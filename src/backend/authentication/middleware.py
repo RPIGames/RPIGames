@@ -21,6 +21,7 @@ def is_logged_in (
         return False
     if len(credentials.credentials) == 0:
         return False
+    return True
 
 def force_authorization (
         credentials: HTTPAuthorizationCredentials = Depends(security),
