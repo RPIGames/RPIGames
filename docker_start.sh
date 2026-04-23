@@ -7,6 +7,7 @@ if ! command -v docker &> /dev/null;
   then echo "Docker installation not found. Please install docker." 
   exit 1
 fi
-sudo docker build -t rpi_games_docker_image .
+sudo docker build -t rpi_games_docker_image . -f deploy/Dockerfile
+docker container stop rpi_games_docker_container
 sudo docker container rm rpi_games_docker_container
 sudo docker run -d --name rpi_games_docker_container -p 80:80 rpi_games_docker_image
