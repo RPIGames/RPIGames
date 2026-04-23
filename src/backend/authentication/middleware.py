@@ -20,7 +20,14 @@ def is_logged_in (
         return False
     if not credentials.scheme == "Bearer":
         return False
-    if len(credentials.credentials) == 0:
+    if not "$" in credentials.credentials:
+        return False
+    credentials_list = credentials.credentials.split("$")
+    if len(credentials_list) != 2:
+        return False
+    user_token = credentials_list[0]
+    secret_token = credentials_list[1]
+    if not len(user_token) == len(secret_token):
         return False
     return True
 
@@ -32,9 +39,27 @@ def force_authorization (
         raise HTTPException(status.HTTP_403_FORBIDDEN,
             {"detail": "Must have Bearer token."}
         )
-    user = session.exec(select(User).where(User.secret == UUID(credentials.credentials))).first()
+
+    credentials_list = credentials.credentials.split("$")
+
+    try:
+        user_uuid = UUID(credentials_list[0])
+        secret_uuid = UUID(credentials_list[1])
+    except ValueError:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+            {"detail": "Badly formed hexadecimal UUID String as auth token."}
+        )
+
+    user = session.get(User, user_uuid)
+
     if user == None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED,
             {"detail": "User token invalid or expired."}
         )
+
+    if user.secret != secret_uuid:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED,
+            {"detail": "User token invalid or expired."}
+        )
+
     return user

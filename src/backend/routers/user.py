@@ -24,7 +24,8 @@ def get_new_user_token(
     session.add(new_user)
     session.commit()
     return {
-        "secret": new_user.secret
+        "id": new_user.id,
+        "secret": new_user.secret,
     }
 
 @router.get("/info")
