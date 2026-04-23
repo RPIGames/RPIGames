@@ -1,21 +1,24 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from sqlmodel import Session, select
 
-from db.engine import engine, create_db_and_tables
-
 from db.models import User, Lobby
+from db.engine import create_db_and_tables, get_session
 
-create_db_and_tables(engine)
+from routers import user
+
+create_db_and_tables()
 
 app = FastAPI()
 
-@app.get("/get-lobbies")
-def get_lobbies():
-    with Session(engine) as session:
-        statement = select(Lobby)
-        lobbies = session.exec(statement).all()
-    return lobbies
+app.include_router(user.router)
 
+@app.get("/get-lobbies")
+def get_lobbies(
+        session: Session = Depends(get_session),
+    ):
+    statement = select(Lobby)
+    lobbies = session.exec(statement).all()
+    return lobbies
 
 @app.get("/items/{item_id}")
 def read_item(item_id: int, q: str | None = None):
