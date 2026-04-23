@@ -2,7 +2,6 @@
 from typing import Generator
 from sqlmodel import create_engine, Session, SQLModel
 
-from .models import Lobby, User
 
 sqlite_file_name = "database.db"
 sqlite_url = f"sqlite:///{sqlite_file_name}"
