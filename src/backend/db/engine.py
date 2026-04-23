@@ -1,8 +1,8 @@
+import os
+
 from sqlmodel import create_engine, SQLModel
 
 from .models import Lobby, User
-
-import os
 
 try:
     sqlite_file_name = os.environ["DATABASE_PATH"]
