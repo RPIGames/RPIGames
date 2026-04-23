@@ -1,0 +1,4 @@
+# How to generate migrations if changed models:
+
+1. Run `alembic revision --autogenerate -m "<change name>"`
+2. Verify it works with `alembic upgrade head`
