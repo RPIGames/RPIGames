@@ -5,7 +5,8 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlmodel import Session, select
 
-from db.engine import get_session, User
+from db.models import User
+from db.engine import get_session
 
 security = HTTPBearer()
 security_optional = HTTPBearer(auto_error=False)
