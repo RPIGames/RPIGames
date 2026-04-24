@@ -43,6 +43,11 @@ def force_authorization (
 
     credentials_list = credentials.credentials.split("$")
 
+    if len(credentials_list) != 2:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+            {"detail": "Badly formatted auth token."}
+        )
+
     try:
         user_uuid = UUID(credentials_list[0])
         secret_uuid = UUID(credentials_list[1])
