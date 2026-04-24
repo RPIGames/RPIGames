@@ -1,5 +1,6 @@
 from typing import Annotated, Optional
 from uuid import UUID
+from cryptography.hazmat.primitives import constant_time
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -57,7 +58,8 @@ def force_authorization (
             {"detail": "User token invalid or expired."}
         )
 
-    if user.secret != secret_uuid:
+    # constant time comparison of the UUIDs
+    if not constant_time.bytes_eq(user.secret.bytes, secret_uuid.bytes):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED,
             {"detail": "User token invalid or expired."}
         )
