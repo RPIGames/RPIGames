@@ -7,4 +7,4 @@ if ! command -v docker &> /dev/null;
   then echo "Docker installation not found. Please install docker." 
   exit 1
 fi
-sudo docker exec -it rpi_games_docker_container /bin/bash
+docker exec -it rpi_games_docker_container /bin/bash
