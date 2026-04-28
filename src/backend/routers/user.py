@@ -1,3 +1,7 @@
+"""
+This user router file contains endpoints relating to user creation and info fetching.
+"""
+
 from typing import Annotated
 
 from fastapi import Depends, APIRouter, HTTPException
@@ -18,11 +22,17 @@ def get_new_user_token(
         logged_in: Annotated[bool, Depends(is_logged_in)],
         session: Session = Depends(get_session),
     ) -> JSONResponse:
+    '''
+    Creates a new user token.
+    '''
+
     if logged_in:
         raise HTTPException(status_code=400, detail="You are already sending a valid user token")
+
     new_user = User()
     session.add(new_user)
     session.commit()
+
     return {
         "id": new_user.id,
         "secret": new_user.secret,
@@ -32,4 +42,8 @@ def get_new_user_token(
 def get_user_info(
         user: Annotated[User, Depends(force_authorization)],
     ) -> User:
+    '''
+    Gets user info. Since this requires and returns the client authentication,
+    this API should only be requested by the user about the user.
+    '''
     return user
