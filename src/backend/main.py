@@ -8,7 +8,9 @@ from routers import user
 
 create_db_and_tables()
 
-app = FastAPI()
+app = FastAPI(
+    root_path="/api"
+)
 
 app.include_router(user.router)
 
