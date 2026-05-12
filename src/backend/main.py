@@ -14,14 +14,3 @@ app = FastAPI(
 
 app.include_router(user.router)
 
-@app.get("/get-lobbies")
-def get_lobbies(
-        session: Session = Depends(get_session),
-    ):
-    statement = select(Lobby)
-    lobbies = session.exec(statement).all()
-    return lobbies
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str | None = None):
-    return {"item_id": item_id, "q": q}
