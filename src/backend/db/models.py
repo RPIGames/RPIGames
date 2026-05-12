@@ -7,6 +7,7 @@ class Lobby(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     name: str
     max_size: int
+    secret: str | None = Field(default=None)
 
     users: list[User] = Relationship(back_populates="lobby")
 
