@@ -3,22 +3,29 @@ body {
     font-family: sans-serif;
 }
 
-nav {
+.top-bar {
     height: 72px;
     width: 100%;
     background-color: #222;
 
     display: flex;
     align-items: center;
+    justify-content: space-between;
 
     padding: 0 16px;
     box-sizing: border-box;
 }
 
-nav img {
+.nav-logo {
     height: 100%;
     max-height: 56px;
     width: auto;
+}
+
+.nav-user {
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
 }
 
 main {
