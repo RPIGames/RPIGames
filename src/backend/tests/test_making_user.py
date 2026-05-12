@@ -25,7 +25,7 @@ def test_create_user():
     - lobby_id: the id of the lobby that the user has joined.
       Since the user hasn't been added to a lobby, it should be None/NULL
     '''
-    response = client.post("/user/new")
+    response = client.post("/v1/user/new")
     assert response.status_code == status.HTTP_200_OK
     assert "secret" in response.json()
     assert "id" in response.json()
@@ -33,7 +33,7 @@ def test_create_user():
     secret:str = response.json()["secret"]
     uuid:str = response.json()["id"]
 
-    response = client.get("/user/info_self", headers={'Authorization': f"Bearer {uuid}${secret}"})
+    response = client.get("/v1/user/info_self", headers={'Authorization': f"Bearer {uuid}${secret}"})
     print(response.text)
     assert response.status_code == status.HTTP_200_OK
     assert "id" in response.json()
@@ -46,7 +46,7 @@ def test_create_user():
     assert "lobby_id" in response.json()
     assert None == response.json()["lobby_id"]
 
-    response = client.get("/user/info", params={"user_id": uuid})
+    response = client.get("/v1/user/info", params={"user_id": uuid})
     print(response.text)
     assert response.status_code == status.HTTP_200_OK
     assert "id" in response.json()
@@ -69,14 +69,14 @@ def test_create_already_signed_in():
 
     It then asserts that it returns an 400 error.
     '''
-    response = client.post("/user/new")
+    response = client.post("/v1/user/new")
     assert response.status_code == status.HTTP_200_OK
     assert "secret" in response.json()
 
     secret:str = response.json()["secret"]
     uuid:str = response.json()["id"]
 
-    response = client.post(url="/user/new", headers={'Authorization': f"Bearer {uuid}${secret}"})
+    response = client.post(url="/v1/user/new", headers={'Authorization': f"Bearer {uuid}${secret}"})
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert "already sending a valid user token" in response.json()["error"]
 
@@ -99,7 +99,7 @@ def test_create_with_random_garbage_auth_header():
     the new user token.
     '''
     for auth in GARBAGE_AUTH_HEADERS:
-        response = client.post(url="/user/new", headers=auth)
+        response = client.post(url="/v1/user/new", headers=auth)
         assert response.status_code == status.HTTP_200_OK
         assert "id" in response.json()
         assert "secret" in response.json()
@@ -112,5 +112,6 @@ def test_user_info_with_garbage():
     400 bad request errors.
     '''
     for auth in GARBAGE_AUTH_HEADERS:
-        response = client.get(url="/user/info_self", headers={'Authorization': "Bearer Randomjaje00Gabage"})
+        response = client.get(url="/v1/user/info_self", headers={'Authorization': "Bearer Randomjaje00Gabage"})
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        assert "detail" in response.json()
