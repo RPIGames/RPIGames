@@ -20,7 +20,6 @@ def test_create_user():
     fields in the response:
 
     - id: the public user-id that anyone should be able to know
-    - secret: the secret user-key that only the user should be able to know
     - name: the name (randomly generated on creation) that the user contains
     - leader: a boolean containing if the user is a leader or not
     - lobby_id: the id of the lobby that the user has joined.
@@ -34,12 +33,24 @@ def test_create_user():
     secret:str = response.json()["secret"]
     uuid:str = response.json()["id"]
 
-    response = client.get("/user/info", headers={'Authorization': f"Bearer {uuid}${secret}"})
+    response = client.get("/user/info_self", headers={'Authorization': f"Bearer {uuid}${secret}"})
+    print(response.text)
     assert response.status_code == status.HTTP_200_OK
     assert "id" in response.json()
     assert str == type(response.json()["id"])
-    assert "secret" in response.json()
-    assert str == type(response.json()["secret"])
+    assert "name" in response.json()
+    assert str == type(response.json()["name"])
+    assert "leader" in response.json()
+    assert bool == type(response.json()["leader"])
+    assert not response.json()["leader"]
+    assert "lobby_id" in response.json()
+    assert None == response.json()["lobby_id"]
+
+    response = client.get("/user/info", params={"user_id": uuid})
+    print(response.text)
+    assert response.status_code == status.HTTP_200_OK
+    assert "id" in response.json()
+    assert str == type(response.json()["id"])
     assert "name" in response.json()
     assert str == type(response.json()["name"])
     assert "leader" in response.json()
@@ -67,9 +78,7 @@ def test_create_already_signed_in():
 
     response = client.post(url="/user/new", headers={'Authorization': f"Bearer {uuid}${secret}"})
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json() == {
-        "detail": "You are already sending a valid user token"
-    }
+    assert "already sending a valid user token" in response.json()["error"]
 
 GARBAGE_AUTH_HEADERS = [
     {'Authorization': "Bearer Random Garbage"},
@@ -79,6 +88,7 @@ GARBAGE_AUTH_HEADERS = [
     {'Auth': "Bearer 102948"},
     {'Authorization': "Bearer 01Ef12943jrka#$&@(!\x00\\EEE)"},
     {'Auth': "Bearer \x00\n\n\nHAHAHAHA"},
+    {'Authorization': "Bearer \x00\n\n\nHAHAHAHA"},
 ]
 
 def test_create_with_random_garbage_auth_header():
@@ -102,5 +112,5 @@ def test_user_info_with_garbage():
     400 bad request errors.
     '''
     for auth in GARBAGE_AUTH_HEADERS:
-        response = client.get(url="/user/info", headers={'Authorization': "Bearer Randomjaje00Gabage"})
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        response = client.get(url="/user/info_self", headers={'Authorization': "Bearer Randomjaje00Gabage"})
+        assert response.status_code == status.HTTP_401_BAD_REQUEST
