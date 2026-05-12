@@ -17,6 +17,9 @@ security_optional = HTTPBearer(auto_error=False)
 def is_logged_in (
     credentials: Annotated[Optional[HTTPAuthorizationCredentials], Depends(security_optional)],
 ) -> bool:
+    """
+    This dependency returns if a user sends a parsable Bearer token.
+    """
     if credentials == None:
         return False
     if not credentials.scheme == "Bearer":
@@ -36,6 +39,12 @@ def force_authorization (
         credentials: HTTPAuthorizationCredentials = Depends(security),
         session: Session = Depends(get_session),
 ) -> User:
+    """
+    This dependency forces the user to have a valid, active, user session,
+    and that the user passes a Bearer auth with the respective details.
+
+    It returns the User object corresponding to that authentication.
+    """
     if not credentials.scheme == "Bearer":
         raise HTTPException(status.HTTP_403_FORBIDDEN,
             {"detail": "Must have Bearer token."}
