@@ -36,8 +36,8 @@ def is_logged_in (
     return True
 
 def force_authorization (
-        credentials: HTTPAuthorizationCredentials = Depends(security),
-        session: Session = Depends(get_session),
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    session: Session = Depends(get_session),
 ) -> User:
     """
     This dependency forces the user to have a valid, active, user session,
