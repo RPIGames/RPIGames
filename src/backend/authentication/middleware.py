@@ -46,14 +46,14 @@ def force_authorization (
     It returns the User object corresponding to that authentication.
     """
     if not credentials.scheme == "Bearer":
-        raise HTTPException(status.HTTP_403_FORBIDDEN,
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED,
             {"detail": "Must have Bearer token."}
         )
 
     credentials_list = credentials.credentials.split("$")
 
     if len(credentials_list) != 2:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED,
             {"detail": "Badly formatted auth token."}
         )
 
@@ -61,7 +61,7 @@ def force_authorization (
         user_uuid = UUID(credentials_list[0])
         secret_uuid = UUID(credentials_list[1])
     except ValueError:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED,
             {"detail": "Badly formed hexadecimal UUID String as auth token."}
         )
 
