@@ -113,4 +113,4 @@ def test_user_info_with_garbage():
     '''
     for auth in GARBAGE_AUTH_HEADERS:
         response = client.get(url="/user/info_self", headers={'Authorization': "Bearer Randomjaje00Gabage"})
-        assert response.status_code == status.HTTP_401_BAD_REQUEST
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
