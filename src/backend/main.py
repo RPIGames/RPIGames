@@ -10,7 +10,7 @@ app = FastAPI(
     root_path="/api"
 )
 
-app.include_router(router_v1, prefix="/v1")
+app.include_router(router_v1, prefix="/v1", include_in_schema=False)
 
 app.include_router(router_v1, prefix="/latest")
 
