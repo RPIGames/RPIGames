@@ -11,19 +11,23 @@ from sqlmodel import Session
 from db.models import User
 from db.engine import get_session
 from authentication.middleware import force_authorization, is_logged_in
-from models.response import ErrorResponse, PrivateUserInfoResponse, UserTokenResponse, PublicUserInfoResponse
+from models.response import AuthenticationErrorResponse, ErrorResponse, PrivateUserInfoResponse, UserTokenResponse, PublicUserInfoResponse
 
 router = APIRouter(
     prefix="/user",
     tags=["user"],
 )
 
-@router.post("/new")
+@router.post("/new", responses={
+    status.HTTP_200_OK: {"model": UserTokenResponse},
+    status.HTTP_400_BAD_REQUEST: {"model": ErrorResponse},
+    status.HTTP_401_UNAUTHORIZED: {"model": AuthenticationErrorResponse},
+})
 def get_new_user_token(
         logged_in: Annotated[bool, Depends(is_logged_in)],
         session: Annotated[Session, Depends(get_session)],
         response: Response,
-    ) -> UserTokenResponse | ErrorResponse:
+    ):
     '''
     Creates a new user token.
     '''
@@ -41,13 +45,17 @@ def get_new_user_token(
         secret = new_user.secret
     )
 
-@router.get("/info_self")
+@router.get("/info_self", responses={
+    status.HTTP_200_OK: {"model": PrivateUserInfoResponse},
+    status.HTTP_401_UNAUTHORIZED: {"model": AuthenticationErrorResponse},
+})
 def get_user_info(
         user: Annotated[User, Depends(force_authorization)],
-    ) -> PrivateUserInfoResponse:
+    ):
     '''
     Gets user info. Since this returns private data, it requires the users authorization.
     '''
+
     return PrivateUserInfoResponse (
         id       = user.id,
         name     = user.name,
@@ -55,12 +63,15 @@ def get_user_info(
         lobby_id = user.lobby_id,
     )
 
-@router.get("/info")
+@router.get("/info", responses={
+    status.HTTP_200_OK: {"model": PublicUserInfoResponse},
+    status.HTTP_404_NOT_FOUND: {"model": ErrorResponse},
+})
 def get_public_user_info (
         user_id: UUID,
         session: Annotated[Session, Depends(get_session)],
         response: Response,
-    ) -> PublicUserInfoResponse | ErrorResponse:
+    ):
     '''
     Gets public user info. Requires a user_id, a UUID that uniquely defines the user.
     '''
@@ -69,7 +80,7 @@ def get_public_user_info (
     if user == None:
         response.status_code = status.HTTP_404_NOT_FOUND
         return ErrorResponse(error = "User not found.")
-    
+
     return PublicUserInfoResponse (
         id       = user.id,
         name     = user.name,
@@ -77,4 +88,3 @@ def get_public_user_info (
         lobby_id = user.lobby_id,
     )
 
-    
