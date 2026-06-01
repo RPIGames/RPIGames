@@ -2,6 +2,7 @@
 This user router file contains endpoints relating to user creation and info fetching.
 """
 
+from types import NoneType
 from typing import Annotated
 from uuid import UUID
 
@@ -88,3 +89,41 @@ def get_public_user_info (
         lobby_id = user.lobby_id,
     )
 
+@router.post("/change_name", responses={
+    status.HTTP_200_OK: {},
+    status.HTTP_400_BAD_REQUEST: {"model": ErrorResponse},
+    status.HTTP_401_UNAUTHORIZED: {"model": AuthenticationErrorResponse},
+})
+def rename_self (
+        new_name: str,
+        user: Annotated[User, Depends(force_authorization)],
+        session: Annotated[Session, Depends(get_session)],
+        response: Response,
+    ):
+    """
+    Changes your username to new_name. There are some restrictions though:
+
+    - Usernames must be greater than or equal to 3 characters long.
+    - Usernames must be less than or equal to 50 characters long.
+    - Usernames must be alphanumeric (+ spaces)
+    """
+
+    if len(new_name) < 3:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return ErrorResponse(error="new_name is too short")
+
+    if len(new_name) > 50:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return ErrorResponse(error="new_name is too long")
+
+    new_name = new_name.strip()
+    for segment in new_name.split(" "):
+        if not new_name.isalnum():
+            response.status_code = status.HTTP_400_BAD_REQUEST
+            return ErrorResponse(error="new_name is not alphanumeric")
+    
+    user.name = new_name
+
+    session.commit()
+
+    return Response(status_code=status.HTTP_200_OK)
