@@ -7,6 +7,8 @@ if ! command -v docker &> /dev/null;
   then echo "Docker installation not found. Please install docker." 
   exit 1
 fi
+
+./compile_typescript.sh
 docker build -t rpi_games_docker_image . -f deploy/dev/docker/Dockerfile
 docker container stop rpi_games_docker_container
 docker container rm rpi_games_docker_container
