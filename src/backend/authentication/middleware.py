@@ -94,8 +94,6 @@ def force_authorization (
     It returns the User object corresponding to that authentication.
     """
     if possible_auth is None:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED,
-            {"detail": "Missing, badly formatted, invalid, or expired authentication."}
-        )
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Missing, badly formatted, invalid, or expired authentication.")
 
     return possible_auth
