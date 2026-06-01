@@ -31,3 +31,37 @@ body {
 main {
     padding: 24px;
 }
+
+footer {
+    width: 100%;
+    background-color: #222;
+
+    position: absolute;
+    bottom: 0;
+
+    padding: 0 1em;
+    box-sizing: border-box;
+}
+
+#footer-links {
+    display: flex;
+    justify-content: center;
+    align-content: end;
+    margin: 0;
+}
+
+#footer-links li {
+    list-style: none;
+    padding: 0.5em 0;
+    margin-right: 1em;
+
+    color: white;
+    font-weight: lighter;
+    font-size: small;
+}
+
+#footer-links li a {
+    color: inherit;
+    font-weight: inherit;
+    font-size: inherit;
+}
