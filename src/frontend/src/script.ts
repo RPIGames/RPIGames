@@ -63,10 +63,50 @@ export async function send_UI_notification(message: string, type: MessageType = 
 
 }
 
+let active_window = "home";
+
+// attach event listeners to all the buttons on the frontend
 document.addEventListener("DOMContentLoaded", () => {
+    // set the current window on the frontend
+    let current_window = document.getElementById(active_window + "-frame");
+
+    // change the active window to whatever
+    function change_active_window(change_to: string) {
+        if (change_to == active_window) {return};
+
+        if (current_window == null) {
+            console.error("current window is currently null");
+            return;
+        }
+        
+        const new_window = document.getElementById(change_to + "-frame");
+        if (new_window == null) {
+            console.error(`couldn't find div called ${change_to}-frame`);
+            return;
+        }
+        current_window.hidden = true;
+        new_window.hidden = false;
+        current_window = new_window;
+
+        active_window = change_to;
+
+        return false;
+    }
+
+    const sidenav_button_home = document.getElementById("sidenav-link-home");
+    const sidenav_button_lobbies = document.getElementById("sidenav-link-lobbies");
+    const sidenav_button_chat = document.getElementById("sidenav-link-chat");
+
+    if (sidenav_button_home != null)
+        sidenav_button_home.onclick = () => change_active_window('home');
+    if (sidenav_button_lobbies != null)
+        sidenav_button_lobbies.onclick = () => change_active_window('lobbies');
+    if (sidenav_button_chat != null)
+        sidenav_button_chat.onclick = () => change_active_window('chat');
+
     const ping_button = document.getElementById("ping-button");
     if (ping_button != null) {
-        ping_button.onclick = () => {send_UI_notification("pong!");};
+        ping_button.onclick = () => send_UI_notification("pong!");
     }
 });
 

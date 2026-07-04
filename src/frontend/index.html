@@ -13,15 +13,32 @@
     <title>RPIGames</title>
   </head>
   <body>
-    <div id="topbar" class="top-bar">
-      <a href="/"><img class="nav-logo" src="/static/RPIGamesLogo.svg" alt="RPIGames Logo" width="200"></a>
+    <div id="topbar">
+      <a href="/"><img id="top-logo" src="/static/RPIGamesLogo.svg" alt="RPIGames Logo" width="200"></a>
       <div class="nav-user" id="username">Signed Out</div>
     </div>
-    <main>
-      <h1>RPIGames</h1>
-      <p>Hello World!</p>
-      <button id="ping-button" class="button">Ping!</button>
-    </main>
+    <div id="middle-div">
+      <div id="sidenav">
+        <a class="active-sidenav-link" id="sidenav-link-home" href="javascript:0">Home</a>
+        <a class="active-sidenav-link" id="sidenav-link-lobbies" href="javascript:0">Lobbies</a>
+        <a class="active-sidenav-link" id="sidenav-link-chat" href="javascript:0" hidden>Chat</a>
+      </div>
+      <div id="center-content">
+        <div id="home-frame">
+          <h1>RPIGames</h1>
+          <p>Hello World!</p>
+          <button id="ping-button" class="button">Ping!</button>
+        </div>
+        <div id="lobbies-frame" hidden>
+          <h1>Lobbies</h1>
+          <p>Here's where the lobbies are supposed to be</p>
+        </div>
+        <div id="chat-frame" hidden>
+          <h1>Chat</h1>
+          <p>Here's where the chat is.</p>
+        </div>
+      </div>
+    </div>
     <div id="notification-box"></div>
     <footer id="footer">
       <ul id="footer-links" class="footer-linkbox">
