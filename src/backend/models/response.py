@@ -22,7 +22,7 @@ class LobbyResponse(BaseModel):
     name: str
     max_members: int
     curr_members: int
-    secret: Optional[str] = None
+    needs_secret: bool
 
 class UserTokenResponse(BaseModel):
     id: UUID
