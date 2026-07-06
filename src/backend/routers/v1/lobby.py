@@ -33,6 +33,7 @@ def mk_lobby_response_from_lobby(lobby: Lobby) -> LobbyResponse:
         name=lobby.name,
         max_members=lobby.max_size,
         curr_members=len(lobby.users),
+        needs_secret=lobby.secret != None,
     )
 
 @router.get("/all")
