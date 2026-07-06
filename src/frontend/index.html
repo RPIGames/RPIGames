@@ -13,25 +13,65 @@
     <title>RPIGames</title>
   </head>
   <body>
-    <div id="topbar">
-      <a href="/"><img id="top-logo" src="/static/RPIGamesLogo.svg" alt="RPIGames Logo" width="200"></a>
+    <div id="topbar" class="flex">
+      <a href="/"><img id="top-logo" src="/static/RPIGamesLogo.svg" alt="RPIGames Logo" class="center-align"></a>
       <div class="nav-user" id="username">Signed Out</div>
     </div>
-    <div id="middle-div">
+    <div id="middle-div" class="flex w-max h-max p-8">
       <div id="sidenav">
         <a class="active-sidenav-link" id="sidenav-link-home" href="javascript:0">Home</a>
         <a class="active-sidenav-link" id="sidenav-link-lobbies" href="javascript:0">Lobbies</a>
         <a class="active-sidenav-link" id="sidenav-link-chat" href="javascript:0" hidden>Chat</a>
       </div>
-      <div id="center-content">
+      <div id="center-content" class="w-max">
         <div id="home-frame">
           <h1>RPIGames</h1>
           <p>Hello World!</p>
           <button id="ping-button" class="button">Ping!</button>
         </div>
         <div id="lobbies-frame" hidden>
-          <h1>Lobbies</h1>
-          <p>Here's where the lobbies are supposed to be</p>
+          <div id="lobbies-topbar" class="flex justify-between center-align mb-4">
+            <h1>Lobbies</h1>
+            <button id="create-lobby-button">
+              <img src="/static/plus.svg" class="w-4" alt="Create New Lobby">
+            </button>
+            <button id="leave-lobby-button" hidden>
+              <img src="/static/exit.svg" class="w-4" alt="Exit Current Lobby">
+            </button>
+          </div>
+          <ul id="lobbies-list">
+            <p>fetching lobbies...</p>
+          </ul>
+          <template id="no-lobbies-template">
+            <li>
+              Sorry, but it appears there are no lobbies. Try making a new one!
+            </li>
+          </template>
+          <template id="lobby-template">
+            <li class="card hover:shadow-md transition-shadow duration-200">
+              <div class="card-body">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <h3 class="mb2">Lobby Name</h3>
+                    <div class="flex items-center space-x-4 text-caption">
+                      <img src="/static/lock.svg" class="w-4" alt="Private Lobby">
+                      <div class="flex items-center">
+                        <img src="/static/user.svg" class="w-4" alt="Users">
+                        <span class="active-players">1</span>
+                        /
+                        <span class="max-players">8</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="ml-4">
+                    <button class="btn-secondary btn-sm">
+                      Join
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </li>
+          </template>
         </div>
         <div id="chat-frame" hidden>
           <h1>Chat</h1>
