@@ -10,6 +10,14 @@ type PublicUserInfo = {
     lobby_id: string | null;
 };
 
+type LobbyResponse = {
+    id: string;
+    name: string;
+    max_members: number;
+    curr_members: number;
+    needs_secret: boolean;
+};
+
 async function get_new_user_id() {
     let response = await fetch(
         "/api/v1/user/new", {
@@ -63,6 +71,56 @@ export async function send_UI_notification(message: string, type: MessageType = 
 
 }
 
+let current_lobby: LobbyResponse | null = null;
+
+async function create_lobby_card(lobby: LobbyResponse) {
+    const node = document
+        .getElementById("lobby-template")!
+        .firstElementChild
+        ?.cloneNode(true) as HTMLElement | null;
+    if (node == null) {
+        return null;
+    }
+
+    node.dataset["lobbyId"] = lobby.id;
+
+    return node;
+}
+
+async function refresh_lobbies() {
+    const lobby_list_element = document.getElementById("lobbies-list");
+    if (lobby_list_element == null) return;
+
+    let response = await fetch("/api/latest/lobby/all");
+    if (!response.ok) {
+        console.error(`Failed to get lobbies: Status code from fetching lobbies is ${response.status}`);
+    }
+
+    let lobby_list = await response.json() as LobbyResponse[];
+
+    let new_children: Node[] = (await Promise.all(lobby_list.map(create_lobby_card))).filter((lobby) => lobby !== null);
+
+    if (new_children.length == 0) {
+        const template = document.getElementById("no-lobbies-template")! as HTMLTemplateElement;
+        const no_lobby_element = template
+            .content
+            .cloneNode(true);
+        new_children.push(no_lobby_element);
+    }
+
+    lobby_list_element.replaceChildren(...new_children);
+}
+
+async function update_lobby_ui() {
+    const createButton = document.getElementById("create-lobby-button");
+    const leaveButton = document.getElementById("leave-lobby-button");
+
+    const inLobby = current_lobby !== null;
+
+    if (createButton !== null) createButton.hidden =  inLobby;
+    if (leaveButton  !== null) leaveButton.hidden  = !inLobby;
+}
+
 let active_window = "home";
 
 // attach event listeners to all the buttons on the frontend
@@ -90,20 +148,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
         active_window = change_to;
 
+        if (change_to == 'lobbies') {
+            void refresh_lobbies();
+            void update_lobby_ui();
+        }
+
         return false;
     }
+
+    // make the sidenav buttons actually toggle the active frame
 
     const sidenav_button_home = document.getElementById("sidenav-link-home");
     const sidenav_button_lobbies = document.getElementById("sidenav-link-lobbies");
     const sidenav_button_chat = document.getElementById("sidenav-link-chat");
 
     if (sidenav_button_home != null)
-        sidenav_button_home.onclick = () => change_active_window('home');
+        sidenav_button_home.addEventListener('click', () => change_active_window('home'));
     if (sidenav_button_lobbies != null)
-        sidenav_button_lobbies.onclick = () => change_active_window('lobbies');
+        sidenav_button_lobbies.addEventListener('click', () => change_active_window('lobbies'));
     if (sidenav_button_chat != null)
-        sidenav_button_chat.onclick = () => change_active_window('chat');
+        sidenav_button_chat.addEventListener('click', () => change_active_window('chat'));
 
+    /* The placeholder button on the home page */
     const ping_button = document.getElementById("ping-button");
     if (ping_button != null) {
         ping_button.onclick = () => send_UI_notification("pong!");
@@ -111,7 +177,9 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function get_user_info(user_id: string) {
-    let response = await fetch(`/api/v1/user/info?user_id=${user_id}`);
+    let response = await fetch(`/api/v1/user/info?user_id=${user_id}`, {
+        credentials: "omit",
+    });
     if (response.ok) {
         let info_response: PublicUserInfo = await response.json();
         return info_response;
@@ -139,10 +207,18 @@ async function start () {
     }
     // check if still active
     let self_info = await get_user_info(user_id);
+    if (self_info == null) {
+        // couldn't get user info, just return
+        return;
+    }
+    // set username
     let username_element = document.getElementById("username")
     if (username_element != null)
-        if (self_info != null)
-            username_element.textContent = self_info.name
+        username_element.textContent = self_info.name
+    // check to see if the user is in a lobby
+    if (self_info.lobby_id != null) {
+        // if it is in a lobby, figure out the lobby name
+    }
 };
 
 window.addEventListener('load', async (_e) => {

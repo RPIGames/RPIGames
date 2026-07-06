@@ -1,58 +1,61 @@
-:root {
-  --navbar-bg-color: #222222; /* global scope */
+
+/* Set sane defaults */
+* {
+    box-sizing: border-box;
+    border: 0 solid;
+    margin: 0;
+    padding: 0;
 }
 
+/* remove the dot */
+ul {
+    list-style-type: none;
+}
+
+/* Some theming vars */
+* {
+  --navbar-bg-color: #222222; /* global scope */
+  --emphasis-color: #d6001c;
+  --text-color: #000000;
+  --spacing: .25rem;
+}
+
+
 body {
-    margin: 0;
     font-family: sans-serif;
 }
 
+/* deal with the topbar */
+* {
+    --topbar-height: calc(var(--spacing)*24);
+}
+
 #topbar {
-    height: 72px;
+    height: var(--topbar-height);
     width: 100%;
     background-color: var(--navbar-bg-color);
 
-    display: flex;
     align-items: center;
     justify-content: space-between;
 
-    padding: 0 16px;
-    box-sizing: border-box;
+    padding: 0 calc(var(--spacing) * 8);
 }
 
 #top-logo {
-    margin: 0.5rem;
-    height: 100%;
-    max-height: 56px;
+    height: calc(var(--topbar-height) - calc(var(--spacing)*4)*2);
+    margin: calc(var(--spacing)*4);
     width: auto;
 }
 
 .nav-user {
     color: white;
-    font-size: 16px;
+    font-size: calc(var(--spacing) * 4);
     font-weight: 500;
-}
-
-#middle-div {
-    height: 100%;
-    width: auto;
-    display: flex;
-    direction: row;
-    margin: 24px;
-}
-
-#center-content {
-    width: stretch;
-}
-
-#center-content > div:not([hidden]) {
-    display: flex;
-    flex-direction: column;
-    /* align-items: center; */
 }
 
 button {
     width: fit-content;
+    height: fit-content;
 }
 
 #footer {
@@ -62,8 +65,7 @@ button {
     position: absolute;
     bottom: 0;
 
-    padding: 0 1em;
-    box-sizing: border-box;
+    padding: 0 calc(var(--spacing) * 4);
 }
 
 #footer-links {
@@ -76,7 +78,7 @@ button {
 #footer-links > li {
     list-style: none;
     padding: 0.5em 0;
-    margin-right: 1em;
+    margin-right: calc(var(--spacing) * 4);
 
     color: white;
     font-weight: lighter;
@@ -137,16 +139,131 @@ button {
 #sidenav {
     display: flex;
     flex-direction: column;
-    width: 10em;
-    border-right-width: 2px;
-    border-right-style: solid;
-    border-left-style: solid;
-    padding-left: .5rem;
-    padding-top: .25rem;
+    width: auto;
+    padding-top: var(--spacing);
     overflow-y: auto;
-    margin-right: 1em;
+    padding-right: calc(var(--spacing)*16);
 }
 
-#sidenav a.active-sidenav-link {
-    color: black;
+
+a:hover {
+    color: var(--emphasis-color);
+}
+
+a:not(:hover) {
+    color: var(--text-color);
+}
+
+/* ~~copied~~ heavily inspired from tailwind css */
+
+:root {
+    --color-neutral-200: #e2e8f0;
+    --color-neutral-300: #cbd5e0;
+    --color-neutral-500: #a0aec0;
+    --color-neutral-900: #171a1c;
+    --color-white: white;
+    --radius-lg: 1.125rem;
+    --font-weight-medium: 500;
+}
+
+.card {
+    border-radius: var(--radius-lg);
+    border-style: solid;
+    border-width: 1px;
+    border-color: var(--color-neutral-200);
+    background-color: var(--color-white);
+}
+
+.card-body {
+    padding-inline: calc(var(--spacing) * 3);
+    padding-block: calc(var(--spacing) * 2);
+}
+
+.btn-secondary {
+    border-radius: var(--radius-lg);
+    padding-inline: calc(var(--spacing) * 4);
+    padding-block: calc(var(--spacing) * 2);
+    font-weight: var(--font-weight-medium);
+    transition-property: all;
+    justify-content: center;
+    align-items: center;
+    transition-duration: .2s;
+    display: inline-flex;
+    border-width: 1px;
+    border-color: var(--color-neutral-300);
+    background-color: var(--color-neutral-200);
+    color: var(--color-neutral-900);
+}
+
+.btn-secondary:hover {
+    border-color: var(--color-neutral-500);
+    background-color: var(--color-neutral-300);
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.items-start {
+    align-items: flex-start;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.space-y-4 > :not(:last-child) {
+    margin-block-end: calc(var(--spacing) * 4);
+}
+
+.mb-2 {
+    margin-bottom: calc(var(--spacing) * 2);
+}
+.mb-4 {
+    margin-bottom: calc(var(--spacing) * 4);
+}
+.ml-4 {
+    margin-left: calc(var(--spacing) * 4);
+}
+
+.p-8 {
+    padding: calc(var(--spacing) * 8);
+}
+.p-4 {
+    padding: calc(var(--spacing) * 4);
+}
+.p-2 {
+    padding: calc(var(--spacing) * 2);
+}
+.p-1 {
+    padding: calc(var(--spacing) * 1);
+}
+
+.w-8 {
+    width: calc(var(--spacing) * 8);
+}
+.w-4 {
+    width: calc(var(--spacing) * 4);
+}
+.w-2 {
+    width: calc(var(--spacing) * 2);
+}
+.w-1 {
+    width: calc(var(--spacing) * 1);
+}
+
+.w-max {
+    width: 100%;
+}
+
+.h-max {
+    height: 100%;
+}
+
+.center-align {
+    align-content: center;
 }
