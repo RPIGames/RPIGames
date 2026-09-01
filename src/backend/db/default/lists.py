@@ -1,3 +1,11 @@
+"""
+Loader for the files in this directory.
+
+Due to how python imports work, this file will only run once and
+provide both the adjective_list and noun_list in memory for other
+modules in the package.
+"""
+
 import os.path
 from pathlib import Path
 
