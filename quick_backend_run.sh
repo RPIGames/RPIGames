@@ -5,4 +5,4 @@ if ! command -v uv &> /dev/null;
   exit 1
 fi
 
-uv run fastapi dev
+uv run --directory src/backend fastapi dev
