@@ -9,7 +9,7 @@ class Lobby(SQLModel, table=True):
     max_size: int
     secret: str | None = Field(default=None)
 
-    users: list[User] = Relationship(back_populates="lobby")
+    users: list['User'] = Relationship(back_populates="lobby")
 
 
 class User(SQLModel, table=True):
