@@ -10,5 +10,7 @@ if [[ -f /tmp/nginx.pid ]]; then
   exit 1
 fi
 
+./compile_typescript.sh
+
 nginx -p . -c deploy/dev/nodocker/nginx_config_quick.conf 2> /dev/null
 printf "Frontend should be started at http://localhost:5000/\n"

@@ -1,0 +1,28 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "A backend API for the RPIGames web site"
+readme = "README.md"
+authors = [
+    { name = "soriad", email = "soriad@rpi.edu" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "cryptography>=50.0.1",
+    "fastapi[standard]>=0.141.1",
+    "sqlmodel>=0.0.42",
+]
+
+[project.scripts]
+backend = "backend:main"
+
+[build-system]
+requires = ["uv_build>=0.12.8,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "tests"
+module-root = ""
+
+[tool.fastapi]
+entrypoint = "main:app"
