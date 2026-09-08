@@ -1,21 +1,15 @@
+"""
+Simple default generator for a random username.
+"""
+
 import random
-import os.path
-from pathlib import Path
 
-list_folder = Path(__file__).resolve().parent
-
-adjective_list: list[str] = []
-with open(os.path.join(list_folder, "english-adjectives.txt")) as f:
-    for line in f.readlines():
-        adjective_list.append(line.strip().lower())
-
-noun_list: list[str] = []
-with open(os.path.join(list_folder, "english-nouns.txt")) as f:
-    for line in f.readlines():
-        noun_list.append(line.strip().lower())
+from .lists import adjective_list, noun_list
 
 def random_username() -> str:
+    """Returns a random username consisting of an adjective and a noun."""
     return random.choice(adjective_list).capitalize() + " " + random.choice(noun_list).capitalize()
 
+# Also doubles as a tool for generating random usernames for testing and such
 if __name__ == "__main__":
     print(f"A random username: {random_username()}")
