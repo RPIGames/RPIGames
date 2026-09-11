@@ -58,6 +58,43 @@ button {
     height: fit-content;
 }
 
+#center-wrapper{
+    display:flex;
+    justify-content: center;
+}
+
+#center-content{
+    display:flex;
+    justify-content: center;
+    flex-direction: column;
+    width:max(60%,600px);
+}
+
+#center-content > ul{
+    margin:10px;
+    padding-left:20px;
+}
+
+#center-content > h2{
+    margin:10px;
+}
+
+#center-content > h2{
+    margin:10px;
+}
+
+#center-content > h1{
+    margin:10px;
+}
+
+#center-content > p{
+    margin:10px;
+}
+
+#center-content li::before{
+    content:"- ";
+}
+
 #footer {
     width: 100%;
     background-color: var(--navbar-bg-color);
