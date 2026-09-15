@@ -224,7 +224,7 @@ async function setPageContent(location: NonNullable<string>,divId?: string){
     }
 
     //Make any other dynamically added page-changing buttons interactive
-    const locationButtons : HTMLButtonElement[] =Array.from(document.querySelectorAll(".pageChange"))
+    const locationButtons : (HTMLButtonElement | HTMLLinkElement)[] =Array.from(document.querySelectorAll(".pageChange"))
     if(locationButtons.length>0){
         for(let button of locationButtons){
             let location : string = button.getAttribute("data-url") || ""

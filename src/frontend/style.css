@@ -105,6 +105,13 @@ button {
     padding: 0 calc(var(--spacing) * 4);
 }
 
+.linkButton{
+    background-color: transparent;
+    color: var(--color-neutral-500);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 #footer-links {
     display: flex;
     justify-content: center;
