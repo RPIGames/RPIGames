@@ -11,28 +11,31 @@ by a '$'):
   the person sending the request is who they say they are.
 """
 
-from typing import Annotated, Optional
+from typing import Annotated
 from uuid import UUID
-from cryptography.hazmat.primitives import constant_time
 
+from cryptography.hazmat.primitives import constant_time
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlmodel import Session, select
+from sqlmodel import Session
 
-from db.models import User
 from db.engine import get_session
+from db.models import User
 
 security_optional = HTTPBearer(auto_error=False)
 
-def is_logged_in (
-    credentials: Annotated[Optional[HTTPAuthorizationCredentials], Depends(security_optional)],
+
+def is_logged_in(
+    credentials: Annotated[
+        HTTPAuthorizationCredentials | None, Depends(security_optional)
+    ],
 ) -> bool:
     """
     This dependency returns if a user sent a parsable Bearer token.
     """
     if credentials == None:
         return False
-    if not credentials.scheme == "Bearer":
+    if credentials.scheme != "Bearer":
         return False
     if not "$" in credentials.credentials:
         return False
@@ -41,14 +44,15 @@ def is_logged_in (
         return False
     user_token = credentials_list[0]
     secret_token = credentials_list[1]
-    if not len(user_token) == len(secret_token):
-        return False
-    return True
+    return len(user_token) == len(secret_token)
 
-def optional_authorization (
-    credentials: Annotated[Optional[HTTPAuthorizationCredentials], Depends(security_optional)],
+
+def optional_authorization(
+    credentials: Annotated[
+        HTTPAuthorizationCredentials | None, Depends(security_optional)
+    ],
     session: Annotated[Session, Depends(get_session)],
-) -> Optional[User]:
+) -> User | None:
     """
     This dependency allows the user to authenticate themselves, as
     long as the user passes a Bearer auth with the respective details.
@@ -59,7 +63,7 @@ def optional_authorization (
     if credentials is None:
         return None
 
-    if not credentials.scheme == "Bearer":
+    if credentials.scheme != "Bearer":
         return None
 
     credentials_list = credentials.credentials.split("$")
@@ -83,8 +87,9 @@ def optional_authorization (
 
     return user
 
-def force_authorization (
-    possible_auth: Annotated[Optional[User], Depends(optional_authorization)],
+
+def force_authorization(
+    possible_auth: Annotated[User | None, Depends(optional_authorization)],
     session: Annotated[Session, Depends(get_session)],
 ) -> User:
     """
@@ -94,6 +99,9 @@ def force_authorization (
     It returns the User object corresponding to that authentication.
     """
     if possible_auth is None:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Missing, badly formatted, invalid, or expired authentication.")
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            "Missing, badly formatted, invalid, or expired authentication.",
+        )
 
     return possible_auth
