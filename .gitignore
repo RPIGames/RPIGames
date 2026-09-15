@@ -189,3 +189,4 @@ cython_debug/
 **/*.kra~
 *autosave.kra
 
+art/imagetemplate.kra~
