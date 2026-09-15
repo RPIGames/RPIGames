@@ -122,58 +122,23 @@ async function updateLobbyUI() {
 }
 
 let activeWindow = "home";
+setPageContent("home")
 
 // attach event listeners to all the buttons on the frontend
 document.addEventListener("DOMContentLoaded", () => {
-    // set the current window on the frontend
-    let currentWindow = document.getElementById(activeWindow + "-frame");
-
-    // change the active window to whatever
-    function changeActiveWindow(changeTo: string) {
-        if (changeTo == activeWindow) {return};
-
-        if (currentWindow == null) {
-            console.error("current window is currently null");
-            return;
-        }
-        
-        const newWindow = document.getElementById(changeTo + "-frame");
-        if (newWindow == null) {
-            console.error(`couldn't find div called ${changeTo}-frame`);
-            return;
-        }
-        currentWindow.hidden = true;
-        newWindow.hidden = false;
-        currentWindow = newWindow;
-
-        activeWindow = changeTo;
-
-        if (changeTo == 'lobbies') {
-            void refreshLobbies();
-            void updateLobbyUI();
-        }
-
-        return false;
-    }
-
     // make the sidenav buttons actually toggle the active frame
 
     const sidenavButtonHome = document.getElementById("sidenav-link-home");
     const sidenavButtonLobbies = document.getElementById("sidenav-link-lobbies");
     const sidenavButtonChat = document.getElementById("sidenav-link-chat");
 
-    if (sidenavButtonHome != null)
-        sidenavButtonHome.addEventListener('click', () => changeActiveWindow('home'));
-    if (sidenavButtonLobbies != null)
-        sidenavButtonLobbies.addEventListener('click', () => changeActiveWindow('lobbies'));
-    if (sidenavButtonChat != null)
-        sidenavButtonChat.addEventListener('click', () => changeActiveWindow('chat'));
+    if (sidenavButtonHome)
+        sidenavButtonHome.addEventListener('click', () => setPageContent("home"));
+    if (sidenavButtonLobbies)
+        sidenavButtonLobbies.addEventListener('click', () => setPageContent("lobbies","lobby-main"));
+    if (sidenavButtonChat)
+        sidenavButtonChat.addEventListener('click', () => setPageContent("chat"));
 
-    /* The placeholder button on the home page */
-    const pingButton = document.getElementById("ping-button");
-    if (pingButton != null) {
-        pingButton.onclick = () => sendUINotification("pong!");
-    }
 });
 
 async function getUserInfo(userId: string) {
@@ -224,4 +189,66 @@ async function start () {
 window.addEventListener('load', async () => {
     await start();
 })
-console.log("added event listener");
+
+const centerContent: HTMLDivElement =document.querySelector("#center-content")!
+
+async function setPageContent(location: NonNullable<string>,divId?: string){
+    activeWindow=location
+    console.log("Changing location to: "+activeWindow)
+    
+    //use div with same name as location, if null
+    if(!divId){
+        divId=location
+    }
+
+    //Fetch html from template 
+    const htmlFetchResponse= await fetch(`templates/${location}.html`)
+     if (!htmlFetchResponse.ok) {
+      throw new Error(`Response status: ${htmlFetchResponse.status}`);
+    }
+    
+    //convert response to html
+    const pageText=await htmlFetchResponse.text()
+    const parser=new DOMParser()
+    const pageHTML= parser.parseFromString(pageText, "text/html")
+
+    if(pageHTML){
+        //add template to centerContent
+        const divTemplate : HTMLTemplateElement | null = pageHTML.querySelector(`#${divId}`)
+        if(divTemplate){
+            const lobbyBody=document.importNode(divTemplate.content, true)
+            centerContent.replaceChildren(lobbyBody)
+        }else{
+            console.error(`'${divTemplate}'+ is not a valid not div name`)
+        }
+    }
+
+    //Make any other dynamically added page-changing buttons interactive
+    const locationButtons : HTMLButtonElement[] =Array.from(document.querySelectorAll(".pageChange"))
+    if(locationButtons.length>0){
+        for(let button of locationButtons){
+            let location : string = button.getAttribute("data-url") || ""
+            let div :string =button.getAttribute("data-div") || ""
+            button.addEventListener("click",()=>{
+                setPageContent(location,div)
+            })
+        }
+    }
+
+    //location-specific code to run on page change
+    switch (location){
+        case "lobbies":{
+            void refreshLobbies();
+            void updateLobbyUI();
+            break;
+        }
+        case "home":{
+            //setup ping button
+            const pingButton = document.getElementById("ping-button");
+            if (pingButton) {
+                pingButton.onclick = () => sendUINotification("pong!");
+            }
+            break
+        }
+    }
+}
