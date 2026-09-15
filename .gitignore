@@ -185,3 +185,7 @@ cython_debug/
 # Ruff stuff:
 .ruff_cache/
 
+#krita stuff
+**/*.kra~
+*autosave.kra
+
