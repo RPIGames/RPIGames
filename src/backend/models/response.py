@@ -2,20 +2,24 @@
 This module contains possible response models.
 """
 
-from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel
 
+
 class OkResponse(BaseModel):
     pass
 
+
 class ErrorResponse(BaseModel):
     """Contains an error."""
+
     error: str
 
+
 class AuthenticationErrorResponse(BaseModel):
-    detail: Optional[str] = None
+    detail: str | None = None
+
 
 class LobbyResponse(BaseModel):
     id: UUID
@@ -24,21 +28,26 @@ class LobbyResponse(BaseModel):
     curr_members: int
     needs_secret: bool
 
+
 class UserTokenResponse(BaseModel):
     id: UUID
     secret: UUID
+
 
 class PublicUserInfo(BaseModel):
     id: UUID
     name: str
     leader: bool = False
-    lobby_id: Optional[UUID] = None
+    lobby_id: UUID | None = None
+
 
 class PrivateUserInfo(PublicUserInfo):
     pass
 
+
 class PublicUserInfoResponse(PublicUserInfo):
     pass
+
 
 class PrivateUserInfoResponse(PrivateUserInfo):
     pass
