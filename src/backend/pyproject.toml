@@ -27,6 +27,9 @@ module-root = ""
 [tool.fastapi]
 entrypoint = "main:app"
 
+[tool.ruff]
+namespace-packages = ["."]
+
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
