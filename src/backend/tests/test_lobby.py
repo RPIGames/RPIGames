@@ -94,8 +94,8 @@ def test_create_lobby():
     assert response.status_code == status.HTTP_200_OK
 
     assert "id" in response.json()
-    lobby_id: str = response.json()["id"]
-    lobby_id = UUID(lobby_id)
+    lobby_id_str: str = response.json()["id"]
+    _lobby_id = UUID(lobby_id_str)
     assert response.json()["name"] == "Test Lobby"
     assert "max_members" in response.json()
 

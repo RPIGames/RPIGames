@@ -26,14 +26,14 @@ def upgrade() -> None:
     op.create_table(
         "lobby",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("name", sqlmodel.AutoString(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
         "user",
         sa.Column("id", sa.Uuid(), nullable=False),
         sa.Column("secret", sa.Uuid(), nullable=False),
-        sa.Column("name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("name", sqlmodel.AutoString(), nullable=False),
         sa.Column("leader", sa.Boolean(), nullable=False),
         sa.Column("lobby_id", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
