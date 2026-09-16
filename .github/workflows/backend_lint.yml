@@ -1,0 +1,12 @@
+name: run backend lint
+
+on: pull_request
+
+jobs:
+  check:
+    runs-on: ubuntu-slim
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4- 
+      - name: ruff-action
+        uses: astral-sh/ruff-action@v4.1.0
