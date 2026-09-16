@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from .v1 import user, lobby
+from .v1 import lobby, user
 
 router = APIRouter()
 
