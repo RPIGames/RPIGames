@@ -1,18 +1,15 @@
 # RPIGames
-Full-Stack Web App for Playing Games on the RPI Campus
+Full-stack web application to connect others across the RPI campus through real-life games. This semester we’ll be making a framework to add more games over the semester. The web app is supposed to make it easier to host campus-wide offline games emphasizing the outdoors, reflecting the games that are played in Jetlag. For example, a game called “Capture the Building” could involve players running around into buildings, pressing a button on the app to “claim” the building. This is communicated to other players using push notifications after the app verifies the GPS location of the player.
 
-## Developer quick start
 
-- backend code can be found at `src/backend`
-  - we use `uv` as a project manager in our backend
-  - use the `./quick_backend_run.sh` script
-  - or start development server with `fastapi dev` after installing the requirements
-- frontend code can be found at `src/frontend`
-  - get `tsc` with npm or your package manager (package name `typescript` on some linux distros.)
-  - you can compile the typescript to js with `tsc -p .` in the `src/frontend` folder
-    - this has been made automatic with `./compile_typescript.sh`
-  - you can also start a nginx frontend server (that also links to the
-  backend fastapi development port) using the [start](quick_frontend_start.sh) and
-  [stop](quick_frontend_stop.sh) scripts
+## RPI GAMES AI policy
 
-When packaging, use the docker scripts to ensure reproducibility.
+In RPIGames, the use of Generative AI is strictly limited to learning how a language or system works and to help with debugging code. Any case of Generative AI directly creating or modifying content, such as writing code, making PR's, adding/editing pages on the wiki, or making Issues, is prohibited.
+
+## For contributers
+
+Make sure to look at the wiki for [developer setup](https://github.com/RPIGames/RPIGames/wiki/Developer-Deployment) and to look at our [coding practices](https://github.com/RPIGames/RPIGames/wiki/Naming-Conventions).
+
+
+
+ 
