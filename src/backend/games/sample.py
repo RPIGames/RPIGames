@@ -2,28 +2,28 @@
 Here's a sample game made using the Game API.
 This shouldn't work until we get the API implemented.
 """
+
 from random import shuffle
-from typing import Any, ClassVar
+from typing import Annotated, Any, ClassVar, TypedDict
 from uuid import UUID
 
-from games.registry import GAMES
-from games_api.game import Game
+from games_api import game
 from games_api.player import Player
-from games_api.schedule import schedule
 
 
-class SampleGame(Game):
+class SampleGameConfig(TypedDict):
+    welcome_message: Annotated[str, "Welcome message"]
 
-    name: ClassVar[str] = "Sample Game!"
-    max_players: ClassVar[tuple[int, int]] = (2, 500)
-    game_config: ClassVar[dict[str, tuple[str, type, int | str | bool | float | None]]] = {
-        "welcome_message": ("Welcome message", str, "Welcome to the game!"),
-        "time_to_hide": ("Time to Hide (minutes):", int, 5),
-        "points_for_hiding": ("Points per minute hidden:", int, 10),
-        "points_for_seeking": ("Points per hider found:", int, 15),
+
+class SampleGame:
+    game_config: ClassVar[dict[str, tuple[str, type]]] = {
+        "welcome_message": ("Welcome message", str),
+        "time_to_hide": ("Time to Hide (minutes):", int),
+        "points_for_hiding": ("Points per minute hidden:", int),
+        "points_for_seeking": ("Points per hider found:", int),
     }
 
-    def __init__(self, initial_player: Player) -> None:
+    async def __init__(self, lobby_id: UUID, initial_player: Player) -> None:
         self.unassigned_players = [initial_player]
         self.game_started = False
         self.hiders: list[Player] = []
@@ -88,18 +88,12 @@ class SampleGame(Game):
             )
         else:
             self.unassigned_players.append(player)
-            try:
-                player.send_notification(
-                    "Welcome to the game!",
-                    """
-                The game is still starting, wait for the team leader.
-                """,
-                )
-            except NotImplementedError:
-                print ("uh oh")
-
-    async def leave_lobby(self, player: Player) -> None:
-        pass
+            player.send_notification(
+                "Welcome to the game!",
+                """
+            The game is still starting, wait for the team leader.
+            """,
+            )
 
     async def button_found_me(self, player: Player, selection: Player):
         self.hiders.remove(player)
@@ -110,5 +104,3 @@ class SampleGame(Game):
         self.scores[selection.uuid] += self.points_per_player
 
         selection.send_notification("You found a player!")
-
-GAMES["sample_game"] = SampleGame
