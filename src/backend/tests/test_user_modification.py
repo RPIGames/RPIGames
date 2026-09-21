@@ -31,7 +31,9 @@ def get_uid_from_auth(auth: str) -> UUID:
 
 def get_user_info(auth: str) -> dict[str, Any]:
     """Gets the public user info as from an auth bearer string"""
-    response = client.get("/v1/user/info", params={"user_id": get_uid_from_auth(auth)})
+    response = client.get(
+        "/v1/user/info", params={"user_id": str(get_uid_from_auth(auth))}
+    )
     assert response.status_code == status.HTTP_200_OK
     return response.json()
 
