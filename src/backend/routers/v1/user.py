@@ -64,7 +64,7 @@ def get_user_info(
     user: Annotated[User, Depends(force_authorization)],
 ):
     """
-    Gets user info. Since this returns private data, it requires the users authorization.
+    Gets user info. Since this returns private data, it requires the user's authorization.
     """
 
     return PrivateUserInfoResponse(
@@ -92,7 +92,7 @@ def get_public_user_info(
     """
 
     user = session.get(User, user_id)
-    if user == None:
+    if user is None:
         response.status_code = status.HTTP_404_NOT_FOUND
         return ErrorResponse(error="User not found.")
 

@@ -24,7 +24,6 @@ from db.models import User
 
 security_optional = HTTPBearer(auto_error=False)
 
-
 def is_logged_in(
     credentials: Annotated[
         HTTPAuthorizationCredentials | None, Depends(security_optional)
@@ -33,7 +32,7 @@ def is_logged_in(
     """
     This dependency returns if a user sent a parsable Bearer token.
     """
-    if credentials == None:
+    if credentials is None:
         return False
     if credentials.scheme != "Bearer":
         return False
@@ -78,7 +77,7 @@ def optional_authorization(
 
     user = session.get(User, user_uuid)
 
-    if user == None:
+    if user is None:
         return None
 
     # constant time comparison of the UUIDs
@@ -90,7 +89,6 @@ def optional_authorization(
 
 def force_authorization(
     possible_auth: Annotated[User | None, Depends(optional_authorization)],
-    session: Annotated[Session, Depends(get_session)],
 ) -> User:
     """
     This dependency forces the user to have a valid, active, user session,
