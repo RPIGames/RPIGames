@@ -30,8 +30,9 @@ def parse_credentials(
     ],
 ) -> Optional[tuple[str, str]]:
     """
-    This dependency returns if a user sent a parsable Bearer token. This function does not check to see if the user is
-    logged in, it only checks to see if the bearer token has a valid format.
+    This dependency parses the credentials sent by the User. If the credentials are of the correct format
+    (user_token$secret_token), then it returns user_token and secret_token. If the credentials are invalid for any
+    reason, then None is returned.
     """
     if credentials is None or \
             credentials.scheme != "Bearer" or \
