@@ -107,7 +107,8 @@ button {
 
 .linkButton{
     background-color: transparent;
-    color: var(--color-neutral-500);
+    color: white;
+    font-weight: 100;
     text-decoration: underline;
     cursor: pointer;
 }
