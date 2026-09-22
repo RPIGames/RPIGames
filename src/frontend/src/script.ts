@@ -100,16 +100,14 @@ export async function sendUINotification(message: string, type: MessageType = Me
 let currentLobby: LobbyResponse | null = null;
 
 async function createLobbyCard(lobby: LobbyResponse) {
-    const node = document
-        .getElementById("lobby-template")!
-        .firstElementChild
-        ?.cloneNode(true) as HTMLElement | null;
-    if (node == null) {
-        return null;
-    }
-
+    //fetch card template
+    //TO-DO: only fetch this once
+    let cardTemplate=(await getPageContent("lobbies","lobby-template"))!
+   
+    //convert template to actual html element 
+    let node : HTMLElement = cardTemplate.content.firstElementChild! as HTMLElement;
     node.dataset["lobbyId"] = lobby.id;
-
+    
     return node;
 }
 
@@ -117,24 +115,25 @@ async function refreshLobbies() {
     const lobbyListElement = document.getElementById("lobbies-list");
     if (lobbyListElement == null) return;
 
+    //get lobby data
     let response = await fetch("/api/latest/lobby/all");
     if (!response.ok) {
         console.error(`Failed to get lobbies: Status code from fetching lobbies is ${response.status}`);
     }
 
+    //create list of lobbies
     let lobbyList = await response.json() as LobbyResponse[];
 
+    //create list of html element cards containing lobby data
     let newChildren: Node[] = (await Promise.all(lobbyList.map(createLobbyCard))).filter((lobby) => lobby !== null);
 
     if (newChildren.length == 0) {
-        const template = document.getElementById("no-lobbies-template")! as HTMLTemplateElement;
-        const noLobbyElement = template
-            .content
-            .cloneNode(true);
-        newChildren.push(noLobbyElement);
+        //if no lobbies exist, show no lobbies template
+        await setPageContent("lobbies","lobbies-list","no-lobbies-template")
+    }else{
+        //add lobbies to html
+        lobbyListElement.replaceChildren(...newChildren);
     }
-
-    lobbyListElement.replaceChildren(...newChildren);
 }
 
 async function updateLobbyUI() {
@@ -147,6 +146,7 @@ async function updateLobbyUI() {
     if (leaveButton  !== null) leaveButton.hidden  = !inLobby;
 }
 
+const centerContent: HTMLDivElement =document.querySelector("#center-content")!
 let activeWindow = "home";
 setPageContent("home")
 
@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (sidenavButtonHome)
         sidenavButtonHome.addEventListener('click', () => setPageContent("home"));
     if (sidenavButtonLobbies)
-        sidenavButtonLobbies.addEventListener('click', () => setPageContent("lobbies","lobby-main"));
+        sidenavButtonLobbies.addEventListener('click', () => setPageContent("lobbies","centerContent","lobby-main"));
     if (sidenavButtonChat)
         sidenavButtonChat.addEventListener('click', () => setPageContent("chat"));
 
@@ -216,19 +216,15 @@ window.addEventListener('load', async () => {
     await start();
 })
 
-const centerContent: HTMLDivElement =document.querySelector("#center-content")!
-
-async function setPageContent(location: NonNullable<string>,divId?: string){
-    activeWindow=location
-    console.log("Changing location to: "+activeWindow)
-    
-    //use div with same name as location, if null
+async function getPageContent(pageLocation: NonNullable<string>, divId?: string) : Promise<HTMLTemplateElement | null>{
+     //use div with same name as location, if null
     if(!divId){
-        divId=location
+        divId=pageLocation
     }
 
+
     //Fetch html from template 
-    const htmlFetchResponse= await fetch(`templates/${location}.html`)
+    const htmlFetchResponse= await fetch(`templates/${pageLocation}.html`)
      if (!htmlFetchResponse.ok) {
       throw new Error(`Response status: ${htmlFetchResponse.status}`);
     }
@@ -239,42 +235,64 @@ async function setPageContent(location: NonNullable<string>,divId?: string){
     const pageHTML= parser.parseFromString(pageText, "text/html")
 
     if(pageHTML){
-        //add template to centerContent
-        const divTemplate : HTMLTemplateElement | null = pageHTML.querySelector(`#${divId}`)
-        if(divTemplate){
-            const lobbyBody=document.importNode(divTemplate.content, true)
-            centerContent.replaceChildren(lobbyBody)
-        }else{
-            console.error(`'${divTemplate}'+ is not a valid not div name`)
-        }
+        //add template to appendDiv
+        return pageHTML.querySelector(`#${divId}`)
+    }else{
+        return null
+    }
+}
+
+async function setPageContent(pageLocation: NonNullable<string>,parentDivId?: string, divId?: string){
+    //find div to append to; if parameter not initialized, set to null
+    let parentDiv : HTMLElement | null = parentDivId ? 
+    document.querySelector(`#${parentDivId}`) : null;
+
+    //append new content to centerContent by default
+    if(!parentDiv){
+        parentDiv=centerContent;
     }
 
+    //get template from location
+    let divTemplate : HTMLTemplateElement | null = await getPageContent(pageLocation,divId)
+    
+    if(divTemplate){
+        const templateContent=document.importNode(divTemplate.content, true)
+        parentDiv.replaceChildren(templateContent)
+    }
+    
     //Make any other dynamically added page-changing buttons interactive
     const locationButtons : (HTMLButtonElement | HTMLLinkElement)[] =Array.from(document.querySelectorAll(".pageChange"))
     if(locationButtons.length>0){
         for(let button of locationButtons){
             let location : string = button.getAttribute("data-url") || ""
+            let appendLocation :string =button.getAttribute("data-divParent") || ""
             let div :string =button.getAttribute("data-div") || ""
             button.addEventListener("click",()=>{
-                setPageContent(location,div)
+                setPageContent(location,appendLocation,div)
             })
         }
     }
 
-    //location-specific code to run on page change
-    switch (location){
-        case "lobbies":{
-            void refreshLobbies();
-            void updateLobbyUI();
-            break;
-        }
-        case "home":{
-            //setup ping button
-            const pingButton = document.getElementById("ping-button");
-            if (pingButton) {
-                pingButton.onclick = () => sendUINotification("pong!",undefined,true,true);
+    //actually change page location internally, if required
+    if(activeWindow!=pageLocation || parentDiv==centerContent){
+        activeWindow=pageLocation
+        console.log("Changing location to: "+activeWindow)
+        //location-specific code to run on page change
+        switch (pageLocation){
+            case "lobbies":{
+                void refreshLobbies();
+                void updateLobbyUI();
+                break;
             }
-            break
+            case "home":{
+                //setup ping button
+                const pingButton = document.getElementById("ping-button");
+                if (pingButton) {
+                    pingButton.onclick = () => sendUINotification("pong!",undefined,true,true);
+                }
+                break
+            }
         }
     }
+
 }
