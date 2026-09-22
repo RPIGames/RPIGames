@@ -4,14 +4,14 @@ of the API.
 """
 
 import random
-from typing import Annotated
+from typing import Annotated, Optional
 from uuid import UUID
 
 from cryptography.hazmat.primitives import constant_time
 from fastapi import APIRouter, Depends, Response, status
 from sqlmodel import Session, select
 
-from authentication.middleware import force_authorization
+from authentication.middleware import require_authorization
 from db.engine import get_session
 from db.models import Lobby, User
 from models.response import (
@@ -67,11 +67,11 @@ def get_all_lobbies(
     },
 )
 def make_lobby(
-    user: Annotated[User, Depends(force_authorization)],
+    user: Annotated[User, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
-    name: str | None = None,
-    secret: str | None = None,
+    name: Optional[str] = None,
+    secret: Optional[str] = None,
 ):
     """
     Creates a lobby. Needs an authorization from a user.
@@ -108,11 +108,11 @@ def make_lobby(
     },
 )
 def join_lobby(
-    user: Annotated[User, Depends(force_authorization)],
+    user: Annotated[User, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
     lobby_id: UUID,
-    lobby_secret: str | None = None,
+    lobby_secret: Optional[str] = None,
 ):
     """
     Joins a lobby specified by lobby_id.
@@ -181,7 +181,7 @@ def join_lobby(
     },
 )
 def leave_lobby(
-    user: Annotated[User, Depends(force_authorization)],
+    user: Annotated[User, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
 ):
@@ -226,7 +226,7 @@ def leave_lobby(
 )
 def pass_leadership(
     grantee_id: UUID,
-    user: Annotated[User, Depends(force_authorization)],
+    user: Annotated[User, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
 ):

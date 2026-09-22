@@ -1,4 +1,5 @@
 import uuid
+from typing import Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -9,7 +10,7 @@ class Lobby(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     name: str
     max_size: int
-    secret: str | None = Field(default=None)
+    secret: Optional[str] = Field(default=None)
 
     users: list["User"] = Relationship(back_populates="lobby")
 
@@ -20,5 +21,5 @@ class User(SQLModel, table=True):
     name: str = Field(default_factory=random_username)
     leader: bool = Field(default=False)
 
-    lobby_id: uuid.UUID | None = Field(default=None, foreign_key="lobby.id")
-    lobby: Lobby | None = Relationship(back_populates="users")
+    lobby_id: Optional[uuid.UUID] = Field(default=None, foreign_key="lobby.id")
+    lobby: Optional[Lobby] = Relationship(back_populates="users")
