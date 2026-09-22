@@ -44,30 +44,56 @@ enum MessageType {
     Error = "error",
 };
 
-export async function sendUINotification(message: string, type: MessageType = MessageType.Info) {
+export async function sendUINotification(message: string, type: MessageType = MessageType.Info, temporary: boolean, pushNotification : boolean) {
     console.log(`Sending ${type} notification with message:`, message);
 
+    //Create div, set styling
     const notificationDiv = document.createElement('div');
     notificationDiv.classList.add('alert');
     notificationDiv.classList.add(type.toString());
 
-    const notificationCloseButton = document.createElement('span');
-    notificationCloseButton.innerHTML = '&times;';
-    notificationCloseButton.classList.add('closebtn');
-
-    notificationCloseButton.onclick = () => {
-        notificationDiv.style.opacity = "0";
-        setTimeout(() => {
-            notificationDiv.remove();
-        }, 600);
-    };
-
+    //add notification message
     const notificationMessage = document.createTextNode(message);
-
-    notificationDiv.appendChild(notificationCloseButton);
     notificationDiv.appendChild(notificationMessage);
 
+    //add close button to div, if it is not temporary
+    if(!temporary){
+        const notificationCloseButton = document.createElement('span');
+        notificationCloseButton.innerHTML = '&times;';
+        notificationCloseButton.classList.add('closebtn');
+
+        notificationCloseButton.onclick = () => {
+            notificationDiv.style.opacity = "0";
+            setTimeout(() => {
+                notificationDiv.remove();
+            }, 600);
+        };
+        notificationDiv.appendChild(notificationCloseButton);
+    }
+
+    //show notification on screen 
     document.getElementById('notification-box')?.appendChild(notificationDiv);
+
+    if(temporary){
+        //delay before disappearing, in seconds
+        let delayTime=1;
+
+        //amount of time it fades away for, in seconds
+        let fadeTime=2;
+
+        //Set original opacity and add transition for it to fade out
+        notificationDiv.style.opacity="100%";
+        notificationDiv.style.transition=`all ${fadeTime}s ${delayTime}s`;
+        notificationDiv.offsetHeight;
+
+        //notification will fade until this opacity is reached
+        notificationDiv.style.opacity="0%";
+
+        //actually delete element after it fades out
+        setTimeout(() => {
+            notificationDiv.remove();
+        }, delayTime*1000+fadeTime*1000);
+    }
 
 }
 
@@ -150,7 +176,7 @@ async function getUserInfo(userId: string) {
         return infoResponse;
     } else if (response.status == 502) {
         // this means there was a gateway error, which is probably because the backend is down
-        await sendUINotification("The backend server seems to be down. Try checking back in in a couple hours, or contact the hostmaster.", MessageType.Error)
+        await sendUINotification("The backend server seems to be down. Try checking back in in a couple hours, or contact the hostmaster.", MessageType.Error, false, true)
         return null;
     } else {
         console.log(`Couldn't get user info for user ${userId}, since response code was ${response.status}.`);
@@ -246,7 +272,7 @@ async function setPageContent(location: NonNullable<string>,divId?: string){
             //setup ping button
             const pingButton = document.getElementById("ping-button");
             if (pingButton) {
-                pingButton.onclick = () => sendUINotification("pong!");
+                pingButton.onclick = () => sendUINotification("pong!",undefined,true,true);
             }
             break
         }
