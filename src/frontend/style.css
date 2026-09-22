@@ -65,7 +65,6 @@ button {
 
 #center-content{
     display:flex;
-    justify-content: center;
     flex-direction: column;
     width:max(60%,600px);
 }
@@ -98,9 +97,6 @@ button {
 #footer {
     width: 100%;
     background-color: var(--navbar-bg-color);
-
-    position: absolute;
-    bottom: 0;
 
     padding: 0 calc(var(--spacing) * 4);
 }
@@ -307,6 +303,10 @@ a:not(:hover) {
 
 .h-max {
     height: 100%;
+}
+
+.h-windowMax{
+    min-height: calc(100vh - var(--topbar-height) - 31.4px);
 }
 
 .center-align {
