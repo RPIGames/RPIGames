@@ -331,13 +331,16 @@ async function setPageContent(
     }
 
     //get template from location
-    let divTemplate : HTMLTemplateElement | null = await getPageContent(pageLocation,divId)
-    
-    if(divTemplate){
-        const templateContent=document.importNode(divTemplate.content, true)
-        parentDiv.replaceChildren(templateContent)
+    const divTemplate: HTMLTemplateElement | null = await getPageContent(
+        pageLocation,
+        divId,
+    );
+
+    if (divTemplate) {
+        const templateContent = document.importNode(divTemplate.content, true);
+        parentDiv.replaceChildren(templateContent);
     }
-    
+
     //Make any other dynamically added page-changing buttons interactive
     const locationButtons: (HTMLButtonElement | HTMLLinkElement)[] = Array.from(
         document.querySelectorAll(".pageChange"),
