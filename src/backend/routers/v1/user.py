@@ -121,7 +121,7 @@ def rename_self (
         if not new_name.isalnum():
             response.status_code = status.HTTP_400_BAD_REQUEST
             return ErrorResponse(error="new_name is not alphanumeric")
-    
+
     user.name = new_name
 
     session.commit()

@@ -1,17 +1,17 @@
 <template id="lobby-main">
   <div id="lobbies-topbar" class="flex justify-between center-align mb-4">
     <h1>Lobbies</h1>
-    <button id="create-lobby-button">
+    <button type="button" id="create-lobby-button">
       <img src="/static/plus.svg" class="w-4" alt="Create New Lobby">
     </button>
-    <button id="leave-lobby-button" hidden>
+    <button type="button" id="leave-lobby-button" hidden>
       <img src="/static/exit.svg" class="w-4" alt="Exit Current Lobby">
     </button>
   </div>
   <ul id="lobbies-list">
     <p>fetching lobbies...</p>
   </ul>
-  <button data-url="home" data-div="" class="pageChange" class="button">Go back home</button>
+  <button type="button" data-url="home" data-div="" class="pageChange button">Go back home</button>
   <div id="lobby-type-frame">
 
   </div>
@@ -36,9 +36,9 @@
             </div>
           </div>
           <div class="ml-4">
-            <button class="btn-secondary btn-sm">
+            <button type="button" class="btn-secondary btn-sm">
               Join
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -50,4 +50,3 @@
     Sorry, but it appears there are no lobbies. Try making a new one!
   </li>
 </template>
-
