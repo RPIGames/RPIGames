@@ -58,14 +58,55 @@ button {
     height: fit-content;
 }
 
+#center-wrapper{
+    display:flex;
+    justify-content: center;
+}
+
+#center-content{
+    display:flex;
+    flex-direction: column;
+    width:max(60%,600px);
+}
+
+#center-content > ul{
+    margin:10px;
+    padding-left:20px;
+}
+
+#center-content > h2{
+    margin:10px;
+}
+
+#center-content > h2{
+    margin:10px;
+}
+
+#center-content > h1{
+    margin:10px;
+}
+
+#center-content > p{
+    margin:10px;
+}
+
+#center-content li::before{
+    content:"- ";
+}
+
 #footer {
     width: 100%;
     background-color: var(--navbar-bg-color);
 
-    position: absolute;
-    bottom: 0;
-
     padding: 0 calc(var(--spacing) * 4);
+}
+
+.linkButton{
+    background-color: transparent;
+    color: white;
+    font-weight: 100;
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 #footer-links {
@@ -262,6 +303,10 @@ a:not(:hover) {
 
 .h-max {
     height: 100%;
+}
+
+.h-windowMax{
+    min-height: calc(100vh - var(--topbar-height) - 31.4px);
 }
 
 .center-align {
