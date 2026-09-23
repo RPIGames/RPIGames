@@ -1,0 +1,52 @@
+<template id="lobby-main">
+  <div id="lobbies-topbar" class="flex justify-between center-align mb-4">
+    <h1>Lobbies</h1>
+    <button type="button" id="create-lobby-button">
+      <img src="/static/plus.svg" class="w-4" alt="Create New Lobby">
+    </button>
+    <button type="button" id="leave-lobby-button" hidden>
+      <img src="/static/exit.svg" class="w-4" alt="Exit Current Lobby">
+    </button>
+  </div>
+  <ul id="lobbies-list">
+    <p>fetching lobbies...</p>
+  </ul>
+  <button type="button" data-url="home" data-div="" class="pageChange button">Go back home</button>
+  <div id="lobby-type-frame">
+
+  </div>
+
+<!--TODO: Refactor so these aren't nested in this template-->
+</template>
+
+<template id="lobby-template">
+    <li class="card hover:shadow-md transition-shadow duration-200">
+      <div class="card-body">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <h3 class="mb2">Lobby Name</h3>
+            <div class="flex items-center space-x-4 text-caption">
+              <img src="/static/lock.svg" class="w-4" alt="Private Lobby">
+              <div class="flex items-center">
+                <img src="/static/user.svg" class="w-4" alt="Users">
+                <span class="active-players">1</span>
+                /
+                <span class="max-players">8</span>
+              </div>
+            </div>
+          </div>
+          <div class="ml-4">
+            <button type="button" class="btn-secondary btn-sm">
+              Join
+            </button>
+          </div>
+        </div>
+      </div>
+    </li>
+  </template>
+
+<template id="no-lobbies-template">
+  <li>
+    Sorry, but it appears there are no lobbies. Try making a new one!
+  </li>
+</template>
