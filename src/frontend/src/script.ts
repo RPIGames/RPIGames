@@ -332,9 +332,9 @@ async function setPageContent(
             const appendLocation: string =
                 button.getAttribute("data-divParent") || "";
             const div: string = button.getAttribute("data-div") || "";
-            button.addEventListener("click", () => {
+            button.onclick = () => {
                 setPageContent(location, appendLocation, div);
-            });
+            };
         }
     }
 
