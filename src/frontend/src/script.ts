@@ -341,7 +341,7 @@ async function setPageContent(
     //actually change page location internally, if required
     if (activeWindow !== pageLocation || parentDiv === centerContent) {
         activeWindow = pageLocation;
-        console.log("Changing location to: $(activeWindow)");
+        console.log(`Changing location to: ${activeWindow}`);
         //location-specific code to run on page change
         switch (pageLocation) {
             case "lobbies": {
