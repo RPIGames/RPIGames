@@ -15,6 +15,20 @@ async function putInCache(request: Request, response: Response) {
     await cache.put(request, response);
 }
 
+async function requestFallback(fallbackUrl: URL) {
+    const fallbackResponse = await caches.match(fallbackUrl);
+    if (fallbackResponse) {
+        return fallbackResponse;
+    }
+    // when even the fallback response is not available,
+    // there is nothing we can do, but we must always
+    // return a Response object
+    return new Response("Network error happened", {
+        status: 408,
+        headers: { "Content-Type": "text/plain" },
+    });
+}
+
 // Sees to see if a resource is cached. If its not, then request and add it into the server.
 async function cacheFirst(
     request: Request,
@@ -35,7 +49,10 @@ async function cacheFirst(
     // code along with enableNavigationPreload() and the "activate" listener.
     const preloadResponse = await preloadResponsePromise;
     if (preloadResponse) {
-        console.info("using preload response", preloadResponse);
+        console.log(`status ${preloadResponse}`);
+        if (preloadResponse.status === 404) {
+            return requestFallback(fallbackUrl);
+        }
         putInCache(request, preloadResponse.clone());
         return preloadResponse;
     }
@@ -43,23 +60,16 @@ async function cacheFirst(
     // Next try to get the resource from the network
     try {
         const responseFromNetwork = await fetch(request.clone());
+        if (responseFromNetwork.status === 404) {
+            return requestFallback(fallbackUrl);
+        }
         // response may be used only once
         // we need to save clone to put one copy in cache
         // and serve second one
         putInCache(request, responseFromNetwork.clone());
         return responseFromNetwork;
     } catch (_error) {
-        const fallbackResponse = await caches.match(fallbackUrl);
-        if (fallbackResponse) {
-            return fallbackResponse;
-        }
-        // when even the fallback response is not available,
-        // there is nothing we can do, but we must always
-        // return a Response object
-        return new Response("Network error happened", {
-            status: 408,
-            headers: { "Content-Type": "text/plain" },
-        });
+        return requestFallback(fallbackUrl);
     }
 }
 
@@ -121,7 +131,7 @@ self.addEventListener("fetch", (event) => {
         cacheFirst(
             event.request,
             event.preloadResponse,
-            new URL("/static/404.html"),
+            new URL(`${self.location.origin}/static/404.html`),
         ),
     );
 });
