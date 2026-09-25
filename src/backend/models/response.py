@@ -1,7 +1,7 @@
 """
 This module contains possible response models.
 """
-
+from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -18,7 +18,7 @@ class ErrorResponse(BaseModel):
 
 
 class AuthenticationErrorResponse(BaseModel):
-    detail: str | None = None
+    detail: Optional[str] = None
 
 
 class LobbyResponse(BaseModel):
@@ -38,7 +38,7 @@ class PublicUserInfo(BaseModel):
     id: UUID
     name: str
     leader: bool = False
-    lobby_id: UUID | None = None
+    lobby_id: Optional[UUID] = None
 
 
 class PrivateUserInfo(PublicUserInfo):

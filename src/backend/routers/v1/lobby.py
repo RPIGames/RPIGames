@@ -4,14 +4,14 @@ of the API.
 """
 
 import random
-from typing import Annotated
+from typing import Annotated, Optional
 from uuid import UUID
 
 from cryptography.hazmat.primitives import constant_time
 from fastapi import APIRouter, Depends, Response, status
 from sqlmodel import Session, select
 
-from authentication.middleware import force_authorization
+from authentication.middleware import require_authorization
 from db.engine import get_session
 from db.models import Lobby, User
 from models.response import (
@@ -37,7 +37,7 @@ def mk_lobby_response_from_lobby(lobby: Lobby) -> LobbyResponse:
         name=lobby.name,
         max_members=lobby.max_size,
         curr_members=len(lobby.users),
-        needs_secret=lobby.secret != None,
+        needs_secret=lobby.secret is not None,
     )
 
 
@@ -67,11 +67,11 @@ def get_all_lobbies(
     },
 )
 def make_lobby(
-    user: Annotated[User, Depends(force_authorization)],
+    user: Annotated[User, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
-    name: str | None = None,
-    secret: str | None = None,
+    name: Optional[str] = None,
+    secret: Optional[str] = None,
 ):
     """
     Creates a lobby. Needs an authorization from a user.
@@ -79,11 +79,11 @@ def make_lobby(
     The lobby will be initialized to contain the user, which gains leadership of the party.
     """
 
-    if user.lobby != None:
+    if user.lobby is not None:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return ErrorResponse(error="You are already in a lobby!")
 
-    if name == None:
+    if name is None:
         name = f"Unnamed group {random.randint(1, 1000)}"
 
     created_lobby = Lobby(name=name, max_size=8, secret=secret)
@@ -108,11 +108,11 @@ def make_lobby(
     },
 )
 def join_lobby(
-    user: Annotated[User, Depends(force_authorization)],
+    user: Annotated[User, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
     lobby_id: UUID,
-    lobby_secret: str | None = None,
+    lobby_secret: Optional[str] = None,
 ):
     """
     Joins a lobby specified by lobby_id.
@@ -120,7 +120,7 @@ def join_lobby(
     If the lobby is a secret lobby, pass the lobby_secret parameter with the password to the lobby.
     """
 
-    if user.lobby != None:
+    if user.lobby is not None:
         response.status_code = status.HTTP_400_BAD_REQUEST
         if user.lobby_id == lobby_id:
             return ErrorResponse(
@@ -134,14 +134,14 @@ def join_lobby(
     assert user.leader == False
 
     lobby = session.get(Lobby, lobby_id)
-    if lobby == None:
+    if lobby is None:
         response.status_code = status.HTTP_404_NOT_FOUND
         return ErrorResponse(error="The lobby you are trying to join does not exist.")
 
     # check to see if the lobby is public or private, and check that the lobby secret matches
 
-    if lobby.secret == None:
-        if lobby_secret != None:
+    if lobby.secret is None:
+        if lobby_secret is not None:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return ErrorResponse(
                 error="The lobby you are trying to join is not private and thus does not require a password."
@@ -150,7 +150,7 @@ def join_lobby(
             # no lobby secret needed!
             pass
     else:
-        if lobby_secret == None:
+        if lobby_secret is None:
             response.status_code = status.HTTP_403_FORBIDDEN
             return ErrorResponse(
                 error="The lobby you are trying to join is private and requires a passphrase to access."
@@ -181,7 +181,7 @@ def join_lobby(
     },
 )
 def leave_lobby(
-    user: Annotated[User, Depends(force_authorization)],
+    user: Annotated[User, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
 ):
@@ -189,7 +189,7 @@ def leave_lobby(
     Leaves the lobby you are currently in.
     """
 
-    if user.lobby == None:
+    if user.lobby is None:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return ErrorResponse(error="You aren't currently in a lobby.")
 
@@ -226,7 +226,7 @@ def leave_lobby(
 )
 def pass_leadership(
     grantee_id: UUID,
-    user: Annotated[User, Depends(force_authorization)],
+    user: Annotated[User, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
 ):
@@ -236,11 +236,11 @@ def pass_leadership(
     The grant_to_user_id expects a valid user id that is in your same lobby.
     """
 
-    if user.lobby == None:
+    if user.lobby is None:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return ErrorResponse(error="You aren't currently in a lobby.")
 
-    if user.leader == False:
+    if not user.leader:
         response.status_code = status.HTTP_403_FORBIDDEN
         return ErrorResponse(
             error="You aren't currently a leader, and thus cannot grant leadership to someone else."
@@ -248,7 +248,7 @@ def pass_leadership(
 
     new_leader = session.get(User, grantee_id)
 
-    if new_leader == None:
+    if new_leader is None:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return ErrorResponse(
             error="The user that you are trying to pass leadership to is not in your lobby."

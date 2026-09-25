@@ -2,13 +2,13 @@
 This user router file contains endpoints relating to user creation and info fetching.
 """
 
-from typing import Annotated
+from typing import Annotated, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Response, status
 from sqlmodel import Session
 
-from authentication.middleware import force_authorization, is_logged_in
+from authentication.middleware import require_authorization, parse_credentials
 from db.engine import get_session
 from db.models import User
 from models.response import (
@@ -34,7 +34,7 @@ router = APIRouter(
     },
 )
 def get_new_user_token(
-    logged_in: Annotated[bool, Depends(is_logged_in)],
+    credentials: Annotated[Optional[tuple[str, str]], Depends(parse_credentials)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
 ):
@@ -42,7 +42,7 @@ def get_new_user_token(
     Creates a new user token.
     """
 
-    if logged_in:
+    if credentials is not None:
         response.status_code = 400
         return ErrorResponse(error="You are already sending a valid user token.")
 
@@ -52,7 +52,6 @@ def get_new_user_token(
 
     return UserTokenResponse(id=new_user.id, secret=new_user.secret)
 
-
 @router.get(
     "/info_self",
     responses={
@@ -61,10 +60,10 @@ def get_new_user_token(
     },
 )
 def get_user_info(
-    user: Annotated[User, Depends(force_authorization)],
+    user: Annotated[User, Depends(require_authorization)],
 ):
     """
-    Gets user info. Since this returns private data, it requires the users authorization.
+    Gets user info. Since this returns private data, it requires the user's authorization.
     """
 
     return PrivateUserInfoResponse(
@@ -92,7 +91,7 @@ def get_public_user_info(
     """
 
     user = session.get(User, user_id)
-    if user == None:
+    if user is None:
         response.status_code = status.HTTP_404_NOT_FOUND
         return ErrorResponse(error="User not found.")
 
@@ -114,7 +113,7 @@ def get_public_user_info(
 )
 def rename_self(
     new_name: str,
-    user: Annotated[User, Depends(force_authorization)],
+    user: Annotated[User, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
 ):

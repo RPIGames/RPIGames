@@ -40,11 +40,11 @@ def test_create_user():
     print(response.text)
     assert response.status_code == status.HTTP_200_OK
     assert "id" in response.json()
-    assert str == type(response.json()["id"])
+    assert isinstance(response.json()["id"], str)
     assert "name" in response.json()
-    assert str == type(response.json()["name"])
+    assert isinstance(response.json()["name"], str)
     assert "leader" in response.json()
-    assert bool == type(response.json()["leader"])
+    assert isinstance(response.json()["leader"], bool)
     assert not response.json()["leader"]
     assert "lobby_id" in response.json()
     assert None == response.json()["lobby_id"]
@@ -53,11 +53,11 @@ def test_create_user():
     print(response.text)
     assert response.status_code == status.HTTP_200_OK
     assert "id" in response.json()
-    assert str == type(response.json()["id"])
+    assert isinstance(response.json()["id"], str)
     assert "name" in response.json()
-    assert str == type(response.json()["name"])
+    assert isinstance(response.json()["name"], str)
     assert "leader" in response.json()
-    assert bool == type(response.json()["leader"])
+    assert isinstance(response.json()["leader"], bool)
     assert not response.json()["leader"]
     assert "lobby_id" in response.json()
     assert None == response.json()["lobby_id"]
@@ -123,7 +123,7 @@ def test_user_info_with_garbage():
     for auth in GARBAGE_AUTH_HEADERS:
         response = client.get(
             url="/v1/user/info_self",
-            headers={"Authorization": "Bearer Randomjaje00Gabage"},
+            headers=auth,
         )
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
         assert "detail" in response.json()

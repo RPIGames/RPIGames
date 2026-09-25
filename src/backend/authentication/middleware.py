@@ -11,7 +11,7 @@ by a '$'):
   the person sending the request is who they say they are.
 """
 
-from typing import Annotated
+from typing import Annotated, Optional
 from uuid import UUID
 
 from cryptography.hazmat.primitives import constant_time
@@ -24,35 +24,35 @@ from db.models import User
 
 security_optional = HTTPBearer(auto_error=False)
 
-
-def is_logged_in(
+def parse_credentials(
     credentials: Annotated[
-        HTTPAuthorizationCredentials | None, Depends(security_optional)
+        Optional[HTTPAuthorizationCredentials], Depends(security_optional)
     ],
-) -> bool:
+) -> Optional[tuple[str, str]]:
     """
-    This dependency returns if a user sent a parsable Bearer token.
+    This dependency parses the credentials sent by the User. If the credentials are of the correct format
+    (user_token$secret_token), then it returns user_token and secret_token. If the credentials are invalid for any
+    reason, then None is returned.
     """
-    if credentials == None:
-        return False
-    if credentials.scheme != "Bearer":
-        return False
-    if not "$" in credentials.credentials:
-        return False
+    if credentials is None or \
+            credentials.scheme != "Bearer" or \
+            "$" not in credentials.credentials:
+        return None
     credentials_list = credentials.credentials.split("$")
     if len(credentials_list) != 2:
-        return False
-    user_token = credentials_list[0]
-    secret_token = credentials_list[1]
-    return len(user_token) == len(secret_token)
+        return None
+    user_token, secret_token = credentials_list
+    if len(user_token) != len(secret_token):
+        return None
+    return user_token, secret_token
 
 
 def optional_authorization(
     credentials: Annotated[
-        HTTPAuthorizationCredentials | None, Depends(security_optional)
+        Optional[tuple[str, str]], Depends(parse_credentials)
     ],
     session: Annotated[Session, Depends(get_session)],
-) -> User | None:
+) -> Optional[User]:
     """
     This dependency allows the user to authenticate themselves, as
     long as the user passes a Bearer auth with the respective details.
@@ -63,22 +63,17 @@ def optional_authorization(
     if credentials is None:
         return None
 
-    if credentials.scheme != "Bearer":
-        return None
+    user_token, secret_token = credentials
 
-    credentials_list = credentials.credentials.split("$")
-
-    if len(credentials_list) != 2:
-        return None
     try:
-        user_uuid = UUID(credentials_list[0])
-        secret_uuid = UUID(credentials_list[1])
+        user_uuid = UUID(user_token)
+        secret_uuid = UUID(secret_token)
     except ValueError:
         return None
 
     user = session.get(User, user_uuid)
 
-    if user == None:
+    if user is None:
         return None
 
     # constant time comparison of the UUIDs
@@ -88,9 +83,8 @@ def optional_authorization(
     return user
 
 
-def force_authorization(
-    possible_auth: Annotated[User | None, Depends(optional_authorization)],
-    session: Annotated[Session, Depends(get_session)],
+def require_authorization(
+    possible_auth: Annotated[Optional[User], Depends(optional_authorization)],
 ) -> User:
     """
     This dependency forces the user to have a valid, active, user session,
