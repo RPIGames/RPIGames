@@ -18,6 +18,34 @@ type LobbyResponse = {
     needsSecret: boolean;
 };
 
+// Registers a service worker to cache requests for offline navigation and faster loading. Also reduces server strain.
+async function registerServiceWorker() {
+    console.log(window.isSecureContext);
+    if ("serviceWorker" in navigator) {
+        try {
+            const registration = await navigator.serviceWorker.register(
+                "/sw.js",
+                {
+                    scope: "/",
+                    type: "module",
+                },
+            );
+            if (registration.installing) {
+                console.log("Service worker installing");
+            } else if (registration.waiting) {
+                console.log("Service worker installed");
+            } else if (registration.active) {
+                console.log("Service worker active");
+            }
+        } catch (error) {
+            console.error(`Registration failed with ${error}`);
+        }
+    }
+}
+
+registerServiceWorker();
+
+// Gets a new user ID. returns null if a session token could not be made
 async function getNewUserId() {
     const response = await fetch("/api/v1/user/new", {
         method: "POST",
@@ -35,6 +63,7 @@ async function getNewUserId() {
     }
 }
 
+// Enum of different notification types. The color is based off of this.
 enum MessageType {
     Info = "info",
     Success = "success",
@@ -42,6 +71,7 @@ enum MessageType {
     Error = "error",
 }
 
+// Sends a UI notification. This is an in-app notification, which means it's not native.
 export async function sendUINotification(
     message: string,
     type: MessageType = MessageType.Info,
@@ -103,6 +133,7 @@ export async function sendUINotification(
 
 const currentLobby: LobbyResponse | null = null;
 
+// creates a lobby card on the lobby page
 async function createLobbyCard(lobby: LobbyResponse) {
     //fetch card template
     //TO-DO: only fetch this once
@@ -119,6 +150,7 @@ async function createLobbyCard(lobby: LobbyResponse) {
     return node;
 }
 
+// refreshes the lobbies, getting new data from the api
 async function refreshLobbies() {
     const lobbyListElement = document.getElementById("lobbies-list");
     if (lobbyListElement == null) return;
@@ -148,6 +180,7 @@ async function refreshLobbies() {
     }
 }
 
+// updates the lobby UI when you join and leave a lobby
 async function updateLobbyUI() {
     const createButton = document.getElementById("create-lobby-button");
     const leaveButton = document.getElementById("leave-lobby-button");
@@ -188,6 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 });
 
+// gets a user's information
 async function getUserInfo(userId: string) {
     const response = await fetch(`/api/v1/user/info?user_id=${userId}`, {
         credentials: "omit",
@@ -211,6 +245,7 @@ async function getUserInfo(userId: string) {
     }
 }
 
+// the start function. handles all the things when the page is first loaded. fires on "load" event
 async function start() {
     console.log("start initialized");
     let userId = localStorage.getItem("userId");
@@ -264,7 +299,7 @@ async function getPageContent(
 
     if (pageHTML) {
         //add template to appendDiv
-        return pageHTML.querySelector(`#${divId}`);
+        return pageHTML.querySelector(`#${divId}`) as HTMLTemplateElement;
     } else {
         return null;
     }
@@ -306,16 +341,16 @@ async function setPageContent(
             const appendLocation: string =
                 button.getAttribute("data-divParent") || "";
             const div: string = button.getAttribute("data-div") || "";
-            button.addEventListener("click", () => {
+            button.onclick = () => {
                 setPageContent(location, appendLocation, div);
-            });
+            };
         }
     }
 
     //actually change page location internally, if required
     if (activeWindow !== pageLocation || parentDiv === centerContent) {
         activeWindow = pageLocation;
-        console.log("Changing location to: $(activeWindow)");
+        console.log(`Changing location to: ${activeWindow}`);
         //location-specific code to run on page change
         switch (pageLocation) {
             case "lobbies": {
