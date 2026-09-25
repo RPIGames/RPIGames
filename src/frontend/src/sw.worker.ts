@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 declare const self: ServiceWorkerGlobalScope;
 
+// One item in the response for when a directory is requested from the backend folder.
 interface ResourceInfo {
     name: string;
     type: "file" | "directory" | "other";
@@ -8,11 +9,13 @@ interface ResourceInfo {
     size: number;
 }
 
+// Puts a request into the cache.
 async function putInCache(request: Request, response: Response) {
     const cache = await caches.open("v1");
     await cache.put(request, response);
 }
 
+// Sees to see if a resource is cached. If its not, then request and add it into the server.
 async function cacheFirst(
     request: Request,
     preloadResponsePromise: Promise<Response>,
@@ -60,6 +63,10 @@ async function cacheFirst(
     }
 }
 
+/**
+ * Adds a list of resources to the cache. If a resource is a folder, recursively add all the folders to the cache.
+ * @param {string[]} resources The resources to add.
+ */
 async function addResourcesToCache(resources: string[]) {
     const todo = resources.concat(); // clone resources (concat with nothing just clones)
     const resourceFiles: string[] = [];
@@ -93,17 +100,20 @@ async function addResourcesToCache(resources: string[]) {
 
 const PREFETCHED_RESOURCES = ["/templates/", "/static/", "/index.html"];
 
+// The install event listener. It adds the resources needed to the cache.
 self.addEventListener("install", (event) => {
     event.waitUntil(addResourcesToCache(PREFETCHED_RESOURCES));
 });
 
+// The fetch event listener. When any resource is fetched, the event listener will be called.
 self.addEventListener("fetch", (event) => {
+    // only cache GET requests
     if (event.request.method !== "GET") {
         return;
     }
 
+    // ignore requests to the backend API
     if (new URL(event.request.url).pathname.startsWith("/api/")) {
-        event.respondWith(fetch(event.request));
         return;
     }
 
