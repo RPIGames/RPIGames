@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if ! command -v nginx &> /dev/null;
-  then echo "Nginx not found. Please install nginx." 
+  then echo "Nginx not found. Please install nginx."
   exit 1
 fi
 
