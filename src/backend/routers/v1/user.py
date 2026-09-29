@@ -154,8 +154,8 @@ def rename_self(
     },
 )
 def sign_out(
-    logged_in: Annotated[bool, Depends(is_logged_in)],
-    user: Annotated[User, Depends(force_authorization)],
+   
+    user: Annotated[User, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
 ):
@@ -164,14 +164,14 @@ def sign_out(
 
     -User must not be in a lobby
     """
-    if user.lobby is not None:
-        response.status_code = status.HTTP_400_BAD_REQUEST
-        return ErrorResponse(error="You are currently in a lobby.")
-
-    if not logged_in:
+    if user is None:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return ErrorResponse(error="You are already logged out.")
 
+    if user.lobby is not None:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return ErrorResponse(error="You are currently in a lobby.")
+   
     #deltete user row. 
     session.delete(user)
     session.commit()
