@@ -76,7 +76,7 @@ def test_create_lobby():
     """
     auth = create_quick_user()
     assert "leader" in get_user_info(auth)
-    assert bool == type(get_user_info(auth)["leader"])
+    assert isinstance(get_user_info(auth)["leader"], bool)
     assert not get_user_info(auth)["leader"]
     assert "lobby_id" in get_user_info(auth)
     assert get_user_info(auth)["lobby_id"] is None
