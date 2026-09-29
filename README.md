@@ -12,7 +12,7 @@ Full-stack web application to connect others across the RPI campus through real-
 
 In RPIGames, the use of Generative AI is strictly limited to learning how a language or system works and to help with debugging code. Any case of Generative AI directly creating or modifying content, such as writing code, making PR's, adding/editing pages on the wiki, or making Issues, is prohibited.
 
-## For contributers
+## For Contributors
 
 Make sure to look at the wiki for [developer setup](https://github.com/RPIGames/RPIGames/wiki/Developer-Deployment) and to look at our [coding practices](https://github.com/RPIGames/RPIGames/wiki/Naming-Conventions).
 
