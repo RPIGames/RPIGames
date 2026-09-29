@@ -24,6 +24,15 @@ def create_quick_user() -> str:
     assert response.status_code == status.HTTP_200_OK
     return f"Bearer {uuid}${secret}"
 
+def create_quick_lobby(auth: str, *, secret: str | None = None) -> UUID:
+    """Helper method that creates a quick lobby given an auth string. Returns lobby uuid."""
+    if secret is None:
+        response = client.post("/v1/lobby/new", headers={"Authorization": auth})
+    else:
+        response = client.post(
+            "/v1/lobby/new", params={"secret": secret}, headers={"Authorization": auth}
+        )
+    return UUID(response.json()["id"])
 
 def get_uid_from_auth(auth: str) -> UUID:
     return UUID(auth.split(" ")[1].split("$")[0])
@@ -100,3 +109,19 @@ def test_change_username_with_non_alphanumeric_name():
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert get_user_info(auth)["name"] == previous_name
     ErrorResponse.model_validate_json(response.text)
+
+def test_user_logout():
+    """
+    This test creates a user, sign it our, and verifies that it was deleted.
+    """
+    auth = create_quick_user()
+    previous_name = get_user_info(auth)["name"]
+    previous_id = get_user_info(auth)["id"]
+    response = client.delete(
+        "/v1/user/sign_out",
+        headers={"Authorization": auth},
+    )
+    test_response =  client.get("/v1/user/info", params={"user_id": get_uid_from_auth(auth)})
+    assert response.status_code == status.HTTP_200_OK
+    assert test_response.status_code == status.HTTP_404_NOT_FOUND
+    

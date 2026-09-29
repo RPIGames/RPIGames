@@ -72,7 +72,7 @@ def get_user_info(
         leader=user.leader,
         lobby_id=user.lobby_id,
     )
-
+    
 
 @router.get(
     "/info",
@@ -144,3 +144,38 @@ def rename_self(
     session.commit()
 
     return Response(status_code=status.HTTP_200_OK)
+
+@router.delete(
+    "/sign_out",
+    responses={
+        status.HTTP_200_OK: {},
+        status.HTTP_400_BAD_REQUEST: {"model": ErrorResponse},
+        status.HTTP_401_UNAUTHORIZED: {"model": AuthenticationErrorResponse},
+    },
+)
+def sign_out(
+    logged_in: Annotated[bool, Depends(is_logged_in)],
+    user: Annotated[User, Depends(force_authorization)],
+    session: Annotated[Session, Depends(get_session)],
+    response: Response,
+):
+    """
+    Signs out a user by setting out the name to nothing and uuid
+
+    -User must not be in a lobby
+    """
+    if user.lobby != None:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return ErrorResponse(error="You are currently in a lobby.")
+
+    if logged_in == False:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return ErrorResponse(error="You are already logged out.")
+
+    #deltete user row. 
+    session.delete(user)
+    session.commit()
+    user = None
+
+    return Response(status_code=status.HTTP_200_OK)
+    
