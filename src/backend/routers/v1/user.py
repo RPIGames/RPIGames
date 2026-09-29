@@ -164,18 +164,17 @@ def sign_out(
 
     -User must not be in a lobby
     """
-    if user.lobby != None:
+    if user.lobby is not None:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return ErrorResponse(error="You are currently in a lobby.")
 
-    if logged_in == False:
+    if not logged_in:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return ErrorResponse(error="You are already logged out.")
 
     #deltete user row. 
     session.delete(user)
     session.commit()
-    user = None
 
     return Response(status_code=status.HTTP_200_OK)
     

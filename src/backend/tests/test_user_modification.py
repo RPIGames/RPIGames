@@ -112,7 +112,7 @@ def test_change_username_with_non_alphanumeric_name():
 
 def test_user_logout():
     """
-    This test creates a user, sign it our, and verifies that it was deleted.
+    This test creates a user, sign it out, and verifies that it was deleted.
     """
     auth = create_quick_user()
     previous_name = get_user_info(auth)["name"]
@@ -124,4 +124,18 @@ def test_user_logout():
     test_response =  client.get("/v1/user/info", params={"user_id": get_uid_from_auth(auth)})
     assert response.status_code == status.HTTP_200_OK
     assert test_response.status_code == status.HTTP_404_NOT_FOUND
+
+def test_user_no_auth_logout():
+    """
+    This test creates a user, sign it out,but doesn't verify it, and verifies that it wasn't deleted.
+    """
+    auth = create_quick_user()
+    previous_name = get_user_info(auth)["name"]
+    previous_id = get_user_info(auth)["id"]
+    response = client.delete(
+        "/v1/user/sign_out",
+    )
+    
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert previous_name == get_user_info(auth)["name"]
     
