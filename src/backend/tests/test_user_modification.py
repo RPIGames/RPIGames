@@ -9,10 +9,11 @@ from uuid import UUID
 
 from fastapi import status
 from fastapi.testclient import TestClient
-from test_lobby import create_quick_lobby
 
 from main import app
 from models.response import AuthenticationErrorResponse, ErrorResponse
+
+from .test_lobby import create_quick_lobby
 
 client = TestClient(app)
 
