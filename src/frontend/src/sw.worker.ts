@@ -5,7 +5,7 @@ import type {
     MessageFromServiceWorker,
     MessageToServiceWorker,
     ResourceInfo,
-} from "./structs";
+} from "./structs.js";
 
 // Puts a request into the cache.
 async function putInCache(request: Request, response: Response) {

@@ -1,3 +1,4 @@
+import { showNotification } from "./api.js";
 import type {
     LobbyResponse,
     PublicUserInfo,
@@ -61,7 +62,8 @@ enum MessageType {
 export async function sendUINotification(
     message: string,
     type: MessageType = MessageType.Info,
-    temporary: boolean,
+    temporary: boolean = true,
+    native: boolean = false,
 ) {
     console.log(`Sending ${type} notification with message:`, message);
 
@@ -114,6 +116,10 @@ export async function sendUINotification(
             },
             delayTime * 1000 + fadeTime * 1000,
         );
+    }
+
+    if (native) {
+        showNotification(message, undefined, undefined, !temporary);
     }
 }
 

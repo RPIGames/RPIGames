@@ -1,4 +1,4 @@
-import type { MessageFromServiceWorker } from "./structs";
+import type { MessageFromServiceWorker } from "./structs.js";
 
 /**
  * Shows a native notification.
