@@ -1,22 +1,8 @@
-type UserTokenResponse = {
-    id: string;
-    secret: string;
-};
-
-type PublicUserInfo = {
-    id: string;
-    name: string;
-    leader: boolean;
-    lobbyId: string | null;
-};
-
-type LobbyResponse = {
-    id: string;
-    name: string;
-    maxMembers: number;
-    currMembers: number;
-    needsSecret: boolean;
-};
+import type {
+    LobbyResponse,
+    PublicUserInfo,
+    UserTokenResponse,
+} from "./structs";
 
 // Registers a service worker to cache requests for offline navigation and faster loading. Also reduces server strain.
 async function registerServiceWorker() {
