@@ -1,7 +1,6 @@
 """
 This module contains possible response models.
 """
-from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel

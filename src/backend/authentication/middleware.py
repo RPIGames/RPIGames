@@ -26,9 +26,9 @@ security_optional = HTTPBearer(auto_error=False)
 
 def parse_credentials(
     credentials: Annotated[
-        Optional[HTTPAuthorizationCredentials], Depends(security_optional)
+        HTTPAuthorizationCredentials | None, Depends(security_optional)
     ],
-) -> Optional[tuple[str, str]]:
+) -> tuple[str, str] | None:
     """
     This dependency parses the credentials sent by the User. If the credentials are of the correct format
     (user_token$secret_token), then it returns user_token and secret_token. If the credentials are invalid for any

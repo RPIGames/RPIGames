@@ -4,7 +4,7 @@ of the API.
 """
 
 import random
-from typing import Annotated, Optional
+from typing import Annotated
 from uuid import UUID
 
 from cryptography.hazmat.primitives import constant_time

@@ -2,7 +2,7 @@
 This user router file contains endpoints relating to user creation and info fetching.
 """
 
-from typing import Annotated, Optional
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Response, status
