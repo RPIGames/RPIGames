@@ -18,7 +18,7 @@ class ErrorResponse(BaseModel):
 
 
 class AuthenticationErrorResponse(BaseModel):
-    detail: Optional[str] = None
+    detail: str | None = None
 
 
 class LobbyResponse(BaseModel):
@@ -38,7 +38,7 @@ class PublicUserInfo(BaseModel):
     id: UUID
     name: str
     leader: bool = False
-    lobby_id: Optional[UUID] = None
+    lobby_id: UUID | None = None
 
 
 class PrivateUserInfo(PublicUserInfo):

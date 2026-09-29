@@ -23,7 +23,7 @@ def create_quick_user() -> str:
     return f"Bearer {uuid}${secret}"
 
 
-def create_quick_lobby(auth: str, *, secret: Optional[str] = None) -> UUID:
+def create_quick_lobby(auth: str, *, secret: str | None = None) -> UUID:
     """Helper method that creates a quick lobby given an auth string. Returns lobby uuid."""
     if secret is None:
         response = client.post("/v1/lobby/new", headers={"Authorization": auth})
@@ -44,7 +44,7 @@ def get_user_info(auth: str) -> dict[str, Any]:
     return response.json()
 
 
-def join_lobby(auth: str, lobby_id: UUID, lobby_secret: Optional[str] = None) -> bool:
+def join_lobby(auth: str, lobby_id: UUID, lobby_secret: str | None = None) -> bool:
     """Trys to join the respective lobby at lobby_id with the
     user authenticated with auth. Returns true if joined successfully."""
     params = {

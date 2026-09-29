@@ -70,8 +70,8 @@ def make_lobby(
     user: Annotated[User, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
-    name: Optional[str] = None,
-    secret: Optional[str] = None,
+    name: str | None = None,
+    secret: str | None = None,
 ):
     """
     Creates a lobby. Needs an authorization from a user.
@@ -112,7 +112,7 @@ def join_lobby(
     session: Annotated[Session, Depends(get_session)],
     response: Response,
     lobby_id: UUID,
-    lobby_secret: Optional[str] = None,
+    lobby_secret: str | None = None,
 ):
     """
     Joins a lobby specified by lobby_id.

@@ -49,10 +49,10 @@ def parse_credentials(
 
 def optional_authorization(
     credentials: Annotated[
-        Optional[tuple[str, str]], Depends(parse_credentials)
+        tuple[str, str | None], Depends(parse_credentials)
     ],
     session: Annotated[Session, Depends(get_session)],
-) -> Optional[User]:
+) -> User | None:
     """
     This dependency allows the user to authenticate themselves, as
     long as the user passes a Bearer auth with the respective details.
@@ -84,7 +84,7 @@ def optional_authorization(
 
 
 def require_authorization(
-    possible_auth: Annotated[Optional[User], Depends(optional_authorization)],
+    possible_auth: Annotated[User | None, Depends(optional_authorization)],
 ) -> User:
     """
     This dependency forces the user to have a valid, active, user session,

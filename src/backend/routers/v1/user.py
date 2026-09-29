@@ -34,7 +34,7 @@ router = APIRouter(
     },
 )
 def get_new_user_token(
-    credentials: Annotated[Optional[tuple[str, str]], Depends(parse_credentials)],
+    credentials: Annotated[tuple[str, str] | None, Depends(parse_credentials)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
 ):
