@@ -115,8 +115,6 @@ def test_user_logout():
     This test creates a user, sign it out, and verifies that it was deleted.
     """
     auth = create_quick_user()
-    previous_name = get_user_info(auth)["name"]
-    previous_id = get_user_info(auth)["id"]
     response = client.delete(
         "/v1/user/sign_out",
         headers={"Authorization": auth},
@@ -145,7 +143,7 @@ def test_user_in_lobby_logout():
     This test creates a user, sign it out,but the user is in the lobby, and verifies that it wasn't deleted.
     """
     auth = create_quick_user()
-    lobby = create_quick_lobby(auth)
+    create_quick_lobby(auth)
     previous_name = get_user_info(auth)["name"]
     previous_id = get_user_info(auth)["id"]
     response = client.delete(
