@@ -1,4 +1,10 @@
+
+<div align="center">
+  <img width="200" alt="image" src="https://github.com/RPIGames/RPIGames/blob/main/src/frontend/static/RPIGamesLogo.svg">
+</div>
+
 # RPIGames
+
 Full-stack web application to connect others across the RPI campus through real-life games. This semester we’ll be making a framework to add more games over the semester. The web app is supposed to make it easier to host campus-wide offline games emphasizing the outdoors, reflecting the games that are played in Jetlag. For example, a game called “Capture the Building” could involve players running around into buildings, pressing a button on the app to “claim” the building. This is communicated to other players using push notifications after the app verifies the GPS location of the player.
 
 
