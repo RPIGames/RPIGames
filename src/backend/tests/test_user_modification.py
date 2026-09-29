@@ -6,7 +6,7 @@ as well as testing when users fail to be created
 
 from typing import Any
 from uuid import UUID
-
+from test_lobby import create_quick_lobby
 from fastapi import status
 from fastapi.testclient import TestClient
 
@@ -24,15 +24,6 @@ def create_quick_user() -> str:
     assert response.status_code == status.HTTP_200_OK
     return f"Bearer {uuid}${secret}"
 
-def create_quick_lobby(auth: str, *, secret: str | None = None) -> UUID:
-    """Helper method that creates a quick lobby given an auth string. Returns lobby uuid."""
-    if secret is None:
-        response = client.post("/v1/lobby/new", headers={"Authorization": auth})
-    else:
-        response = client.post(
-            "/v1/lobby/new", params={"secret": secret}, headers={"Authorization": auth}
-        )
-    return UUID(response.json()["id"])
 
 def get_uid_from_auth(auth: str) -> UUID:
     return UUID(auth.split(" ")[1].split("$")[0])
@@ -110,22 +101,26 @@ def test_change_username_with_non_alphanumeric_name():
     assert get_user_info(auth)["name"] == previous_name
     ErrorResponse.model_validate_json(response.text)
 
+
 def test_user_logout():
     """
-    This test creates a user, sign it out, and verifies that it was deleted.
+    This test creates a user, signs it out, and verifies that it was deleted.
     """
     auth = create_quick_user()
     response = client.delete(
         "/v1/user/sign_out",
         headers={"Authorization": auth},
     )
-    test_response =  client.get("/v1/user/info", params={"user_id": get_uid_from_auth(auth)})
+    test_response = client.get(
+        "/v1/user/info", params={"user_id": get_uid_from_auth(auth)}
+    )
     assert response.status_code == status.HTTP_200_OK
     assert test_response.status_code == status.HTTP_404_NOT_FOUND
 
+
 def test_user_no_auth_logout():
     """
-    This test creates a user, sign it out,but doesn't verify it, and verifies that it wasn't deleted.
+    This test creates a user, tries to sign it out without authenticating, and verifies that it the request fails and that the user wasn't deleted.
     """
     auth = create_quick_user()
     previous_name = get_user_info(auth)["name"]
@@ -133,14 +128,15 @@ def test_user_no_auth_logout():
     response = client.delete(
         "/v1/user/sign_out",
     )
-    
+
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert previous_name == get_user_info(auth)["name"]
     assert previous_id == get_user_info(auth)["id"]
-    
+
+
 def test_user_in_lobby_logout():
     """
-    This test creates a user, sign it out,but the user is in the lobby, and verifies that it wasn't deleted.
+    This test creates a user, attempts to sign it out while the user is in a lobby, verifies that it fails and that it still exists.
     """
     auth = create_quick_user()
     create_quick_lobby(auth)
@@ -150,10 +146,7 @@ def test_user_in_lobby_logout():
         "/v1/user/sign_out",
         headers={"Authorization": auth},
     )
-    
+
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert previous_name == get_user_info(auth)["name"]
     assert previous_id == get_user_info(auth)["id"]
-
-
-    

@@ -52,6 +52,7 @@ def get_new_user_token(
 
     return UserTokenResponse(id=new_user.id, secret=new_user.secret)
 
+
 @router.get(
     "/info_self",
     responses={
@@ -72,7 +73,7 @@ def get_user_info(
         leader=user.leader,
         lobby_id=user.lobby_id,
     )
-    
+
 
 @router.get(
     "/info",
@@ -145,6 +146,7 @@ def rename_self(
 
     return Response(status_code=status.HTTP_200_OK)
 
+
 @router.delete(
     "/sign_out",
     responses={
@@ -154,7 +156,6 @@ def rename_self(
     },
 )
 def sign_out(
-   
     user: Annotated[User, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
@@ -171,10 +172,9 @@ def sign_out(
     if user.lobby is not None:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return ErrorResponse(error="You are currently in a lobby.")
-   
-    #deltete user row. 
+
+    # delete user row
     session.delete(user)
     session.commit()
 
     return Response(status_code=status.HTTP_200_OK)
-    

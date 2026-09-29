@@ -24,6 +24,7 @@ from db.models import User
 
 security_optional = HTTPBearer(auto_error=False)
 
+
 def parse_credentials(
     credentials: Annotated[
         HTTPAuthorizationCredentials | None, Depends(security_optional)
@@ -34,9 +35,11 @@ def parse_credentials(
     (user_token$secret_token), then it returns user_token and secret_token. If the credentials are invalid for any
     reason, then None is returned.
     """
-    if credentials is None or \
-            credentials.scheme != "Bearer" or \
-            "$" not in credentials.credentials:
+    if (
+        credentials is None
+        or credentials.scheme != "Bearer"
+        or "$" not in credentials.credentials
+    ):
         return None
     credentials_list = credentials.credentials.split("$")
     if len(credentials_list) != 2:
@@ -48,9 +51,7 @@ def parse_credentials(
 
 
 def optional_authorization(
-    credentials: Annotated[
-        tuple[str, str | None], Depends(parse_credentials)
-    ],
+    credentials: Annotated[tuple[str, str | None], Depends(parse_credentials)],
     session: Annotated[Session, Depends(get_session)],
 ) -> User | None:
     """
