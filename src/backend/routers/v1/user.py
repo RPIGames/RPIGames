@@ -8,7 +8,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Response, status
 from sqlmodel import Session
 
-from authentication.middleware import require_authorization, parse_credentials
+from authentication.middleware import parse_credentials, require_authorization
 from db.engine import get_session
 from db.models import User
 from models.response import (

@@ -4,7 +4,7 @@ as well as testing when users fail to be created
 (for example, a bogus header)
 """
 
-from typing import Any, Optional
+from typing import Any
 from uuid import UUID
 
 from fastapi import status

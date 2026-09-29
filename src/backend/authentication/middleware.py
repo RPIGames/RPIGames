@@ -11,7 +11,7 @@ by a '$'):
   the person sending the request is who they say they are.
 """
 
-from typing import Annotated, Optional
+from typing import Annotated
 from uuid import UUID
 
 from cryptography.hazmat.primitives import constant_time
