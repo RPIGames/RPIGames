@@ -6,9 +6,10 @@ as well as testing when users fail to be created
 
 from typing import Any
 from uuid import UUID
-from test_lobby import create_quick_lobby
+
 from fastapi import status
 from fastapi.testclient import TestClient
+from test_lobby import create_quick_lobby
 
 from main import app
 from models.response import AuthenticationErrorResponse, ErrorResponse
