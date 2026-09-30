@@ -355,7 +355,7 @@ async function setPageContent(
                 const pingButton = document.getElementById("ping-button");
                 if (pingButton) {
                     pingButton.onclick = () =>
-                        sendUINotification("pong!", undefined, true);
+                        sendUINotification("pong!", undefined, true, true);
                 }
                 break;
             }
