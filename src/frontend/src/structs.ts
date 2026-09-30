@@ -45,7 +45,8 @@ export interface ClientClaimMessage {
 // a message sent from the frontend code to the service worker
 // could be of multiple types. the type is specified by the type property
 export type MessageFromServiceWorker =
-    NativeNotificationClicked | OwnershipResponse;
+    | NativeNotificationClicked
+    | OwnershipResponse;
 
 // A response from the service worker when a notification was clicked
 export interface NativeNotificationClicked {
