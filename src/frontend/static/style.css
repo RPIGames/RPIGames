@@ -23,6 +23,9 @@ ul {
 
 body {
     font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    height:100vh;
 }
 
 /* deal with the topbar */
@@ -76,6 +79,7 @@ button {
                 0px 0px 0 calc(var(--innerBorderWidth) + var(--outerBorderWidth)) black;
     border: var(--outerBorderWidth) solid black;
     border-radius: 10px;
+    max-width:500px;
 }
 
 #center-content > ul{
@@ -186,12 +190,18 @@ button {
 }
 
 #lobbies-list{
-    max-height:100%;
+    overflow-y: scroll;
+    border-radius: 10px;
+    height: 100%;
 }
 
+
 .lobby-wrapper{
-    height: 100%;
+    display: flex;
+    flex-direction: column;
     position: relative;
+    height:100%;
+    min-height:100px;
 }
 
 .card {
@@ -211,12 +221,16 @@ button {
     padding-block: calc(var(--spacing) * 2);
 }
 
+.card-body h3{
+    flex:1;
+}
+
 .text-caption{
     justify-content: end;
 }
 
 #lobby-footer{
-    position: absolute;
+    position: relative;
     bottom: 0;
     left:0;
     padding:10px;
@@ -322,6 +336,7 @@ a:not(:hover) {
 }
 
 .flex-1 {
+    display: flex;
     flex: 1;
 }
 
