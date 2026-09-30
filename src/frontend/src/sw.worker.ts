@@ -136,6 +136,8 @@ self.addEventListener("fetch", (event) => {
 
 let active_client_id: string | null = null;
 
+// This event listener listens for ownership requests, and responds to them.
+// The first page to get ownership keeps it.
 self.addEventListener("message", async (e: ExtendableMessageEvent) => {
     if (!(e.source instanceof Client)) return;
     const data: MessageToServiceWorker = e.data;
@@ -159,6 +161,8 @@ self.addEventListener("message", async (e: ExtendableMessageEvent) => {
     }
 });
 
+// Event listener listens when a notification is clicked.
+// If it recieves a click, it sents the callback to the active client.
 self.addEventListener("notificationclick", async (event: NotificationEvent) => {
     if (active_client_id === null) return;
 

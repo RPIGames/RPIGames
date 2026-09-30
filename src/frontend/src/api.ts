@@ -88,6 +88,8 @@ async function addNotificationCallback(id: string, callback: () => unknown) {
     }
 }
 
+// listens a notification click event from the serviceworker. If a click event
+// is found and there is a callback in the callback map, cal the callback
 navigator.serviceWorker.addEventListener("message", (e: MessageEvent) => {
     const data: MessageFromServiceWorker = e.data;
     if (data.type !== "native_notification_callback") return;
