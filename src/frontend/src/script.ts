@@ -361,7 +361,18 @@ async function setPageContent(
                 const pingButton = document.getElementById("ping-button");
                 if (pingButton) {
                     pingButton.onclick = () =>
-                        sendUINotification("pong!", undefined, true, true);
+                        sendUINotification("pong!", undefined, true, false);
+                }
+                const nativePingButton =
+                    document.getElementById("native-ping-button");
+                if (nativePingButton) {
+                    nativePingButton.onclick = () =>
+                        sendUINotification(
+                            "native pong!",
+                            undefined,
+                            true,
+                            true,
+                        );
                 }
                 break;
             }

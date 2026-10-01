@@ -1,0 +1,27 @@
+services:
+    frontend:
+        build:
+            context: ../../../
+            dockerfile: deploy/dev/docker/frontend.Dockerfile
+        ports:
+            - "5000:5000"
+        depends_on:
+            - backend
+        networks:
+            - frontend
+    backend:
+        build:
+            context: ../../../
+            dockerfile: deploy/dev/docker/backend.Dockerfile
+        expose:
+            - "9000"
+        volumes:
+            - backend-db:/db
+        networks:
+            - frontend
+
+networks:
+    frontend:
+
+volumes:
+    backend-db:
