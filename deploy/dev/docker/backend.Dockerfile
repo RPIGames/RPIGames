@@ -20,8 +20,9 @@ COPY --exclude=**/.*/** \
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --link-mode=copy
 
+# Set database
 VOLUME ["/db"]
 ENV DATABASE_PATH="/db/database.db"
 
-
+# The command to actually run
 CMD ["uv", "run", "fastapi", "dev", "--host", "0.0.0.0", "--port", "9000", "--forwarded-allow-ips=\"*\"", "--root-path", "/api"]

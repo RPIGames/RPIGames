@@ -1,4 +1,7 @@
 #!/bin/bash
+set -euo pipefail
+
+# Simple bash script that checks for podman and a docker-compose plugin
 
 if ! command -v podman &> /dev/null;
   then echo "Podman installation not found. Please install podman."

@@ -24,3 +24,5 @@ COPY src/frontend/templates /app/templates/
 COPY src/frontend/index.html /app/index.html
 
 EXPOSE 80
+
+# CMD is the default from the docker.io/nginx repo
