@@ -16,9 +16,9 @@ export type PublicUserInfo = {
 export type LobbyResponse = {
     id: string;
     name: string;
-    maxMembers: number;
-    currMembers: number;
-    needsSecret: boolean;
+    max_members: number;
+    curr_members: number;
+    needs_secret: boolean;
 };
 
 // One item in the response for when a directory is requested from the backend folder.
