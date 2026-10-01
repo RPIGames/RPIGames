@@ -1,13 +1,11 @@
 /// <reference lib="webworker" />
 declare const self: ServiceWorkerGlobalScope;
 
-// One item in the response for when a directory is requested from the backend folder.
-interface ResourceInfo {
-    name: string;
-    type: "file" | "directory" | "other";
-    mtime: string;
-    size: number;
-}
+import type {
+    MessageFromServiceWorker,
+    MessageToServiceWorker,
+    ResourceInfo,
+} from "./structs.js";
 
 // Puts a request into the cache.
 async function putInCache(request: Request, response: Response) {
@@ -134,4 +132,48 @@ self.addEventListener("fetch", (event) => {
             new URL(`${self.location.origin}/static/404.html`),
         ),
     );
+});
+
+let active_client_id: string | null = null;
+
+// This event listener listens for ownership requests, and responds to them.
+// The first page to get ownership keeps it.
+self.addEventListener("message", async (e: ExtendableMessageEvent) => {
+    if (!(e.source instanceof Client)) return;
+    const data: MessageToServiceWorker = e.data;
+    if (data.type !== "claim_client") return;
+    if (
+        active_client_id === null ||
+        (await self.clients.get(active_client_id)) === undefined
+    ) {
+        active_client_id = e.source.id;
+        const response: MessageFromServiceWorker = {
+            type: "ownership_response",
+            ownership_taken: true,
+        };
+        e.source.postMessage(response);
+    } else {
+        const response: MessageFromServiceWorker = {
+            type: "ownership_response",
+            ownership_taken: false,
+        };
+        e.source.postMessage(response);
+    }
+});
+
+// Event listener listens when a notification is clicked.
+// If it recieves a click, it sents the callback to the active client.
+self.addEventListener("notificationclick", async (event: NotificationEvent) => {
+    if (active_client_id === null) return;
+
+    const client = await self.clients.get(active_client_id);
+
+    if (client === undefined) return;
+
+    const message: MessageFromServiceWorker = {
+        type: "native_notification_callback",
+        notification_id: event.notification.tag,
+    };
+
+    client.postMessage(message);
 });
