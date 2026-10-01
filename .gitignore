@@ -60,6 +60,7 @@ cover/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+database.db
 
 # Flask stuff:
 instance/
@@ -185,3 +186,8 @@ cython_debug/
 # Ruff stuff:
 .ruff_cache/
 
+#krita stuff
+**/*.kra~
+*autosave.kra
+
+art/imagetemplate.kra~

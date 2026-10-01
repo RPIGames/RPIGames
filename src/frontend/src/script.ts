@@ -124,6 +124,7 @@ export async function sendUINotification(
 }
 
 const currentLobby: LobbyResponse | null = null;
+console.log(currentLobby);
 
 // creates a lobby card on the lobby page
 async function createLobbyCard(lobby: LobbyResponse) {
@@ -131,13 +132,30 @@ async function createLobbyCard(lobby: LobbyResponse) {
     //TO-DO: only fetch this once
     const cardTemplate = (await getPageContent(
         "lobbies",
-        "lobby-template",
+        "lobby-card-template",
     )) as HTMLTemplateElement;
 
     //convert template to actual html element
     const node: HTMLElement = cardTemplate.content
         .firstElementChild as HTMLElement;
+
+    //set id attribute of card to lobby id
     node.setAttribute("data-lobby-id", lobby.id);
+
+    //set values of name, active players, max players on card
+    (node.querySelector("h3") as HTMLElement).innerHTML = lobby.name;
+    (node.querySelector(".active-players") as HTMLElement).innerHTML =
+        lobby.curr_members.toString();
+    (node.querySelector(".max-players") as HTMLElement).innerHTML =
+        lobby.max_members.toString();
+
+    //change private lock img to public lock if public
+    //private lock used by default
+    if (!lobby.needs_secret) {
+        const lockSvg = node.querySelector("#lockSvg") as HTMLImageElement;
+        lockSvg.src = "/static/unlocked.svg";
+        lockSvg.alt = "Public Lobby";
+    }
 
     return node;
 }
@@ -170,17 +188,6 @@ async function refreshLobbies() {
         //add lobbies to html
         lobbyListElement.replaceChildren(...newChildren);
     }
-}
-
-// updates the lobby UI when you join and leave a lobby
-async function updateLobbyUI() {
-    const createButton = document.getElementById("create-lobby-button");
-    const leaveButton = document.getElementById("leave-lobby-button");
-
-    const inLobby = currentLobby !== null;
-
-    if (createButton !== null) createButton.hidden = inLobby;
-    if (leaveButton !== null) leaveButton.hidden = !inLobby;
 }
 
 const centerContent: HTMLDivElement = document.querySelector(
@@ -347,7 +354,6 @@ async function setPageContent(
         switch (pageLocation) {
             case "lobbies": {
                 void refreshLobbies();
-                void updateLobbyUI();
                 break;
             }
             case "home": {

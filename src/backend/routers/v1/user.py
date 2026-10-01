@@ -8,7 +8,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Response, status
 from sqlmodel import Session
 
-from authentication.middleware import force_authorization, is_logged_in
+from authentication.middleware import parse_credentials, require_authorization
 from db.engine import get_session
 from db.models import User
 from models.response import (
@@ -34,7 +34,7 @@ router = APIRouter(
     },
 )
 def get_new_user_token(
-    logged_in: Annotated[bool, Depends(is_logged_in)],
+    credentials: Annotated[tuple[str, str] | None, Depends(parse_credentials)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
 ):
@@ -42,7 +42,7 @@ def get_new_user_token(
     Creates a new user token.
     """
 
-    if logged_in:
+    if credentials is not None:
         response.status_code = 400
         return ErrorResponse(error="You are already sending a valid user token.")
 
@@ -61,10 +61,10 @@ def get_new_user_token(
     },
 )
 def get_user_info(
-    user: Annotated[User, Depends(force_authorization)],
+    user: Annotated[User, Depends(require_authorization)],
 ):
     """
-    Gets user info. Since this returns private data, it requires the users authorization.
+    Gets user info. Since this returns private data, it requires the user's authorization.
     """
 
     return PrivateUserInfoResponse(
@@ -92,7 +92,7 @@ def get_public_user_info(
     """
 
     user = session.get(User, user_id)
-    if user == None:
+    if user is None:
         response.status_code = status.HTTP_404_NOT_FOUND
         return ErrorResponse(error="User not found.")
 
@@ -114,7 +114,7 @@ def get_public_user_info(
 )
 def rename_self(
     new_name: str,
-    user: Annotated[User, Depends(force_authorization)],
+    user: Annotated[User, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
 ):
@@ -142,6 +142,39 @@ def rename_self(
 
     user.name = new_name
 
+    session.commit()
+
+    return Response(status_code=status.HTTP_200_OK)
+
+
+@router.delete(
+    "/sign_out",
+    responses={
+        status.HTTP_200_OK: {},
+        status.HTTP_400_BAD_REQUEST: {"model": ErrorResponse},
+        status.HTTP_401_UNAUTHORIZED: {"model": AuthenticationErrorResponse},
+    },
+)
+def sign_out(
+    user: Annotated[User, Depends(require_authorization)],
+    session: Annotated[Session, Depends(get_session)],
+    response: Response,
+):
+    """
+    Signs out a user by setting out the name to nothing and uuid
+
+    -User must not be in a lobby
+    """
+    if user is None:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return ErrorResponse(error="You are already logged out.")
+
+    if user.lobby is not None:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return ErrorResponse(error="You are currently in a lobby.")
+
+    # delete user row
+    session.delete(user)
     session.commit()
 
     return Response(status_code=status.HTTP_200_OK)
