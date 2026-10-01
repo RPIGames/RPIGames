@@ -1,22 +1,9 @@
-type UserTokenResponse = {
-    id: string;
-    secret: string;
-};
-
-type PublicUserInfo = {
-    id: string;
-    name: string;
-    leader: boolean;
-    lobbyId: string | null;
-};
-
-type LobbyResponse = {
-    id: string;
-    name: string;
-    max_members: number;
-    curr_members: number;
-    needs_secret: boolean;
-};
+import { showNotification } from "./api.js";
+import type {
+    LobbyResponse,
+    PublicUserInfo,
+    UserTokenResponse,
+} from "./structs";
 
 // Registers a service worker to cache requests for offline navigation and faster loading. Also reduces server strain.
 async function registerServiceWorker() {
@@ -75,7 +62,8 @@ enum MessageType {
 export async function sendUINotification(
     message: string,
     type: MessageType = MessageType.Info,
-    temporary: boolean,
+    temporary: boolean = true,
+    native: boolean = false,
 ) {
     console.log(`Sending ${type} notification with message:`, message);
 
@@ -128,6 +116,10 @@ export async function sendUINotification(
             },
             delayTime * 1000 + fadeTime * 1000,
         );
+    }
+
+    if (native) {
+        showNotification(message, undefined, undefined, !temporary);
     }
 }
 
@@ -369,7 +361,7 @@ async function setPageContent(
                 const pingButton = document.getElementById("ping-button");
                 if (pingButton) {
                     pingButton.onclick = () =>
-                        sendUINotification("pong!", undefined, true);
+                        sendUINotification("pong!", undefined, true, true);
                 }
                 break;
             }
