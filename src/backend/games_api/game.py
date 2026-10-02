@@ -27,6 +27,8 @@ class Game:
     def __init__(self, lobby_id: UUID):
         self._lobby_id = lobby_id
 
+    #give utc time when end, send update when timer is changed 
+    #send timer to user each timer ahas unique identifier, countdown, send timer name and end on completion 
     def make_timer(
         self,
         timer_seconds: float,
@@ -40,4 +42,3 @@ class Game:
     #takes in an amount of scores that are being stored
     #also takes the which score it is 
 
-#
