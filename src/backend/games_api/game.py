@@ -34,3 +34,10 @@ class Game:
         disappear_on_completion: bool = True,
     ) -> None:
         raise NotImplementedError
+
+    #add scoreboard
+    #takes in a sorted array that this then sends to front end.
+    #takes in an amount of scores that are being stored
+    #also takes the which score it is 
+
+#
