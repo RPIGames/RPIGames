@@ -4,80 +4,18 @@ as well as testing when users fail to be created
 (for example, a bogus header)
 """
 
-from typing import Any
 from uuid import UUID
 
 from fastapi import status
-from fastapi.testclient import TestClient
 
-from main import app
-
-client = TestClient(app)
-
-
-def create_quick_user() -> str:
-    """Helper method that creates a user. Returns an auth bearer string"""
-    response = client.post("/v1/user/new")
-    secret: str = response.json()["secret"]
-    uuid: str = response.json()["id"]
-    return f"Bearer {uuid}${secret}"
-
-
-def create_quick_lobby(auth: str, *,
-    game_type: str = "sample_game",
-    capacity: int = 8,
-    config: dict[str, str | int | float | bool] | None = None,
-    secret: str | None = None) -> UUID:
-    """Helper method that creates a quick lobby given an auth string. Returns lobby uuid."""
-    if config is None:
-        config = {"welcome_message": "hello", "time_to_hide": 5, "points_for_hiding": 10, "points_for_seeking": 15}
-    if secret is None:
-        response = client.post("/v1/lobby/new", json={
-            "game_type_id": game_type,
-            "game_capacity": capacity,
-            "game_config": config,
-        }, headers={"Authorization": auth})
-    else:
-        response = client.post(
-            "/v1/lobby/new", json={
-                "game_type_id": game_type,
-                "game_capacity": capacity,
-                "game_config": config,
-                "secret": secret
-            }, headers={"Authorization": auth}
-        )
-        print(response.request.content)
-
-    if response.status_code != 200:
-        raise ValueError(f"there was an error making a quick lobby: {response.text}")
-
-    return UUID(response.json()["id"])
-
-
-def get_uid_from_auth(auth: str) -> UUID:
-    return UUID(auth.split(" ")[1].split("$")[0])
-
-
-def get_user_info(auth: str) -> dict[str, Any]:
-    """Gets the public user info as from an auth bearer string"""
-    response = client.get(
-        "/v1/user/info", params={"user_id": str(get_uid_from_auth(auth))}
-    )
-    return response.json()
-
-
-def join_lobby(auth: str, lobby_id: UUID, lobby_secret: str | None = None) -> bool:
-    """Trys to join the respective lobby at lobby_id with the
-    user authenticated with auth. Returns true if joined successfully."""
-    body = {
-        "lobby_id": str(lobby_id),
-    }
-    if lobby_secret is not None:
-        body["lobby_secret"] = lobby_secret
-    response = client.post("/v1/lobby/join", json=body, headers={"Authorization": auth})
-    print(response)
-    print(response.json())
-    return response.status_code == status.HTTP_200_OK
+from .helper import (
+    client,
+    create_quick_lobby,
+    create_quick_user,
+    get_uid_from_auth,
+    get_user_info,
+    join_lobby,
+)
 
 
 def test_create_lobby():
@@ -151,7 +89,7 @@ def test_join_lobby():
     auth2 = create_quick_user()
     assert get_user_info(auth2)["lobby_id"] is None
 
-    assert join_lobby(auth2, lobby_id=lobby)
+    assert join_lobby(auth2, lobby)
 
     assert get_user_info(auth)["leader"]
     assert not get_user_info(auth2)["leader"]
@@ -164,9 +102,9 @@ def test_join_lobby():
 def test_grant_leadership():
     """Tests the /lobby/leadership/grant endpoint"""
     auth = create_quick_user()
-    lobby = create_quick_lobby(auth)
+    lobby = create_quick_lobby(auth, )
     auth2 = create_quick_user()
-    assert join_lobby(auth2, lobby)
+    assert join_lobby(auth2, lobby, )
 
     assert get_user_info(auth)["leader"]
     assert get_user_info(auth)["lobby_id"] is not None
@@ -192,7 +130,7 @@ def test_join_hidden_lobby():
     auth2 = create_quick_user()
     assert get_user_info(auth2)["lobby_id"] is None
 
-    assert join_lobby(auth2, lobby_id=lobby, lobby_secret="testsecret")
+    assert join_lobby(auth2, lobby, lobby_secret="testsecret")
 
     assert get_user_info(auth)["leader"]
     assert not get_user_info(auth2)["leader"]

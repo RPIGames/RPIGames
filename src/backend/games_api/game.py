@@ -5,12 +5,10 @@ lives here.
 """
 
 from abc import ABC, abstractmethod
-
 from collections.abc import Awaitable, Callable
+from datetime import datetime
 from typing import Any, ClassVar
 from uuid import UUID
-from datetime import datetime
-from collections.abc import Callable
 
 from games_api.player import Player
 
@@ -25,7 +23,7 @@ class Game(ABC):
     def __init__(self, initial_player: Player):
         self.scoreboard = []
         self.chat_room_players :dict[UUID,List[UUID]] = {}
-        
+
 
 
     #add scoreboard
@@ -41,7 +39,7 @@ class Game(ABC):
     #    ) -> list[ScoreboardData]:
     #    return self.scoreboard
 
-    #Chat_Send_Message(Room UUID, message): gets all the players that are in the chatroom 
+    #Chat_Send_Message(Room UUID, message): gets all the players that are in the chatroom
     async def get_room(self,
         room_id: UUID) -> list[UUID]:
         if room_id in self.chat_room_players:
@@ -64,7 +62,7 @@ class Game(ABC):
     @abstractmethod
     async def leave_lobby(self, player: Player) -> None:
         pass
-    
+
     #define function to get timers to all players
     async def assign_mass_timer(self,
         players: list[Player],

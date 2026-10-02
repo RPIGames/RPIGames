@@ -1,14 +1,11 @@
 from uuid import UUID
 
 import pytest
-from fastapi.testclient import TestClient
 
 from games_api.player import Player
-from main import app
 
-from .test_user_modification import create_quick_user, get_uid_from_auth, get_user_info
+from .helper import create_quick_user, get_uid_from_auth, get_user_info
 
-client = TestClient(app)
 
 def test_making_player():
     """

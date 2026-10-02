@@ -4,41 +4,12 @@ as well as testing when users fail to be created
 (for example, a bogus header)
 """
 
-from typing import Any
-from uuid import UUID
-
 from fastapi import status
-from fastapi.testclient import TestClient
 
-from main import app
 from models.response import AuthenticationErrorResponse, ErrorResponse
 
+from .helper import client, create_quick_user, get_uid_from_auth, get_user_info
 from .test_lobby import create_quick_lobby
-
-client = TestClient(app)
-
-
-
-def create_quick_user() -> str:
-    """Helper method that creates a user. Returns an auth bearer string"""
-    response = client.post("/v1/user/new")
-    secret: str = response.json()["secret"]
-    uuid: str = response.json()["id"]
-    assert response.status_code == status.HTTP_200_OK
-    return f"Bearer {uuid}${secret}"
-
-
-def get_uid_from_auth(auth: str) -> UUID:
-    return UUID(auth.split(" ")[1].split("$")[0])
-
-
-def get_user_info(auth: str) -> dict[str, Any]:
-    """Gets the public user info as from an auth bearer string"""
-    response = client.get(
-        "/v1/user/info", params={"user_id": str(get_uid_from_auth(auth))}
-    )
-    assert response.status_code == status.HTTP_200_OK
-    return response.json()
 
 
 def test_change_username():
@@ -80,7 +51,7 @@ def test_change_username_with_too_long_name():
     response = client.post(
         "/v1/user/change_name",
         params={
-            "new_name": "this is an extremely long username you could even say it isnt a username at all and is instead just a test",
+            "new_name": "this is an extremely long username you could even say it isn't a username at all and is instead just a test.",
         },
         headers={"Authorization": auth},
     )
