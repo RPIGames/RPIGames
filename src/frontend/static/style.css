@@ -69,7 +69,9 @@ button {
 #center-content{
     display:flex;
     flex-direction: column;
-    width:max(60%,600px);
+    align-items: center;
+    width:clamp(380px,80%,1000px);
+    padding:5px;
 }
 
 .red-black-border{
@@ -79,7 +81,7 @@ button {
                 0px 0px 0 calc(var(--innerBorderWidth) + var(--outerBorderWidth)) black;
     border: var(--outerBorderWidth) solid black;
     border-radius: 10px;
-    max-width:500px;
+    width:100%;
 }
 
 #center-content > ul{
@@ -363,7 +365,8 @@ a:not(:hover) {
 }
 
 .p-8 {
-    padding: calc(var(--spacing) * 8);
+    padding-top: calc(var(--spacing) * 8);
+    padding-bottom: calc(var(--spacing) * 8);
 }
 .p-4 {
     padding: calc(var(--spacing) * 4);
