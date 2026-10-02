@@ -214,7 +214,6 @@ const hamburgerImageClose: HTMLDivElement = document.querySelector(
     "#hamburgerClose",
 ) as HTMLImageElement;
 
-
 //close menu when middle section (anything but header, footer, or menu) is clicked
 document.querySelector("#middle-div")?.addEventListener("click", () => {
     closeHamburgerMenu();
