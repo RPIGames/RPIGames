@@ -7,6 +7,7 @@ as well as testing when users fail to be created
 from fastapi import status
 from fastapi.testclient import TestClient
 
+from .helper import GARBAGE_AUTH_HEADERS
 from main import app
 
 client = TestClient(app)
@@ -85,19 +86,6 @@ def test_create_already_signed_in():
     )
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert "already sending a valid user token" in response.json()["error"]
-
-
-GARBAGE_AUTH_HEADERS = [
-    {"Authorization": "Bearer Random Garbage"},
-    {"Authorization": "Bearer "},
-    {"Authorization": "Bea rer"},
-    {"Authorization": "Bearer 01010101$010010001"},
-    {"Auth": "Bearer 102948"},
-    {"Authorization": "Bearer 01Ef12943jrka#$&@(!\x00\\EEE)"},
-    {"Auth": "Bearer \x00\n\n\nHAHAHAHA"},
-    {"Authorization": "Bearer \x00\n\n\nHAHAHAHA"},
-]
-
 
 def test_create_with_random_garbage_auth_header():
     """
