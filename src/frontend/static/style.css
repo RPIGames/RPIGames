@@ -37,6 +37,7 @@ body {
     height: var(--topbar-height);
     width: 100%;
     background-color: var(--navbar-bg-color);
+    border-bottom: 2px solid red;
 
     align-items: center;
     justify-content: space-between;
@@ -50,15 +51,51 @@ body {
     width: auto;
 }
 
+.menu-wrapper{
+    gap:10px;
+    align-items: center;
+}
+
+.hamburgerButton{
+    background-color: transparent;
+    width:50px;
+    height: 50px;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
+.hamburgerButton > img{
+    filter:brightness(0) invert(1);
+    width: 100%;
+    height: 100%;
+}
+
+#hamburgerClose{
+    width: 80%;
+    height: 80%;
+    display: none;
+}
+
+.hamburgerButton > img:hover{
+    filter:brightness(0) invert(0.8);
+}
+
+.hamburgerButton:hover{
+    cursor: pointer;
+}
+
 .nav-user {
     color: white;
     font-size: calc(var(--spacing) * 4);
     font-weight: 500;
+    text-align: right;
 }
 
 button {
     width: fit-content;
     height: fit-content;
+    cursor: pointer;
 }
 
 #center-wrapper{
@@ -283,12 +320,38 @@ button {
 }
 
 #sidenav {
-    display: flex;
+    display: none;
+    position: absolute;
     flex-direction: column;
-    width: auto;
+    right:0;
+    top:var(--topbar-height);
     padding-top: var(--spacing);
-    overflow-y: auto;
-    padding-right: calc(var(--spacing)*16);
+    width: 100vw;
+
+    gap:5px;
+
+    align-items: center;
+
+    padding-left: 50px;
+    padding-top:20px;
+    padding-bottom: 30px;
+    background-color: var(--navbar-bg-color);
+
+    z-index:10000;
+}
+
+#sidenav button{
+    background-color: transparent;
+    color:white;
+    font-size:35px;
+    width:100%;
+    text-align: left;
+}
+
+#sidenav button:hover{
+    background-color: transparent;
+    color:white;
+    text-decoration: underline;
 }
 
 

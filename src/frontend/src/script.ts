@@ -126,6 +126,10 @@ export async function sendUINotification(
 const currentLobby: LobbyResponse | null = null;
 console.log(currentLobby);
 
+const centerContent: HTMLDivElement = document.querySelector(
+    "#center-content",
+) as HTMLDivElement;
+
 // creates a lobby card on the lobby page
 async function createLobbyCard(lobby: LobbyResponse) {
     //fetch card template
@@ -190,35 +194,67 @@ async function refreshLobbies() {
     }
 }
 
-const centerContent: HTMLDivElement = document.querySelector(
-    "#center-content",
+//hamburger menu itself
+const hamburgerMenu: HTMLDivElement = document.querySelector(
+    "#sidenav",
 ) as HTMLDivElement;
-let activeWindow = "home";
-setPageContent("home");
+
+//hamburger menu button
+const hamburgerButton: HTMLButtonElement = document.querySelector(
+    ".hamburgerButton",
+) as HTMLButtonElement;
+
+//hamburger menu image (three lines) that shows when menu can be opened
+const hamburgerImageOpen: HTMLDivElement = document.querySelector(
+    "#hamburgerOpen",
+) as HTMLImageElement;
+
+//hamburger menu image (x button) that shows when menu can be closed
+const hamburgerImageClose: HTMLDivElement = document.querySelector(
+    "#hamburgerClose",
+) as HTMLImageElement;
+
+
+//close menu when middle section (anything but header, footer, or menu) is clicked
+document.querySelector("#middle-div")?.addEventListener("click", () => {
+    closeHamburgerMenu();
+});
 
 // attach event listeners to all the buttons on the frontend
 document.addEventListener("DOMContentLoaded", () => {
-    // make the sidenav buttons actually toggle the active frame
-
-    const sidenavButtonHome = document.getElementById("sidenav-link-home");
-    const sidenavButtonLobbies = document.getElementById(
-        "sidenav-link-lobbies",
-    );
-    const sidenavButtonChat = document.getElementById("sidenav-link-chat");
-
-    if (sidenavButtonHome)
-        sidenavButtonHome.addEventListener("click", () =>
-            setPageContent("home"),
-        );
-    if (sidenavButtonLobbies)
-        sidenavButtonLobbies.addEventListener("click", () =>
-            setPageContent("lobbies", "centerContent", "lobby-main"),
-        );
-    if (sidenavButtonChat)
-        sidenavButtonChat.addEventListener("click", () =>
-            setPageContent("chat"),
-        );
+    //make hamburger menu interactable
+    hamburgerButton?.addEventListener("click", () => {
+        if (hamburgerMenu.style.display === "none") {
+            //show menu if it is hidden
+            openHamburgerMenu();
+        } else {
+            //hide menu if it is showing
+            closeHamburgerMenu();
+        }
+    });
 });
+
+function openHamburgerMenu() {
+    //show menu itself
+    hamburgerMenu.style.display = "flex";
+
+    //hide menu image
+    hamburgerImageOpen.style.display = "none";
+
+    //show closing-x image
+    hamburgerImageClose.style.display = "block";
+}
+
+function closeHamburgerMenu() {
+    //hide menu itself
+    hamburgerMenu.style.display = "none";
+
+    //show menu image
+    hamburgerImageOpen.style.display = "block";
+
+    //show closing-x image
+    hamburgerImageClose.style.display = "none";
+}
 
 // gets a user's information
 async function getUserInfo(userId: string) {
@@ -309,6 +345,9 @@ async function setPageContent(
     parentDivId?: string,
     divId?: string,
 ) {
+    //close menu, if open
+    closeHamburgerMenu();
+
     //find div to append to; if parameter not initialized, set to null
     let parentDiv: HTMLElement | null = parentDivId
         ? document.querySelector(`#${parentDivId}`)
@@ -379,3 +418,9 @@ async function setPageContent(
         }
     }
 }
+
+//set hamburger menu to closed state
+closeHamburgerMenu();
+//Set page to home
+let activeWindow = "home";
+setPageContent("home");
