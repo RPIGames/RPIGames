@@ -5,6 +5,9 @@ set -euo pipefail
 
 "$(dirname "$0")/verify_deps.sh"
 
+SCRIPT_PATH=$(dirname "$0")/../deploy/dev/docker/compose.yaml
+SCRIPT_PATH=$(realpath "$SCRIPT_PATH")
+
 podman compose \
-    --file "$(dirname "$0")/../deploy/dev/docker/compose.yaml" \
+    --file "$SCRIPT_PATH" \
     down
