@@ -10,6 +10,9 @@ if [[ "$1" != "frontend" && "$1" != "backend" ]]; then
     exit 1
 fi
 
+SCRIPT_PATH=$(dirname "$0")/../deploy/dev/docker/compose.yaml
+SCRIPT_PATH=$(realpath "$SCRIPT_PATH")
+
 podman compose \
-    --file "$(dirname "$0")/../deploy/dev/docker/compose.yaml"\
+    --file "$SCRIPT_PATH"\
    exec "$1" /bin/sh
