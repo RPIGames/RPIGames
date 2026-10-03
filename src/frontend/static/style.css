@@ -37,6 +37,7 @@ body {
     height: var(--topbar-height);
     width: 100%;
     background-color: var(--navbar-bg-color);
+    border-bottom: 2px solid red;
 
     align-items: center;
     justify-content: space-between;
@@ -50,28 +51,75 @@ body {
     width: auto;
 }
 
+.menu-wrapper{
+    gap:10px;
+    align-items: center;
+}
+
+/* Hamburger Menu styling */
+
+/* Button Itself */
+.hamburgerButton{
+    background-color: transparent;
+    width:50px;
+    height: 50px;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
+/* Image on Button */
+.hamburgerButton > img{
+    filter:brightness(0) invert(1); /*forces image color to be white*/
+    width: 100%;
+    height: 100%;
+}
+
+/* Hamburger menu close-x button image */
+#hamburgerClose{
+    width: 80%;
+    height: 80%;
+    display: none;
+}
+
+.hamburgerButton > img:hover{
+    filter:brightness(0) invert(0.8); /*forces image color to be slightly gray on hover*/
+}
+
+.hamburgerButton:hover{
+    cursor: pointer;
+}
+
+/* Username styling*/
 .nav-user {
     color: white;
     font-size: calc(var(--spacing) * 4);
     font-weight: 500;
+    text-align: right;
 }
 
 button {
     width: fit-content;
     height: fit-content;
+    cursor: pointer;
 }
 
+/*Contains and centers center content*/
 #center-wrapper{
     display:flex;
     justify-content: center;
 }
 
+/*Centers inserted content with relative width*/
 #center-content{
     display:flex;
     flex-direction: column;
-    width:max(60%,600px);
+    align-items: center;
+    width:clamp(380px,80%,1000px);
+    padding:5px;
 }
 
+/*Creates red and black border around div*/
 .red-black-border{
     --innerBorderWidth:5px;
     --outerBorderWidth:5px;
@@ -79,9 +127,10 @@ button {
                 0px 0px 0 calc(var(--innerBorderWidth) + var(--outerBorderWidth)) black;
     border: var(--outerBorderWidth) solid black;
     border-radius: 10px;
-    max-width:500px;
+    width:100%;
 }
 
+/*Margins around various inserted elements*/
 #center-content > ul{
     margin:10px;
     padding-left:20px;
@@ -114,6 +163,7 @@ button {
     padding: 0 calc(var(--spacing) * 4);
 }
 
+/*Button that looks like a link*/
 .linkButton{
     background-color: transparent;
     color: white;
@@ -122,6 +172,7 @@ button {
     cursor: pointer;
 }
 
+/*Other links in footer*/
 #footer-links {
     display: flex;
     justify-content: center;
@@ -145,6 +196,7 @@ button {
     font-size: inherit;
 }
 
+/*Notification styling*/
 .alert {
   padding: 20px;
   color: white;
@@ -182,8 +234,7 @@ button {
     }
 }
 
-/*Start lobby specific css*/
-
+/*Lobby specific css*/
 #lobbies-topbar{
     border-bottom: 2px solid black;
     padding-left: 2px;
@@ -270,8 +321,6 @@ button {
 }
 
 
-/*End lobby specific css*/
-
 #notification-box {
     position: fixed;
     z-index: 99;
@@ -280,13 +329,40 @@ button {
     width: 30rem;
 }
 
+/*Elements inside hamburger menu styling*/
 #sidenav {
-    display: flex;
+    display: none;
+    position: absolute;
     flex-direction: column;
-    width: auto;
+    right:0;
+    top:var(--topbar-height);
     padding-top: var(--spacing);
-    overflow-y: auto;
-    padding-right: calc(var(--spacing)*16);
+    width: 100vw;
+
+    gap:5px;
+
+    align-items: center;
+
+    padding-left: 50px;
+    padding-top:20px;
+    padding-bottom: 30px;
+    background-color: var(--navbar-bg-color);
+
+    z-index:10000;
+}
+
+#sidenav button{
+    background-color: transparent;
+    color:white;
+    font-size:35px;
+    width:100%;
+    text-align: left;
+}
+
+#sidenav button:hover{
+    background-color: transparent;
+    color:white;
+    text-decoration: underline;
 }
 
 
@@ -363,7 +439,8 @@ a:not(:hover) {
 }
 
 .p-8 {
-    padding: calc(var(--spacing) * 8);
+    padding-top: calc(var(--spacing) * 8);
+    padding-bottom: calc(var(--spacing) * 8);
 }
 .p-4 {
     padding: calc(var(--spacing) * 4);
