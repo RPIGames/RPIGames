@@ -147,6 +147,8 @@ async function createLobbyCard(lobby: LobbyResponse) {
     return node;
 }
 
+const currentLobbyData : Record<string,any> ={};
+
 // refreshes the lobbies, getting new data from the api
 async function refreshLobbies() {
     const lobbyListElement = document.getElementById("lobbies-list");
@@ -166,6 +168,24 @@ async function refreshLobbies() {
         //add lobbies to html
         lobbyListElement.replaceChildren(...newChildren);
     }
+}
+
+async function makeLobbyButtonsInteractable(){
+    const joinButton = document.getElementById("joinLobby") as HTMLButtonElement
+    joinButton.addEventListener("click",joinLobby)
+}
+
+async function joinLobby(){
+    console.log("Attempting to join lobby")
+    const lobbyId=(document.querySelector(".card.selected") as HTMLElement).getAttribute("data-lobby-id")
+        const lobbyNeedsSecret=currentLobbyData[lobbyId as string].needs_secret
+        if(lobbyNeedsSecret){
+            //show password element on page
+            const passwordModalTemplate= (await getPageContent("lobbies","lobby-password-modal") as HTMLTemplateElement);
+            const passwordModal=passwordModalTemplate.content
+        .firstElementChild as HTMLElement
+            centerContent.appendChild(passwordModal)
+        }
 }
 
 //hamburger menu itself
@@ -342,6 +362,7 @@ async function setPageContent(
         switch (pageLocation) {
             case "lobbies": {
                 void refreshLobbies();
+                void makeLobbyButtonsInteractable();
                 break;
             }
             case "home": {
