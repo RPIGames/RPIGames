@@ -147,7 +147,7 @@ async function createLobbyCard(lobby: LobbyResponse) {
     return node;
 }
 
-const currentLobbyData : Record<string,any> ={};
+const currentLobbyData: Record<string, LobbyResponse> = {};
 
 // refreshes the lobbies, getting new data from the api
 async function refreshLobbies() {
@@ -161,6 +161,34 @@ async function refreshLobbies() {
         await Promise.all(lobbyList.map(createLobbyCard))
     ).filter((lobby) => lobby !== null);
 
+    //set up event listeners for each card
+    newChildren.forEach((card) => {
+        //when node clicked
+        card.addEventListener("click", () => {
+            //get all currently selected cards
+            const selectedCardList =
+                document.querySelectorAll(".card.selected");
+            if (selectedCardList.length !== 0) {
+                selectedCardList.forEach((selectedCard) => {
+                    //deselect currently selected cards
+                    if (selectedCard !== card) {
+                        (selectedCard as HTMLElement).classList.remove(
+                            "selected",
+                        );
+                    }
+                });
+            } else {
+                //no other cards are selected yet
+                const joinButton = document.getElementById(
+                    "joinLobby",
+                ) as HTMLButtonElement;
+                joinButton.disabled = false;
+            }
+            //set existing card as selected
+            (card as HTMLElement).classList.add("selected");
+        });
+    });
+
     if (newChildren.length === 0) {
         //if no lobbies exist, show no lobbies template
         await setPageContent("lobbies", "lobbies-list", "no-lobbies-template");
@@ -170,22 +198,31 @@ async function refreshLobbies() {
     }
 }
 
-async function makeLobbyButtonsInteractable(){
-    const joinButton = document.getElementById("joinLobby") as HTMLButtonElement
-    joinButton.addEventListener("click",joinLobby)
+async function makeLobbyButtonsInteractable() {
+    const joinButton = document.getElementById(
+        "joinLobby",
+    ) as HTMLButtonElement;
+    joinButton.addEventListener("click", joinLobby);
 }
 
-async function joinLobby(){
-    console.log("Attempting to join lobby")
-    const lobbyId=(document.querySelector(".card.selected") as HTMLElement).getAttribute("data-lobby-id")
-        const lobbyNeedsSecret=currentLobbyData[lobbyId as string].needs_secret
-        if(lobbyNeedsSecret){
-            //show password element on page
-            const passwordModalTemplate= (await getPageContent("lobbies","lobby-password-modal") as HTMLTemplateElement);
-            const passwordModal=passwordModalTemplate.content
-        .firstElementChild as HTMLElement
-            centerContent.appendChild(passwordModal)
-        }
+async function joinLobby() {
+    console.log("Attempting to join lobby");
+    const lobbyId = (
+        document.querySelector(".card.selected") as HTMLElement
+    ).getAttribute("data-lobby-id");
+    const lobbyNeedsSecret = (
+        currentLobbyData[lobbyId as string] as LobbyResponse
+    ).needs_secret;
+    if (lobbyNeedsSecret) {
+        //show password element on page
+        const passwordModalTemplate = (await getPageContent(
+            "lobbies",
+            "lobby-password-modal",
+        )) as HTMLTemplateElement;
+        const passwordModal = passwordModalTemplate.content
+            .firstElementChild as HTMLElement;
+        centerContent.appendChild(passwordModal);
+    }
 }
 
 //hamburger menu itself
