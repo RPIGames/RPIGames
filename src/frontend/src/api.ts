@@ -227,7 +227,12 @@ export async function joinLobby(id: string, secret?: string) {
         headers: [getAuthHeader(), ["Content-Type", "application/json"]],
         body: JSON.stringify(body),
     });
-    if (!response.ok) {
+    if (response.status === 400) {
+        console.log(
+            `Could not join lobby ${id} because you are already in a lobby.`,
+        );
+        return false;
+    } else if (!response.ok) {
         console.log(
             `${response.status} error trying to join lobby ${id}: ${await response.json()}`,
         );
@@ -237,6 +242,28 @@ export async function joinLobby(id: string, secret?: string) {
     await getSelfUserInfo();
 
     return true;
+}
+
+/**
+ * Leaves the current lobby. The current user must be part a lobby.
+ *
+ * @throws If the user is not signed in.
+ * @throws If a user is not in a lobby.
+ *
+ * @returns true if a lobby was left
+ *
+ */
+export async function leaveLobby() {
+    // do the fetch
+    const response = await fetch("/api/v1/lobby/leave", {
+        method: "POST",
+        headers: [getAuthHeader(), ["Content-Type", "application/json"]],
+    });
+
+    if (response.ok) {
+        return true;
+    }
+    throw `${response.status} error while leaving current lobby: ${response.json()}`;
 }
 
 /**
