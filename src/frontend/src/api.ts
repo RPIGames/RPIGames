@@ -157,8 +157,6 @@ export async function getAllLobbies() {
  * @returns A {@link LobbyResponse} that represents the lobby just created.
  */
 export async function makeLobby(name?: string, secret?: string) {
-    const userAuthString = getAuthString();
-
     // Construct request body
     const body: MakeLobbyRequest = {};
     if (name) {
@@ -171,7 +169,7 @@ export async function makeLobby(name?: string, secret?: string) {
     // do the fetch
     const response = await fetch("/api/v1/lobby/new", {
         method: "POST",
-        headers: [["Bearer", userAuthString]],
+        headers: [getAuthHeader(), ["Content-Type", "application/json"]],
         body: JSON.stringify(body),
     });
 
@@ -185,7 +183,7 @@ export async function makeLobby(name?: string, secret?: string) {
  * Gets an auth string from localStorage
  *
  * @private
- * @returns The auth string to pass in a Bearer header
+ * @returns The auth string to pass in an Authorization header
  */
 function getAuthString() {
     const user_id = localStorage.getItem("userId");
@@ -197,6 +195,16 @@ function getAuthString() {
 }
 
 /**
+ * Gets an auth header from localStorage
+ *
+ * @private
+ * @returns A [string, string] pair to pass into headers array
+ */
+function getAuthHeader(): [string, string] {
+    return ["Authorization", getAuthString()];
+}
+
+/**
  * Joins a lobby, given a lobbies uuid or not.
  *
  * @param id The lobbies uuid
@@ -205,9 +213,6 @@ function getAuthString() {
  * @returns True if the lobby was joined, false otherwise.
  */
 export async function joinLobby(id: string, secret?: string) {
-    // obtain user id and user secret from the localstorage
-    const userAuthString = getAuthString();
-
     // Construct request body
     const body: LobbyJoinRequest = {
         lobby_id: id,
@@ -219,7 +224,7 @@ export async function joinLobby(id: string, secret?: string) {
     // do the fetch
     const response = await fetch("/api/v1/lobby/join", {
         method: "POST",
-        headers: [["Authentication", userAuthString]],
+        headers: [getAuthHeader(), ["Content-Type", "application/json"]],
         body: JSON.stringify(body),
     });
     if (!response.ok) {
