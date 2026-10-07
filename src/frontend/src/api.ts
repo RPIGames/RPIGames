@@ -1,5 +1,7 @@
 import type {
+    LobbyJoinRequest,
     LobbyResponse,
+    MakeLobbyRequest,
     MessageFromServiceWorker,
     PublicUserInfo,
     UserTokenResponse,
@@ -154,26 +156,23 @@ export async function getAllLobbies() {
  *
  * @returns A {@link LobbyResponse} that represents the lobby just created.
  */
-export async function makeLobby(
-    name: string | undefined,
-    secret: string | undefined,
-) {
+export async function makeLobby(name?: string, secret?: string) {
     const userAuthString = getAuthString();
 
-    // Construct url params
-    const params = new URLSearchParams();
-    if (name !== undefined) {
-        params.append("name", name);
+    // Construct request body
+    const body: MakeLobbyRequest = {};
+    if (name) {
+        body.name = name;
     }
-    if (secret !== undefined) {
-        params.append("secret", secret);
+    if (secret) {
+        body.secret = secret;
     }
 
     // do the fetch
     const response = await fetch("/api/v1/lobby/new", {
         method: "POST",
         headers: [["Bearer", userAuthString]],
-        body: params,
+        body: JSON.stringify(body),
     });
 
     if (response.ok) {
@@ -194,7 +193,7 @@ function getAuthString() {
     if (user_id === null || user_secret === null) {
         throw `trying to call joinLobby without being logged in`;
     }
-    return `${user_id}$${user_secret}`;
+    return `Bearer ${user_id}$${user_secret}`;
 }
 
 /**
@@ -205,21 +204,23 @@ function getAuthString() {
  *
  * @returns True if the lobby was joined, false otherwise.
  */
-export async function joinLobby(id: string, secret: string | undefined) {
+export async function joinLobby(id: string, secret?: string) {
     // obtain user id and user secret from the localstorage
     const userAuthString = getAuthString();
 
-    // Construct url params
-    const params = new URLSearchParams([["lobby_id", id]]);
-    if (secret !== undefined) {
-        params.append("lobby_secret", secret);
+    // Construct request body
+    const body: LobbyJoinRequest = {
+        lobby_id: id,
+    };
+    if (secret) {
+        body.lobby_secret = secret;
     }
 
     // do the fetch
     const response = await fetch("/api/v1/lobby/join", {
         method: "POST",
-        headers: [["Bearer", userAuthString]],
-        body: params,
+        headers: [["Authentication", userAuthString]],
+        body: JSON.stringify(body),
     });
     if (!response.ok) {
         console.log(
