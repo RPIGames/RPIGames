@@ -1,9 +1,10 @@
-import { showNotification } from "./api.js";
-import type {
-    LobbyResponse,
-    PublicUserInfo,
-    UserTokenResponse,
-} from "./structs";
+import {
+    showNotification,
+    getNewUserId,
+    getAllLobbies,
+    getSelfUserInfo,
+} from "./api.js";
+import type { LobbyResponse } from "./structs";
 
 // Registers a service worker to cache requests for offline navigation and faster loading. Also reduces server strain.
 async function registerServiceWorker() {
@@ -31,24 +32,6 @@ async function registerServiceWorker() {
 }
 
 registerServiceWorker();
-
-// Gets a new user ID. returns null if a session token could not be made
-async function getNewUserId() {
-    const response = await fetch("/api/v1/user/new", {
-        method: "POST",
-    });
-    if (response.ok) {
-        const tokenResponse: UserTokenResponse = await response.json();
-        const userAuthToken = `${tokenResponse.id}$${tokenResponse.secret}`;
-        console.debug(`Got new user auth token: ${userAuthToken}`);
-        localStorage.setItem("userId", tokenResponse.id);
-        localStorage.setItem("userSecret", tokenResponse.secret);
-        return tokenResponse.id;
-    } else {
-        console.log("Couldn't get session token.");
-        return null;
-    }
-}
 
 // Enum of different notification types. The color is based off of this.
 enum MessageType {
@@ -169,16 +152,7 @@ async function refreshLobbies() {
     const lobbyListElement = document.getElementById("lobbies-list");
     if (lobbyListElement == null) return;
 
-    //get lobby data
-    const response = await fetch("/api/latest/lobby/all");
-    if (!response.ok) {
-        console.error(
-            `Failed to get lobbies: Status code from fetching lobbies is ${response.status}`,
-        );
-    }
-
-    //create list of lobbies
-    const lobbyList = (await response.json()) as LobbyResponse[];
+    const lobbyList = await getAllLobbies();
 
     //create list of html element cards containing lobby data
     const newChildren: Node[] = (
@@ -255,30 +229,6 @@ function closeHamburgerMenu() {
     hamburgerImageClose.style.display = "none";
 }
 
-// gets a user's information
-async function getUserInfo(userId: string) {
-    const response = await fetch(`/api/v1/user/info?user_id=${userId}`, {
-        credentials: "omit",
-    });
-    if (response.ok) {
-        const infoResponse: PublicUserInfo = await response.json();
-        return infoResponse;
-    } else if (response.status === 502) {
-        // this means there was a gateway error, which is probably because the backend is down
-        await sendUINotification(
-            "The backend server seems to be down. Try checking back in in a couple hours, or contact the hostmaster.",
-            MessageType.Error,
-            false,
-        );
-        return null;
-    } else {
-        console.log(
-            `Couldn't get user info for user ${userId}, since response code was ${response.status}.`,
-        );
-        return null;
-    }
-}
-
 // the start function. handles all the things when the page is first loaded. fires on "load" event
 async function start() {
     console.log("start initialized");
@@ -293,7 +243,7 @@ async function start() {
         }
     }
     // check if still active
-    const selfInfo = await getUserInfo(userId);
+    const selfInfo = await getSelfUserInfo();
     if (selfInfo == null) {
         // couldn't get user info, just return
         return;
