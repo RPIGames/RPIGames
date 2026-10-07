@@ -13,3 +13,6 @@ podman compose \
     --force-recreate \
     --build \
     --detach
+
+printf "Frontend should be started at http://localhost:5000/\n"
+printf "API Docs should be started at http://localhost:5000/api/docs\n"
