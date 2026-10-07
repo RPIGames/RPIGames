@@ -61,7 +61,6 @@ def get_all_lobbies(
 
     return lobbies
 
-
 @router.post(
     "/new",
     responses={
@@ -74,13 +73,15 @@ def make_lobby(
     user: Annotated[User, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
-    body: MakeLobbyRequest,
+    body: MakeLobbyRequest | None = None,
 ):
     """
     Creates a lobby. Needs an authorization from a user.
 
     The lobby will be initialized to contain the user, which gains leadership of the party.
     """
+    if body is None:
+        body = MakeLobbyRequest()
 
     if user.lobby is not None:
         response.status_code = status.HTTP_400_BAD_REQUEST
