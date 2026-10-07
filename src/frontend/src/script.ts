@@ -1,8 +1,8 @@
 import {
-    showNotification,
-    getNewUserId,
     getAllLobbies,
+    getNewUserId,
     getSelfUserInfo,
+    showNotification,
 } from "./api.js";
 import type { LobbyResponse } from "./structs";
 

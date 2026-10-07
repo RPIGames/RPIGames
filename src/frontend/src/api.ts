@@ -194,7 +194,7 @@ function getAuthString() {
     if (user_id === null || user_secret === null) {
         throw `trying to call joinLobby without being logged in`;
     }
-    return user_id + "$" + user_secret;
+    return `${user_id}$${user_secret}`;
 }
 
 /**
