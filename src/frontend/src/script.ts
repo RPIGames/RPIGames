@@ -276,6 +276,7 @@ async function joinLobby(lobby: LobbyResponse, password?: string) {
         currentLobby = lobby;
         console.log("Lobby joined successfully! Lobby info: ");
         console.log(currentLobby);
+        localStorage.setItem("currentLobby",lobby.id)
         setPageContent("game", "", "game-main");
     }
     return lobbyJoinSuccess;
@@ -288,6 +289,7 @@ async function leaveLobby() {
     if (lobbyLeaveSuccess) {
         //go back to lobbies page
         currentLobby = null;
+        localStorage.removeItem("currentLobby")
         console.log("Lobby left successfully!");
         setPageContent("lobbies", "", "lobby-main");
     }
@@ -517,4 +519,10 @@ async function setPageContent(
 closeHamburgerMenu();
 //Set page to home
 let activeWindow = "home";
-setPageContent("home");
+
+//go to game page if user already logged into lobby
+if(localStorage.getItem("currentLobby")){
+    setPageContent("game","","game-main");
+}else{
+    setPageContent("home");
+}
