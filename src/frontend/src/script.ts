@@ -108,8 +108,7 @@ export async function sendUINotification(
     }
 }
 
-const currentLobby: LobbyResponse | null = null;
-console.log(currentLobby);
+let currentLobby: LobbyResponse | null = null;
 
 const centerContent: HTMLDivElement = document.querySelector(
     "#center-content",
@@ -228,14 +227,35 @@ async function joinLobby() {
             "lobby-password-modal",
         )) as HTMLTemplateElement;
         centerContent.appendChild(passwordModal);
+
+        //set up button to leave password modal
+        const passwordExitButton=document.querySelector(".cancel-password-button") as HTMLButtonElement;
+        passwordExitButton.addEventListener("click",()=>{
+            passwordModal.remove();
+        })
     } else {
         //try to join lobby
         const lobbyJoinSuccess = await joinLobbyBackend(lobbyId);
         if (lobbyJoinSuccess) {
             //go to main game page
-            console.log("Lobby joined successfully!");
+            currentLobby=lobby;
+            console.log("Lobby joined successfully! Lobby info: ");
+            console.log(currentLobby)
             setPageContent("game", "", "game-main");
         }
+    }
+}
+
+
+
+async function leaveLobby(){
+    console.log("Attempting to leave lobby...");
+    //leave lobby in backend
+    const lobbyLeaveSuccess = await leaveLobbyBackend();
+    if (lobbyLeaveSuccess) {
+        currentLobby=null;
+        console.log("Lobby left successfully!");
+        setPageContent("lobbies", "", "lobby-main");
     }
 }
 
@@ -451,20 +471,15 @@ async function setPageContent(
 
                 //
                 leaveLobbyButton.addEventListener("click", async () => {
-                    console.log("Attempting to leave lobby...");
-
-                    //leave lobby in backend
-                    const lobbyLeaveSuccess = await leaveLobbyBackend();
-                    if (lobbyLeaveSuccess) {
-                        console.log("Lobby left successfully!");
-                        setPageContent("lobbies", "", "lobby-main");
-                    }
+                    leaveLobby()
                 });
                 break;
             }
         }
     }
 }
+
+
 
 //set hamburger menu to closed state
 closeHamburgerMenu();

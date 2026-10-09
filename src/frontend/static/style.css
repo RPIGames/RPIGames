@@ -323,6 +323,67 @@ button {
     justify-content: end;
 }
 
+.password-modal-wrapper{
+    position: absolute;
+    background-color: #0000001a;
+    top:0;
+    left:0;
+    display: flex;
+    width:100dvw;
+    height:100dvh;
+    align-items: center;
+    justify-content: center;
+}
+
+.password-modal{
+    font-size:20px;
+    background-color: white;
+    gap:10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 2px solid black;
+     width:clamp(300px,70%,500px);
+    height: 200px;
+    border-radius: 20px;
+}
+
+.password-modal button{
+    height:50px;
+    width: 100px;
+    border-radius: 10px;
+    background-color: rgb(199, 0, 0);
+    color:white;
+}
+
+.password-modal button:hover{
+    background-color: rgb(235, 144, 144);
+    cursor: pointer;
+}
+
+.password-modal input{
+    border: 2px solid black;
+    border-radius: 10px;
+    width:90%;
+    padding:10px;
+    height:50px;
+    font-size: 20px;
+}
+
+.password-button-wrapper{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;    
+    width:90%;
+    gap:50px;
+}
+
+.password-modal button img{
+    height:100%;
+    width: 100%;
+}
 
 #notification-box {
     position: fixed;
