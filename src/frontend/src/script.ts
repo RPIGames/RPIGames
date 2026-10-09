@@ -2,6 +2,8 @@ import {
     getAllLobbies,
     getNewUserId,
     getSelfUserInfo,
+    joinLobby as joinLobbyBackend,
+    leaveLobby as leaveLobbyBackend,
     showNotification,
 } from "./api.js";
 import type { LobbyResponse } from "./structs";
@@ -115,6 +117,8 @@ const centerContent: HTMLDivElement = document.querySelector(
 
 // creates a lobby card on the lobby page
 async function createLobbyCard(lobby: LobbyResponse) {
+    currentLobbyData[lobby.id] = { ...lobby };
+
     //fetch card template
     //TO-DO: only fetch this once
     const node = (await getPageContent(
@@ -203,12 +207,20 @@ async function makeLobbyButtonsInteractable() {
 
 async function joinLobby() {
     console.log("Attempting to join lobby");
+    //get id of lobby
     const lobbyId = (
         document.querySelector(".card.selected") as HTMLElement
-    ).getAttribute("data-lobby-id");
-    const lobbyNeedsSecret = (
-        currentLobbyData[lobbyId as string] as LobbyResponse
-    ).needs_secret;
+    ).getAttribute("data-lobby-id") as string;
+
+    const lobby = currentLobbyData[lobbyId as string] as LobbyResponse;
+
+    //don't try to join lobby if full
+    if (lobby.curr_members === lobby.max_members) {
+        alert("Lobby is full!");
+        return;
+    }
+    //bool for if lobby needs secret
+    const lobbyNeedsSecret = lobby.needs_secret;
     if (lobbyNeedsSecret) {
         //show password element on page
         const passwordModal = (await getPageContent(
@@ -216,6 +228,14 @@ async function joinLobby() {
             "lobby-password-modal",
         )) as HTMLTemplateElement;
         centerContent.appendChild(passwordModal);
+    } else {
+        //try to join lobby
+        const lobbyJoinSuccess = await joinLobbyBackend(lobbyId);
+        if (lobbyJoinSuccess) {
+            //go to main game page
+            console.log("Lobby joined successfully!");
+            setPageContent("game", "", "game-main");
+        }
     }
 }
 
@@ -421,6 +441,25 @@ async function setPageContent(
                             true,
                         );
                 }
+                break;
+            }
+            case "game": {
+                //button to leave lobby
+                const leaveLobbyButton = document.getElementById(
+                    "leave-lobby-button",
+                ) as HTMLButtonElement;
+
+                //
+                leaveLobbyButton.addEventListener("click", async () => {
+                    console.log("Attempting to leave lobby...");
+
+                    //leave lobby in backend
+                    const lobbyLeaveSuccess = await leaveLobbyBackend();
+                    if (lobbyLeaveSuccess) {
+                        console.log("Lobby left successfully!");
+                        setPageContent("lobbies", "", "lobby-main");
+                    }
+                });
                 break;
             }
         }
