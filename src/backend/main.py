@@ -6,7 +6,7 @@ from routers.v1_router import router as router_v1
 create_db_and_tables()
 
 description = """
-This is the backend documentation for this project. It holds how the api is working on the backend and can be used for testing. 
+This is the backend documentation for this project. It shows the schema of the api and can be used for testing. 
 
 ## User
 * **/user/new** - Get new User token
