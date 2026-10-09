@@ -117,14 +117,10 @@ const centerContent: HTMLDivElement = document.querySelector(
 async function createLobbyCard(lobby: LobbyResponse) {
     //fetch card template
     //TO-DO: only fetch this once
-    const cardTemplate = (await getPageContent(
+    const node = (await getPageContent(
         "lobbies",
         "lobby-card-template",
     )) as HTMLTemplateElement;
-
-    //convert template to actual html element
-    const node: HTMLElement = cardTemplate.content
-        .firstElementChild as HTMLElement;
 
     //set id attribute of card to lobby id
     node.setAttribute("data-lobby-id", lobby.id);
@@ -215,12 +211,10 @@ async function joinLobby() {
     ).needs_secret;
     if (lobbyNeedsSecret) {
         //show password element on page
-        const passwordModalTemplate = (await getPageContent(
+        const passwordModal = (await getPageContent(
             "lobbies",
             "lobby-password-modal",
         )) as HTMLTemplateElement;
-        const passwordModal = passwordModalTemplate.content
-            .firstElementChild as HTMLElement;
         centerContent.appendChild(passwordModal);
     }
 }
@@ -321,7 +315,8 @@ window.addEventListener("load", async () => {
 async function getPageContent(
     pageLocation: NonNullable<string>,
     divId?: string,
-): Promise<HTMLTemplateElement | null> {
+    leaveAsTemplate: boolean = false,
+): Promise<HTMLTemplateElement | HTMLElement | null> {
     //use div with same name as location, if null
     if (!divId) {
         divId = pageLocation;
@@ -339,8 +334,15 @@ async function getPageContent(
     const pageHTML = parser.parseFromString(pageText, "text/html");
 
     if (pageHTML) {
-        //add template to appendDiv
-        return pageHTML.querySelector(`#${divId}`) as HTMLTemplateElement;
+        const htmlTemplate = pageHTML.querySelector(
+            `#${divId}`,
+        ) as HTMLTemplateElement;
+        if (leaveAsTemplate) {
+            return htmlTemplate;
+        } else {
+            //convert template to an html element
+            return htmlTemplate.content.firstElementChild as HTMLElement;
+        }
     } else {
         return null;
     }
@@ -365,12 +367,11 @@ async function setPageContent(
     }
 
     //get template from location
-    const divTemplate: HTMLTemplateElement | null = await getPageContent(
-        pageLocation,
-        divId,
-    );
+    const pageContentResult: HTMLElement | HTMLTemplateElement | null =
+        await getPageContent(pageLocation, divId, true);
 
-    if (divTemplate) {
+    if (pageContentResult) {
+        const divTemplate = pageContentResult as HTMLTemplateElement;
         const templateContent = document.importNode(divTemplate.content, true);
         parentDiv.replaceChildren(templateContent);
     }
