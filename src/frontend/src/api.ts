@@ -236,7 +236,7 @@ export async function joinLobby(id: string, secret?: string) {
     if (response.status === 400) {
         throw {
             type: "client_issue",
-            pretty: `Could not join lobby ${id} because of a client error: ${await response.json()}.`,
+            pretty: `Could not join lobby ${id} because of a client error: ${JSON.stringify(await response.json())}.`,
         };
     } else if (response.status === 403) {
         throw {
@@ -246,7 +246,7 @@ export async function joinLobby(id: string, secret?: string) {
     } else if (!response.ok) {
         throw {
             type: "other",
-            pretty: `${response.status} error trying to join lobby ${id}: ${await response.json()}`,
+            pretty: `${response.status} error trying to join lobby ${id}: ${JSON.stringify(await response.json())}`,
         };
     }
 
@@ -272,7 +272,7 @@ export async function leaveLobby() {
     if (response.ok) {
         return true;
     }
-    throw `${response.status} error while leaving current lobby: ${response.json()}`;
+    throw `${response.status} error while leaving current lobby: ${JSON.stringify(await response.json())}`;
 }
 
 /**
