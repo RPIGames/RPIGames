@@ -201,11 +201,12 @@ async function makeLobbyButtonsInteractable() {
     const joinButton = document.getElementById(
         "joinLobby",
     ) as HTMLButtonElement;
-    joinButton.addEventListener("click", joinLobby);
+    joinButton.addEventListener("click", checkLobbyJoinStatus);
 }
 
-async function joinLobby() {
+async function checkLobbyJoinStatus() {
     console.log("Attempting to join lobby");
+    let password = "";
     //get id of lobby
     const lobbyId = (
         document.querySelector(".card.selected") as HTMLElement
@@ -228,32 +229,65 @@ async function joinLobby() {
         )) as HTMLTemplateElement;
         centerContent.appendChild(passwordModal);
 
+        //password input field
+        const passwordField = document.querySelector(
+            ".lobby-password-input",
+        ) as HTMLInputElement;
+
         //set up button to leave password modal
-        const passwordExitButton=document.querySelector(".cancel-password-button") as HTMLButtonElement;
-        passwordExitButton.addEventListener("click",()=>{
+        const passwordExitButton = document.querySelector(
+            ".cancel-password-button",
+        ) as HTMLButtonElement;
+        passwordExitButton.addEventListener("click", () => {
             passwordModal.remove();
-        })
+        });
+
+        //set up button to enter pssword
+        const passwordEnterButton = document.querySelector(
+            ".submit-password-button",
+        ) as HTMLButtonElement;
+        passwordEnterButton.addEventListener("click", async () => {
+            password = passwordField.value;
+            //try to join lobby
+            const lobbyJoinSuccess = await joinLobby(lobby, password);
+            //If lobby cannot be joined, assume invalid password entered
+            if (!lobbyJoinSuccess) {
+                (
+                    document.querySelector(".password-invalid") as HTMLElement
+                ).style.display = "block";
+            }
+        });
     } else {
         //try to join lobby
-        const lobbyJoinSuccess = await joinLobbyBackend(lobbyId);
-        if (lobbyJoinSuccess) {
-            //go to main game page
-            currentLobby=lobby;
-            console.log("Lobby joined successfully! Lobby info: ");
-            console.log(currentLobby)
-            setPageContent("game", "", "game-main");
-        }
+        joinLobby(lobby);
     }
 }
 
+async function joinLobby(lobby: LobbyResponse, password?: string) {
+    let lobbyJoinSuccess: boolean;
+    //join lobby with or without password, depending on if public or private
+    if (password) {
+        lobbyJoinSuccess = await joinLobbyBackend(lobby.id, password);
+    } else {
+        lobbyJoinSuccess = await joinLobbyBackend(lobby.id);
+    }
+    if (lobbyJoinSuccess) {
+        //go to main game page
+        currentLobby = lobby;
+        console.log("Lobby joined successfully! Lobby info: ");
+        console.log(currentLobby);
+        setPageContent("game", "", "game-main");
+    }
+    return lobbyJoinSuccess;
+}
 
-
-async function leaveLobby(){
+async function leaveLobby() {
     console.log("Attempting to leave lobby...");
     //leave lobby in backend
     const lobbyLeaveSuccess = await leaveLobbyBackend();
     if (lobbyLeaveSuccess) {
-        currentLobby=null;
+        //go back to lobbies page
+        currentLobby = null;
         console.log("Lobby left successfully!");
         setPageContent("lobbies", "", "lobby-main");
     }
@@ -471,15 +505,13 @@ async function setPageContent(
 
                 //
                 leaveLobbyButton.addEventListener("click", async () => {
-                    leaveLobby()
+                    leaveLobby();
                 });
                 break;
             }
         }
     }
 }
-
-
 
 //set hamburger menu to closed state
 closeHamburgerMenu();

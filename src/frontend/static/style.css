@@ -323,6 +323,8 @@ button {
     justify-content: end;
 }
 
+/*lobby password modal styling*/
+
 .password-modal-wrapper{
     position: absolute;
     background-color: #0000001a;
@@ -336,6 +338,7 @@ button {
 }
 
 .password-modal{
+    position: relative;
     font-size:20px;
     background-color: white;
     gap:10px;
@@ -370,6 +373,14 @@ button {
     padding:10px;
     height:50px;
     font-size: 20px;
+}
+
+/*Text that shows when invalid password entered*/
+.password-invalid{
+    font-size: 15px;
+    color: red;
+    text-align: center;
+    display: none;
 }
 
 .password-button-wrapper{
