@@ -205,8 +205,6 @@ async function makeLobbyButtonsInteractable() {
 }
 
 async function checkLobbyJoinStatus() {
-    console.log("Attempting to join lobby");
-    let password = "";
     //get id of lobby
     const lobbyId = (
         document.querySelector(".card.selected") as HTMLElement
@@ -219,67 +217,86 @@ async function checkLobbyJoinStatus() {
         alert("Lobby is full!");
         return;
     }
-    //bool for if lobby needs secret
+
+    //Don't join lobby directly if secret is needed
+    //Instead create password modal and join lobby when submit button pressed
     const lobbyNeedsSecret = lobby.needs_secret;
     if (lobbyNeedsSecret) {
-        //show password element on page
-        const passwordModal = (await getPageContent(
-            "lobbies",
-            "lobby-password-modal",
-        )) as HTMLTemplateElement;
-        centerContent.appendChild(passwordModal);
-
-        //password input field
-        const passwordField = document.querySelector(
-            ".lobby-password-input",
-        ) as HTMLInputElement;
-
-        //set up button to leave password modal
-        const passwordExitButton = document.querySelector(
-            ".cancel-password-button",
-        ) as HTMLButtonElement;
-        passwordExitButton.addEventListener("click", () => {
-            passwordModal.remove();
-        });
-
-        //set up button to enter pssword
-        const passwordEnterButton = document.querySelector(
-            ".submit-password-button",
-        ) as HTMLButtonElement;
-        passwordEnterButton.addEventListener("click", async () => {
-            password = passwordField.value;
-            //try to join lobby
-            const lobbyJoinSuccess = await joinLobby(lobby, password);
-            //If lobby cannot be joined, assume invalid password entered
-            if (!lobbyJoinSuccess) {
-                (
-                    document.querySelector(".password-invalid") as HTMLElement
-                ).style.display = "block";
-            }
-        });
+        setupPasswordModal(lobby);
     } else {
-        //try to join lobby
+        //If no secret is needed, (attempt to) join lobby directly
         joinLobby(lobby);
     }
 }
 
+async function setupPasswordModal(lobby: LobbyResponse) {
+    //show password element on page
+    const passwordModal = (await getPageContent(
+        "lobbies",
+        "lobby-password-modal",
+    )) as HTMLTemplateElement;
+    centerContent.appendChild(passwordModal);
+
+    //password input field
+    const passwordField = document.querySelector(
+        ".lobby-password-input",
+    ) as HTMLInputElement;
+
+    //set up button to leave password modal
+    const passwordExitButton = document.querySelector(
+        ".cancel-password-button",
+    ) as HTMLButtonElement;
+
+    //Delete the password modal when modal is exited
+    passwordExitButton.addEventListener("click", () => {
+        passwordModal.remove();
+    });
+
+    //set up button to enter password when clicked
+    const passwordEnterButton = document.querySelector(
+        ".submit-password-button",
+    ) as HTMLButtonElement;
+
+    //When enter button clicked:
+    passwordEnterButton.addEventListener("click", async () => {
+        //try to join lobby
+        try {
+            await joinLobby(lobby, passwordField.value);
+        } catch (error) {
+            //TS workaround to show that error is an object
+            if (typeof error === "object") {
+                //get the type of error
+                const errorType = (error as { type: string }).type;
+                //If password is incorrect, show incorrect password text
+                if (errorType === "incorrect_password") {
+                    (
+                        document.querySelector(
+                            ".password-invalid",
+                        ) as HTMLElement
+                    ).style.display = "block";
+                    return;
+                }
+            }
+            //If error is of different type, throw error again so it doesn't fail silently
+            throw error;
+        }
+    });
+}
+
 async function joinLobby(lobby: LobbyResponse, password?: string) {
-    let lobbyJoinSuccess: boolean;
+    console.log("Attempting to join lobby...");
     //join lobby with or without password, depending on if public or private
     if (password) {
-        lobbyJoinSuccess = await joinLobbyBackend(lobby.id, password);
+        await joinLobbyBackend(lobby.id, password);
     } else {
-        lobbyJoinSuccess = await joinLobbyBackend(lobby.id);
+        await joinLobbyBackend(lobby.id);
     }
-    if (lobbyJoinSuccess) {
-        //go to main game page
-        currentLobby = lobby;
-        console.log("Lobby joined successfully! Lobby info: ");
-        console.log(currentLobby);
-        localStorage.setItem("currentLobby",lobby.id)
-        setPageContent("game", "", "game-main");
-    }
-    return lobbyJoinSuccess;
+    //go to main game page
+    currentLobby = lobby;
+    console.log("Lobby joined successfully! Lobby info: ");
+    console.log(currentLobby);
+    localStorage.setItem("currentLobby", lobby.id);
+    setPageContent("game", "", "game-main");
 }
 
 async function leaveLobby() {
@@ -289,7 +306,7 @@ async function leaveLobby() {
     if (lobbyLeaveSuccess) {
         //go back to lobbies page
         currentLobby = null;
-        localStorage.removeItem("currentLobby")
+        localStorage.removeItem("currentLobby");
         console.log("Lobby left successfully!");
         setPageContent("lobbies", "", "lobby-main");
     }
@@ -521,8 +538,8 @@ closeHamburgerMenu();
 let activeWindow = "home";
 
 //go to game page if user already logged into lobby
-if(localStorage.getItem("currentLobby")){
-    setPageContent("game","","game-main");
-}else{
+if (localStorage.getItem("currentLobby")) {
+    setPageContent("game", "", "game-main");
+} else {
     setPageContent("home");
 }
