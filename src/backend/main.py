@@ -6,7 +6,7 @@ from routers.v1_router import router as router_v1
 create_db_and_tables()
 
 description = """
-This is the backend documentation for this project. 
+This is the backend documentation for this project. It holds how the api is working on the backend and can be used for testing. 
 
 ## User
 * **/user/new** - Get new User token
@@ -27,7 +27,7 @@ app = FastAPI(
     title = "RPIGames",
     root_path="/api",
     description = description,
-    version = "1.0.0",
+    version = "0.1.0",
     license_info={
         "name": "MIT License",
         "url": "https://opensource.org/license/mit",
