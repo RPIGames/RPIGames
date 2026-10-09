@@ -5,7 +5,6 @@ of the API.
 
 import random
 from typing import Annotated
-from uuid import UUID
 
 from cryptography.hazmat.primitives import constant_time
 from fastapi import APIRouter, Depends, Response, status
@@ -14,6 +13,11 @@ from sqlmodel import Session, select
 from authentication.middleware import require_authorization
 from db.engine import get_session
 from db.models import Lobby, User
+from models.request import (
+    LobbyJoinRequest,
+    LobbyPassLeadershipRequest,
+    MakeLobbyRequest,
+)
 from models.response import (
     AuthenticationErrorResponse,
     ErrorResponse,
@@ -57,7 +61,6 @@ def get_all_lobbies(
 
     return lobbies
 
-
 @router.post(
     "/new",
     responses={
@@ -70,23 +73,24 @@ def make_lobby(
     user: Annotated[User, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
-    name: str | None = None,
-    secret: str | None = None,
+    body: MakeLobbyRequest | None = None,
 ):
     """
     Creates a lobby. Needs an authorization from a user.
 
     The lobby will be initialized to contain the user, which gains leadership of the party.
     """
+    if body is None:
+        body = MakeLobbyRequest()
 
     if user.lobby is not None:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return ErrorResponse(error="You are already in a lobby!")
 
-    if name is None:
-        name = f"Unnamed group {random.randint(1, 1000)}"
+    if body.name is None:
+        body.name = f"Unnamed group {random.randint(1, 1000)}"
 
-    created_lobby = Lobby(name=name, max_size=8, secret=secret)
+    created_lobby = Lobby(name=body.name, max_size=8, secret=body.secret)
     session.add(created_lobby)
 
     user.lobby = created_lobby
@@ -111,8 +115,7 @@ def join_lobby(
     user: Annotated[User, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
-    lobby_id: UUID,
-    lobby_secret: str | None = None,
+    body: LobbyJoinRequest,
 ):
     """
     Joins a lobby specified by lobby_id.
@@ -122,7 +125,7 @@ def join_lobby(
 
     if user.lobby is not None:
         response.status_code = status.HTTP_400_BAD_REQUEST
-        if user.lobby_id == lobby_id:
+        if user.lobby_id == body.lobby_id:
             return ErrorResponse(
                 error="You are already in the lobby you are trying to join."
             )
@@ -133,7 +136,7 @@ def join_lobby(
 
     assert user.leader == False
 
-    lobby = session.get(Lobby, lobby_id)
+    lobby = session.get(Lobby, body.lobby_id)
     if lobby is None:
         response.status_code = status.HTTP_404_NOT_FOUND
         return ErrorResponse(error="The lobby you are trying to join does not exist.")
@@ -141,7 +144,7 @@ def join_lobby(
     # check to see if the lobby is public or private, and check that the lobby secret matches
 
     if lobby.secret is None:
-        if lobby_secret is not None:
+        if body.lobby_secret is not None:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return ErrorResponse(
                 error="The lobby you are trying to join is not private and thus does not require a password."
@@ -150,14 +153,14 @@ def join_lobby(
             # no lobby secret needed!
             pass
     else:
-        if lobby_secret is None:
+        if body.lobby_secret is None:
             response.status_code = status.HTTP_403_FORBIDDEN
             return ErrorResponse(
                 error="The lobby you are trying to join is private and requires a passphrase to access."
             )
         else:
             # lobby_secret is required. check with constant-time equality
-            if not constant_time.bytes_eq(lobby_secret.encode(), lobby.secret.encode()):
+            if not constant_time.bytes_eq(body.lobby_secret.encode(), lobby.secret.encode()):
                 response.status_code = status.HTTP_403_FORBIDDEN
                 return ErrorResponse(error="The passphrase was incorrect.")
 
@@ -225,10 +228,10 @@ def leave_lobby(
     },
 )
 def pass_leadership(
-    grantee_id: UUID,
     user: Annotated[User, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
+    body: LobbyPassLeadershipRequest,
 ):
     """
     This method gives the leadership role to someone else in your session.
@@ -246,7 +249,7 @@ def pass_leadership(
             error="You aren't currently a leader, and thus cannot grant leadership to someone else."
         )
 
-    new_leader = session.get(User, grantee_id)
+    new_leader = session.get(User, body.grantee_id)
 
     if new_leader is None:
         response.status_code = status.HTTP_400_BAD_REQUEST

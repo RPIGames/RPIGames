@@ -33,7 +33,7 @@ def get_uid_from_auth(auth: str) -> UUID:
 
 def get_user_info(auth: str) -> dict[str, Any]:
     """Gets the public user info as from an auth bearer string"""
-    response = client.get("/v1/user/info", params={"user_id": get_uid_from_auth(auth)})
+    response = client.get("/v1/user/info", params={"user_id": str(get_uid_from_auth(auth))})
     assert response.status_code == status.HTTP_200_OK
     return response.json()
 
@@ -114,7 +114,7 @@ def test_user_logout():
         headers={"Authorization": auth},
     )
     test_response = client.get(
-        "/v1/user/info", params={"user_id": get_uid_from_auth(auth)}
+        "/v1/user/info", params={"user_id": str(get_uid_from_auth(auth))}
     )
     assert response.status_code == status.HTTP_200_OK
     assert test_response.status_code == status.HTTP_404_NOT_FOUND
