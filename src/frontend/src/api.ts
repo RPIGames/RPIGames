@@ -204,13 +204,19 @@ function getAuthHeader(): [string, string] {
     return ["Authorization", getAuthString()];
 }
 
+export interface ApiError {
+    type: "client_issue" | "incorrect_password" | "other";
+    pretty?: string;
+}
+
 /**
  * Joins a lobby, given a lobbies uuid or not.
  *
  * @param id The lobbies uuid
  * @param secret The lobbies secret, only if it's a private lobby
  *
- * @returns True if the lobby was joined, false otherwise.
+ * @throws {@link ApiError}
+ * This exception is thrown if you have not joined the lobby for some reason or other.
  */
 export async function joinLobby(id: string, secret?: string) {
     // Construct request body
@@ -228,20 +234,23 @@ export async function joinLobby(id: string, secret?: string) {
         body: JSON.stringify(body),
     });
     if (response.status === 400) {
-        console.log(
-            `Could not join lobby ${id} because you are already in a lobby.`,
-        );
-        return false;
+        throw {
+            type: "client_issue",
+            pretty: `Could not join lobby ${id} because of a client error: ${await response.json()}.`,
+        };
+    } else if (response.status === 403) {
+        throw {
+            type: "incorrect_password",
+            pretty: `Could not join lobby ${id} because the password was not specified or incorrect.`,
+        };
     } else if (!response.ok) {
-        console.log(
-            `${response.status} error trying to join lobby ${id}: ${await response.json()}`,
-        );
-        return false;
+        throw {
+            type: "other",
+            pretty: `${response.status} error trying to join lobby ${id}: ${await response.json()}`,
+        };
     }
 
     await getSelfUserInfo();
-
-    return true;
 }
 
 /**
