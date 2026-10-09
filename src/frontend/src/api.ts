@@ -1,5 +1,7 @@
 import type {
+    LobbyJoinRequest,
     LobbyResponse,
+    MakeLobbyRequest,
     MessageFromServiceWorker,
     PublicUserInfo,
     UserTokenResponse,
@@ -154,26 +156,21 @@ export async function getAllLobbies() {
  *
  * @returns A {@link LobbyResponse} that represents the lobby just created.
  */
-export async function makeLobby(
-    name: string | undefined,
-    secret: string | undefined,
-) {
-    const userAuthString = getAuthString();
-
-    // Construct url params
-    const params = new URLSearchParams();
-    if (name !== undefined) {
-        params.append("name", name);
+export async function makeLobby(name?: string, secret?: string) {
+    // Construct request body
+    const body: MakeLobbyRequest = {};
+    if (name) {
+        body.name = name;
     }
-    if (secret !== undefined) {
-        params.append("secret", secret);
+    if (secret) {
+        body.secret = secret;
     }
 
     // do the fetch
     const response = await fetch("/api/v1/lobby/new", {
         method: "POST",
-        headers: [["Bearer", userAuthString]],
-        body: params,
+        headers: [getAuthHeader(), ["Content-Type", "application/json"]],
+        body: JSON.stringify(body),
     });
 
     if (response.ok) {
@@ -186,7 +183,7 @@ export async function makeLobby(
  * Gets an auth string from localStorage
  *
  * @private
- * @returns The auth string to pass in a Bearer header
+ * @returns The auth string to pass in an Authorization header
  */
 function getAuthString() {
     const user_id = localStorage.getItem("userId");
@@ -194,7 +191,17 @@ function getAuthString() {
     if (user_id === null || user_secret === null) {
         throw `trying to call joinLobby without being logged in`;
     }
-    return `${user_id}$${user_secret}`;
+    return `Bearer ${user_id}$${user_secret}`;
+}
+
+/**
+ * Gets an auth header from localStorage
+ *
+ * @private
+ * @returns A [string, string] pair to pass into headers array
+ */
+function getAuthHeader(): [string, string] {
+    return ["Authorization", getAuthString()];
 }
 
 /**
@@ -205,23 +212,27 @@ function getAuthString() {
  *
  * @returns True if the lobby was joined, false otherwise.
  */
-export async function joinLobby(id: string, secret: string | undefined) {
-    // obtain user id and user secret from the localstorage
-    const userAuthString = getAuthString();
-
-    // Construct url params
-    const params = new URLSearchParams([["lobby_id", id]]);
-    if (secret !== undefined) {
-        params.append("lobby_secret", secret);
+export async function joinLobby(id: string, secret?: string) {
+    // Construct request body
+    const body: LobbyJoinRequest = {
+        lobby_id: id,
+    };
+    if (secret) {
+        body.lobby_secret = secret;
     }
 
     // do the fetch
     const response = await fetch("/api/v1/lobby/join", {
         method: "POST",
-        headers: [["Bearer", userAuthString]],
-        body: params,
+        headers: [getAuthHeader(), ["Content-Type", "application/json"]],
+        body: JSON.stringify(body),
     });
-    if (!response.ok) {
+    if (response.status === 400) {
+        console.log(
+            `Could not join lobby ${id} because you are already in a lobby.`,
+        );
+        return false;
+    } else if (!response.ok) {
         console.log(
             `${response.status} error trying to join lobby ${id}: ${await response.json()}`,
         );
@@ -231,6 +242,28 @@ export async function joinLobby(id: string, secret: string | undefined) {
     await getSelfUserInfo();
 
     return true;
+}
+
+/**
+ * Leaves the current lobby. The current user must be part a lobby.
+ *
+ * @throws If the user is not signed in.
+ * @throws If a user is not in a lobby.
+ *
+ * @returns true if a lobby was left
+ *
+ */
+export async function leaveLobby() {
+    // do the fetch
+    const response = await fetch("/api/v1/lobby/leave", {
+        method: "POST",
+        headers: [getAuthHeader(), ["Content-Type", "application/json"]],
+    });
+
+    if (response.ok) {
+        return true;
+    }
+    throw `${response.status} error while leaving current lobby: ${response.json()}`;
 }
 
 /**
