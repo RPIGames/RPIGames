@@ -14,7 +14,7 @@
         <button>Create Lobby</button>
       </div>
       <div class="lobby-button-wrapper right">
-        <button disabled>Join Lobby</button>
+        <button id="joinLobby" disabled>Join Lobby</button>
       </div>
     </div>
   </div>
@@ -39,6 +39,20 @@
         </div>
       </div>
     </li>
+  </template>
+
+<template id="lobby-password-modal">
+    <div class="password-modal-wrapper">
+      <div class="password-modal">
+        Enter Lobby Password:
+        <input class="lobby-password-input"></input>
+        <div class="password-button-wrapper">
+            <button class="cancel-password-button">Cancel</button>
+            <p class="password-invalid">Incorrect Password</p>
+            <button class="submit-password-button">Submit</button>
+        </div>
+      </div>
+    </div>
   </template>
 
 <template id="no-lobbies-template">
