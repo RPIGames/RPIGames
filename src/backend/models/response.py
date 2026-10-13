@@ -50,3 +50,4 @@ class PublicUserInfoResponse(PublicUserInfo):
 
 class PrivateUserInfoResponse(PrivateUserInfo):
     pass
+
