@@ -149,8 +149,8 @@ def test_grant_leadership():
 
     response = client.post(
         "/latest/lobby/leadership/grant",
-        params={"grantee_id": str(get_uid_from_auth(auth2))},
         headers={"Authorization": auth},
+        json={"grantee_id": str(get_uid_from_auth(auth2))},
     )
 
     assert response.status_code == 200

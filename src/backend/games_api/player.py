@@ -6,7 +6,9 @@ from collections.abc import Callable
 from typing import Any, TypeVar
 from uuid import UUID
 
-from db.engine import get_session
+from sqlmodel import Session
+
+from db.engine import engine
 from db.models import User
 
 T = TypeVar("T")
@@ -15,7 +17,7 @@ T = TypeVar("T")
 class Player:
     def __init__(self, uuid: UUID) -> None:
         self.uuid = uuid
-        db_conn = get_session()
+        db_conn = Session(engine)
         user = db_conn.get(User, self.uuid)
         if user is None:
             raise ValueError
