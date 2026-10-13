@@ -123,7 +123,7 @@ async function createLobbyCard(lobby: LobbyResponse) {
     const node = (await getPageContent(
         "lobbies",
         "lobby-card-template",
-    )) as HTMLTemplateElement;
+    )) as HTMLElement;
 
     //set id attribute of card to lobby id
     node.setAttribute("data-lobby-id", lobby.id);
@@ -156,35 +156,50 @@ async function refreshLobbies() {
     const lobbyList = await getAllLobbies();
 
     //create list of html element cards containing lobby data
-    const newChildren: Node[] = (
+    const newChildren: HTMLElement[] = (
         await Promise.all(lobbyList.map(createLobbyCard))
     ).filter((lobby) => lobby !== null);
 
     //set up event listeners for each card
     newChildren.forEach((card) => {
-        //when node clicked
+        //when card clicked
         card.addEventListener("click", () => {
             //get all currently selected cards
             const selectedCardList =
                 document.querySelectorAll(".card.selected");
+
+            //deselect currently selected cards, if any exist
             if (selectedCardList.length !== 0) {
                 selectedCardList.forEach((selectedCard) => {
-                    //deselect currently selected cards
+                    //if clicked card is currently selected, don't bother removing the selection
                     if (selectedCard !== card) {
-                        (selectedCard as HTMLElement).classList.remove(
-                            "selected",
-                        );
+                        selectedCard.classList.remove("selected");
                     }
                 });
-            } else {
-                //no other cards are selected yet
-                const joinButton = document.getElementById(
-                    "joinLobby",
-                ) as HTMLButtonElement;
-                joinButton.disabled = false;
             }
             //set existing card as selected
-            (card as HTMLElement).classList.add("selected");
+            card.classList.add("selected");
+
+            //get join lobby button
+            const joinButton = document.getElementById(
+                "joinLobby",
+            ) as HTMLButtonElement;
+
+            //get id of lobby
+            const lobbyId = (
+                document.querySelector(".card.selected") as HTMLElement
+            ).getAttribute("data-lobby-id") as string;
+
+            //get lobby data
+            const lobby = currentLobbyData[lobbyId as string] as LobbyResponse;
+
+            //If lobby is full, disable join button
+            //otherwise join button should be enabled b/c lobby is selected
+            if (lobby.curr_members === lobby.max_members) {
+                joinButton.disabled = true;
+            } else {
+                joinButton.disabled = false;
+            }
         });
     });
 
@@ -211,12 +226,6 @@ async function checkLobbyJoinStatus() {
     ).getAttribute("data-lobby-id") as string;
 
     const lobby = currentLobbyData[lobbyId as string] as LobbyResponse;
-
-    //don't try to join lobby if full
-    if (lobby.curr_members === lobby.max_members) {
-        alert("Lobby is full!");
-        return;
-    }
 
     //Don't join lobby directly if secret is needed
     //Instead create password modal and join lobby when submit button pressed
