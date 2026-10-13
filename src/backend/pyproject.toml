@@ -34,5 +34,6 @@ namespace-packages = ["."]
 
 [dependency-groups]
 dev = [
+    "coverage>=7.16.2",
     "pytest>=9.1.1",
 ]
