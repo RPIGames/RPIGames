@@ -61,6 +61,7 @@ def get_all_lobbies(
 
     return lobbies
 
+
 @router.post(
     "/new",
     responses={
@@ -160,7 +161,9 @@ def join_lobby(
             )
         else:
             # lobby_secret is required. check with constant-time equality
-            if not constant_time.bytes_eq(body.lobby_secret.encode(), lobby.secret.encode()):
+            if not constant_time.bytes_eq(
+                body.lobby_secret.encode(), lobby.secret.encode()
+            ):
                 response.status_code = status.HTTP_403_FORBIDDEN
                 return ErrorResponse(error="The passphrase was incorrect.")
 

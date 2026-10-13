@@ -41,7 +41,9 @@ def get_uid_from_auth(auth: str) -> UUID:
 
 def get_user_info(auth: str) -> dict[str, Any]:
     """Gets the public user info as from an auth bearer string"""
-    response = client.get("/v1/user/info", params={"user_id": str(get_uid_from_auth(auth))})
+    response = client.get(
+        "/v1/user/info", params={"user_id": str(get_uid_from_auth(auth))}
+    )
     return response.json()
 
 
@@ -53,9 +55,7 @@ def join_lobby(auth: str, lobby_id: UUID, lobby_secret: str | None = None) -> bo
     }
     if lobby_secret is not None:
         body["lobby_secret"] = lobby_secret
-    response = client.post(
-        "/v1/lobby/join", json=body, headers={"Authorization": auth}
-    )
+    response = client.post("/v1/lobby/join", json=body, headers={"Authorization": auth})
     print(response)
     print(response.json())
     return response.status_code == status.HTTP_200_OK
