@@ -2,6 +2,8 @@ import {
     getAllLobbies,
     getNewUserId,
     getSelfUserInfo,
+    joinLobby as joinLobbyBackend,
+    leaveLobby as leaveLobbyBackend,
     showNotification,
 } from "./api.js";
 import type { LobbyResponse } from "./structs";
@@ -106,8 +108,7 @@ export async function sendUINotification(
     }
 }
 
-const currentLobby: LobbyResponse | null = null;
-console.log(currentLobby);
+let currentLobby: LobbyResponse | null = null;
 
 const centerContent: HTMLDivElement = document.querySelector(
     "#center-content",
@@ -117,14 +118,10 @@ const centerContent: HTMLDivElement = document.querySelector(
 async function createLobbyCard(lobby: LobbyResponse) {
     //fetch card template
     //TO-DO: only fetch this once
-    const cardTemplate = (await getPageContent(
+    const node = (await getPageContent(
         "lobbies",
         "lobby-card-template",
-    )) as HTMLTemplateElement;
-
-    //convert template to actual html element
-    const node: HTMLElement = cardTemplate.content
-        .firstElementChild as HTMLElement;
+    )) as HTMLElement;
 
     //set id attribute of card to lobby id
     node.setAttribute("data-lobby-id", lobby.id);
@@ -147,24 +144,194 @@ async function createLobbyCard(lobby: LobbyResponse) {
     return node;
 }
 
-// refreshes the lobbies, getting new data from the api
-async function refreshLobbies() {
-    const lobbyListElement = document.getElementById("lobbies-list");
-    if (lobbyListElement == null) return;
+//map of data for all lobbies
+//stored as id, lobby pair
+const allLobbiesData = new Map<string, LobbyResponse>();
 
+async function refreshLobbyData() {
+    allLobbiesData.clear();
     const lobbyList = await getAllLobbies();
+    //add each lobby to map
+    for (const lobby of lobbyList) {
+        allLobbiesData.set(lobby.id, lobby);
+    }
+}
+
+// refreshes the lobbies, getting new data from the api
+async function setLobbyCards() {
+    const lobbyListElement = document.getElementById(
+        "lobbies-list",
+    ) as HTMLElement;
+
+    await refreshLobbyData();
+
+    const lobbyCardList: HTMLElement[] = [];
 
     //create list of html element cards containing lobby data
-    const newChildren: Node[] = (
-        await Promise.all(lobbyList.map(createLobbyCard))
-    ).filter((lobby) => lobby !== null);
+    for (const [, lobby] of allLobbiesData) {
+        lobbyCardList.push(await createLobbyCard(lobby));
+    }
 
-    if (newChildren.length === 0) {
+    //set up event listeners for each card
+    lobbyCardList.forEach((card) => {
+        //when card clicked
+        card.addEventListener("click", () => {
+            //get all currently selected cards
+            const selectedCardList =
+                document.querySelectorAll(".card.selected");
+
+            //deselect currently selected cards, if any exist
+            if (selectedCardList.length !== 0) {
+                selectedCardList.forEach((selectedCard) => {
+                    //if clicked card is currently selected, don't bother removing the selection
+                    if (selectedCard !== card) {
+                        selectedCard.classList.remove("selected");
+                    }
+                });
+            }
+            //set existing card as selected
+            card.classList.add("selected");
+
+            //get join lobby button
+            const joinButton = document.getElementById(
+                "joinLobby",
+            ) as HTMLButtonElement;
+
+            //get id of lobby
+            const lobbyId = (
+                document.querySelector(".card.selected") as HTMLElement
+            ).getAttribute("data-lobby-id") as string;
+
+            //get lobby data
+            const lobby = allLobbiesData.get(
+                lobbyId as string,
+            ) as LobbyResponse;
+
+            //If lobby is full, disable join button
+            //otherwise join button should be enabled b/c lobby is selected
+            if (lobby.curr_members === lobby.max_members) {
+                joinButton.disabled = true;
+            } else {
+                joinButton.disabled = false;
+            }
+        });
+    });
+
+    if (lobbyCardList.length === 0) {
         //if no lobbies exist, show no lobbies template
         await setPageContent("lobbies", "lobbies-list", "no-lobbies-template");
     } else {
         //add lobbies to html
-        lobbyListElement.replaceChildren(...newChildren);
+        lobbyListElement.replaceChildren(...lobbyCardList);
+    }
+}
+
+async function makeLobbyButtonsInteractable() {
+    const joinButton = document.getElementById(
+        "joinLobby",
+    ) as HTMLButtonElement;
+    joinButton.addEventListener("click", checkLobbyJoinStatus);
+}
+
+async function checkLobbyJoinStatus() {
+    //get id of lobby
+    const lobbyId = (
+        document.querySelector(".card.selected") as HTMLElement
+    ).getAttribute("data-lobby-id") as string;
+
+    const lobby = allLobbiesData.get(lobbyId as string) as LobbyResponse;
+
+    //Don't join lobby directly if secret is needed
+    //Instead create password modal and join lobby when submit button pressed
+    const lobbyNeedsSecret = lobby.needs_secret;
+    if (lobbyNeedsSecret) {
+        setupPasswordModal(lobby);
+    } else {
+        //If no secret is needed, (attempt to) join lobby directly
+        joinLobby(lobby);
+    }
+}
+
+async function setupPasswordModal(lobby: LobbyResponse) {
+    //show password element on page
+    const passwordModal = (await getPageContent(
+        "lobbies",
+        "lobby-password-modal",
+    )) as HTMLTemplateElement;
+    centerContent.appendChild(passwordModal);
+
+    //password input field
+    const passwordField = document.querySelector(
+        ".lobby-password-input",
+    ) as HTMLInputElement;
+
+    //set up button to leave password modal
+    const passwordExitButton = document.querySelector(
+        ".cancel-password-button",
+    ) as HTMLButtonElement;
+
+    //Delete the password modal when modal is exited
+    passwordExitButton.addEventListener("click", () => {
+        passwordModal.remove();
+    });
+
+    //set up button to enter password when clicked
+    const passwordEnterButton = document.querySelector(
+        ".submit-password-button",
+    ) as HTMLButtonElement;
+
+    //When enter button clicked:
+    passwordEnterButton.addEventListener("click", async () => {
+        //try to join lobby
+        try {
+            await joinLobby(lobby, passwordField.value);
+        } catch (error) {
+            //TS workaround to show that error is an object
+            if (typeof error === "object") {
+                //get the type of error
+                const errorType = (error as { type: string }).type;
+                //If password is incorrect, show incorrect password text
+                if (errorType === "incorrect_password") {
+                    (
+                        document.querySelector(
+                            ".password-invalid",
+                        ) as HTMLElement
+                    ).style.display = "block";
+                    return;
+                }
+            }
+            //If error is of different type, throw error again so it doesn't fail silently
+            throw error;
+        }
+    });
+}
+
+async function joinLobby(lobby: LobbyResponse, password?: string) {
+    console.log("Attempting to join lobby...");
+    //join lobby with or without password, depending on if public or private
+    if (password) {
+        await joinLobbyBackend(lobby.id, password);
+    } else {
+        await joinLobbyBackend(lobby.id);
+    }
+    //go to main game page
+    currentLobby = lobby;
+    console.log("Lobby joined successfully! Lobby info: ");
+    console.log(currentLobby);
+    localStorage.setItem("currentLobby", lobby.id);
+    setPageContent("game", "", "game-main");
+}
+
+async function leaveLobby() {
+    console.log("Attempting to leave lobby...");
+    //leave lobby in backend
+    const lobbyLeaveSuccess = await leaveLobbyBackend();
+    if (lobbyLeaveSuccess) {
+        //go back to lobbies page
+        currentLobby = null;
+        localStorage.removeItem("currentLobby");
+        console.log("Lobby left successfully!");
+        setPageContent("lobbies", "", "lobby-main");
     }
 }
 
@@ -264,7 +431,8 @@ window.addEventListener("load", async () => {
 async function getPageContent(
     pageLocation: NonNullable<string>,
     divId?: string,
-): Promise<HTMLTemplateElement | null> {
+    leaveAsTemplate: boolean = false,
+): Promise<HTMLTemplateElement | HTMLElement | null> {
     //use div with same name as location, if null
     if (!divId) {
         divId = pageLocation;
@@ -282,8 +450,15 @@ async function getPageContent(
     const pageHTML = parser.parseFromString(pageText, "text/html");
 
     if (pageHTML) {
-        //add template to appendDiv
-        return pageHTML.querySelector(`#${divId}`) as HTMLTemplateElement;
+        const htmlTemplate = pageHTML.querySelector(
+            `#${divId}`,
+        ) as HTMLTemplateElement;
+        if (leaveAsTemplate) {
+            return htmlTemplate;
+        } else {
+            //convert template to an html element
+            return htmlTemplate.content.firstElementChild as HTMLElement;
+        }
     } else {
         return null;
     }
@@ -308,12 +483,11 @@ async function setPageContent(
     }
 
     //get template from location
-    const divTemplate: HTMLTemplateElement | null = await getPageContent(
-        pageLocation,
-        divId,
-    );
+    const pageContentResult: HTMLElement | HTMLTemplateElement | null =
+        await getPageContent(pageLocation, divId, true);
 
-    if (divTemplate) {
+    if (pageContentResult) {
+        const divTemplate = pageContentResult as HTMLTemplateElement;
         const templateContent = document.importNode(divTemplate.content, true);
         parentDiv.replaceChildren(templateContent);
     }
@@ -341,7 +515,8 @@ async function setPageContent(
         //location-specific code to run on page change
         switch (pageLocation) {
             case "lobbies": {
-                void refreshLobbies();
+                void setLobbyCards();
+                void makeLobbyButtonsInteractable();
                 break;
             }
             case "home": {
@@ -364,6 +539,18 @@ async function setPageContent(
                 }
                 break;
             }
+            case "game": {
+                //button to leave lobby
+                const leaveLobbyButton = document.getElementById(
+                    "leave-lobby-button",
+                ) as HTMLButtonElement;
+
+                //
+                leaveLobbyButton.addEventListener("click", async () => {
+                    leaveLobby();
+                });
+                break;
+            }
         }
     }
 }
@@ -372,4 +559,10 @@ async function setPageContent(
 closeHamburgerMenu();
 //Set page to home
 let activeWindow = "home";
-setPageContent("home");
+
+//go to game page if user already logged into lobby
+if (localStorage.getItem("currentLobby")) {
+    setPageContent("game", "", "game-main");
+} else {
+    setPageContent("home");
+}

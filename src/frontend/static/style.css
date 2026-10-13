@@ -256,13 +256,16 @@ button {
 }
 
 .card {
-    border-style: solid;
-    border-width: 1px;
-    border-color: var(--color-neutral-200);
+    border-top: solid 1px var(--color-neutral-200);
+    border-bottom: solid 1px var(--color-neutral-200);
     background-color: var(--color-white);
 }
 
-.card:hover{
+.card.selected{
+    background-color: yellow;
+}
+
+.card:not(.selected):hover{
     cursor: pointer;
     background-color: lightgray;
 }
@@ -320,6 +323,78 @@ button {
     justify-content: end;
 }
 
+/*lobby password modal styling*/
+
+.password-modal-wrapper{
+    position: absolute;
+    background-color: #0000001a;
+    top:0;
+    left:0;
+    display: flex;
+    width:100dvw;
+    height:100dvh;
+    align-items: center;
+    justify-content: center;
+}
+
+.password-modal{
+    position: relative;
+    font-size:20px;
+    background-color: white;
+    gap:10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 2px solid black;
+     width:clamp(300px,70%,500px);
+    height: 200px;
+    border-radius: 20px;
+}
+
+.password-modal button{
+    height:50px;
+    width: 100px;
+    border-radius: 10px;
+    background-color: rgb(199, 0, 0);
+    color:white;
+}
+
+.password-modal button:hover{
+    background-color: rgb(235, 144, 144);
+    cursor: pointer;
+}
+
+.password-modal input{
+    border: 2px solid black;
+    border-radius: 10px;
+    width:90%;
+    padding:10px;
+    height:50px;
+    font-size: 20px;
+}
+
+/*Text that shows when invalid password entered*/
+.password-invalid{
+    font-size: 15px;
+    color: red;
+    text-align: center;
+    display: none;
+}
+
+.password-button-wrapper{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;    
+    width:90%;
+    gap:50px;
+}
+
+.password-modal button img{
+    height:100%;
+    width: 100%;
+}
 
 #notification-box {
     position: fixed;
