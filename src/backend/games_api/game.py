@@ -28,7 +28,7 @@ class Game:
         self._lobby_id = lobby_id
 
     #give utc time when end, send update when timer is changed 
-    #send timer to user each timer ahas unique identifier, countdown, send timer name and end on completion 
+    #send timer to user each timer has unique identifier, countdown, send timer name and end on completion 
     def make_timer(
         self,
         timer_seconds: float,
