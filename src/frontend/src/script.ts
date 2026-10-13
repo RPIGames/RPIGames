@@ -157,11 +157,15 @@ async function refreshLobbyData() {
     }
 }
 
+
 // refreshes the lobbies, getting new data from the api
-async function setLobbyCards() {
+async function updateLobbyCards() {
     const lobbyListElement = document.getElementById(
         "lobbies-list",
     ) as HTMLElement;
+
+    //HTML to display while lobby data is being fetched
+    lobbyListElement.innerHTML="Fetching Lobbies...";
 
     await refreshLobbyData();
 
@@ -194,7 +198,7 @@ async function setLobbyCards() {
 
             //get join lobby button
             const joinButton = document.getElementById(
-                "joinLobby",
+                "join-lobby",
             ) as HTMLButtonElement;
 
             //get id of lobby
@@ -227,13 +231,21 @@ async function setLobbyCards() {
 }
 
 async function makeLobbyButtonsInteractable() {
+    //Join lobby button
     const joinButton = document.getElementById(
-        "joinLobby",
+        "join-lobby",
     ) as HTMLButtonElement;
     joinButton.addEventListener("click", checkLobbyJoinStatus);
+
+    //Refresh lobbies button
+    const refreshButton= document.getElementById("refresh-lobbies") as HTMLButtonElement;
+    refreshButton.addEventListener("click",updateLobbyCards)
 }
 
 async function checkLobbyJoinStatus() {
+    //Refresh data just in case there has been a change since last join
+    await refreshLobbyData();
+
     //get id of lobby
     const lobbyId = (
         document.querySelector(".card.selected") as HTMLElement
@@ -515,7 +527,7 @@ async function setPageContent(
         //location-specific code to run on page change
         switch (pageLocation) {
             case "lobbies": {
-                void setLobbyCards();
+                void updateLobbyCards();
                 void makeLobbyButtonsInteractable();
                 break;
             }
