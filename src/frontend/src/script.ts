@@ -223,11 +223,11 @@ async function updateLobbyCards(fullRefresh: boolean = true) {
         });
     });
 
-    if(lobbyCardList.length !== 0){
+    if (lobbyCardList.length !== 0) {
         //add lobbies to html
         lobbyListElement.replaceChildren(...lobbyCardList);
-    }else{
-         //if no lobbies exist, show no lobbies template
+    } else {
+        //if no lobbies exist, show no lobbies template
         await setPageContent("lobbies", "lobbies-list", "no-lobbies-template");
     }
 
@@ -255,6 +255,15 @@ async function makeLobbyButtonsInteractable() {
     refreshButton.addEventListener("click", () => {
         updateLobbyCards();
     });
+
+    //Create lobby button
+    const createLobbyButton = document.getElementById(
+        "create-lobby",
+    ) as HTMLButtonElement; 
+    createLobbyButton
+    createLobbyButton.addEventListener("click",async ()=>{
+        await setPageContent("createLobby", "", "create-main");
+    })
 }
 
 async function checkLobbyJoinStatus() {
@@ -264,7 +273,6 @@ async function checkLobbyJoinStatus() {
     const lobby = allLobbiesData.get(
         currentSelectedCardId as string,
     ) as LobbyResponse;
-
 
     //Don't join lobby directly if secret is needed
     //Instead create password modal and join lobby when submit button pressed
