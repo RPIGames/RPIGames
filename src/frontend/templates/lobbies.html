@@ -6,17 +6,18 @@
         Refresh Lobbies
       </button>
     </div>
-    <ul id="lobbies-list">
+    <ul class="lobby-middle-content" id="lobbies-list">
       <p>Fetching Lobbies...</p>
     </ul>
     <div id="lobby-footer" class="flex">
       <div class="lobby-button-wrapper">
-        <button>Create Lobby</button>
+        <button id="create-lobby">Create Lobby</button>
         <button id="join-lobby" disabled>Join Lobby</button>
       </div>
     </div>
   </div>
 </template>
+
 
 <template id="lobby-card-template">
     <li class="card hover:shadow-md transition-shadow duration-200">
@@ -43,7 +44,7 @@
     <div class="password-modal-wrapper">
       <div class="password-modal">
         Enter Lobby Password:
-        <input class="lobby-password-input"></input>
+        <input class="lobby-password-input lobby-input"></input>
         <div class="password-button-wrapper">
             <button class="cancel-password-button">Cancel</button>
             <p class="password-invalid">Incorrect Password</p>
