@@ -6,6 +6,7 @@ import type {
     UserTokenResponse,
 } from "./structs/api.js";
 import type { MessageFromServiceWorker } from "./structs/serviceWorker.js";
+import type { ClientAuthenticationMessage, ClientSendChatMessage, ServerMessage, Uuid } from "./structs/websocket.js";
 
 /**
  * Shows a native notification.
@@ -121,7 +122,7 @@ export async function getUserInfo(userId: string) {
 export async function getSelfUserInfo() {
     const user_id = localStorage.getItem("userId");
     if (user_id === null) {
-        throw "tries to get self users info without a self user";
+        throw new Error("tries to get self users info without a self user");
     }
     return await getUserInfo(user_id);
 }
@@ -137,7 +138,7 @@ export async function getAllLobbies() {
     //get lobby data
     const response = await fetch("/api/latest/lobby/all");
     if (!response.ok) {
-        throw `Failed to get lobbies: Status code from fetching lobbies is ${response.status}`;
+        throw new Error(`Failed to get lobbies: Status code from fetching lobbies is ${response.status}`);
     }
 
     //create list of lobbies
@@ -176,7 +177,22 @@ export async function makeLobby(name?: string, secret?: string) {
     if (response.ok) {
         return (await response.json()) as LobbyResponse;
     }
-    throw `${response.status} error while making a new lobby: ${response.json()}`;
+    throw new Error(`${response.status} error while making a new lobby: ${response.json()}`);
+}
+
+/**
+ * Gets an auth token from localStorage
+ *
+ * @private
+ * @returns The auth token to pass in an Bearer Authorization header
+ */
+function getAuthToken(): `${Uuid}$${Uuid}` {
+    const user_id = localStorage.getItem("userId") as Uuid;
+    const user_secret = localStorage.getItem("userSecret") as Uuid;
+    if (user_id === null || user_secret === null) {
+        throw new Error(`trying to call joinLobby without being logged in`);
+    }
+    return `${user_id}$${user_secret}`;
 }
 
 /**
@@ -186,12 +202,8 @@ export async function makeLobby(name?: string, secret?: string) {
  * @returns The auth string to pass in an Authorization header
  */
 function getAuthString() {
-    const user_id = localStorage.getItem("userId");
-    const user_secret = localStorage.getItem("userSecret");
-    if (user_id === null || user_secret === null) {
-        throw `trying to call joinLobby without being logged in`;
-    }
-    return `Bearer ${user_id}$${user_secret}`;
+    const user_token = getAuthToken();
+    return `Bearer ${user_token}`;
 }
 
 /**
@@ -263,7 +275,7 @@ export async function leaveLobby() {
     if (response.ok) {
         return true;
     }
-    throw `${response.status} error while leaving current lobby: ${response.json()}`;
+    throw new Error(`${response.status} error while leaving current lobby: ${response.json()}`);
 }
 
 /**
@@ -312,3 +324,87 @@ navigator.serviceWorker.addEventListener("message", (e: MessageEvent) => {
         }
     }
 });
+
+
+// Client side Websocket things are defined here:
+
+// makes a URL for the websocket
+const wsUri = new URL("/api/v1/ws/connect/");
+
+// actually opens the websocket
+let webSocket: WebSocket = new WebSocket(wsUri);
+// variable that keeps track of the authentication state of the websocket
+let webSocketAuthenticated = false;
+
+// add the handleMessage function as an event listener on the websocket
+webSocket.addEventListener("message", handleMessage, { "passive": true })
+
+// adds a close event so that we can see (in the log) when the websocket dies
+// or closes
+webSocket.addEventListener("close", (event) => {
+    if (event.wasClean) {
+        console.log(`Closed cleanly, code=${event.code}, reason=${event.reason}`);
+    } else {
+        console.log("Connection died");
+    }
+});
+
+// function that handles a message from the websocket
+function handleMessage(event: MessageEvent<string>) {
+    const message: ServerMessage = JSON.parse(event.data);
+    if (message.type === "status") {
+        switch (message.status) {
+            case "connection established":
+                // Send user auth, if we have it.
+                try {
+                    authenticateWebSocket(getAuthToken())
+                } catch (e) {
+                    console.warn(`authstring is not in localstorage, websocket will not work
+                        make sure to call authenticateWebSocket(token) after you have gotten a token`)
+                }
+                break;
+            case "authenticated":
+                // set auth status
+                webSocketAuthenticated = true;
+                break;
+        }
+    } else if (message.type === "error") {
+        switch (message.category) {
+            case "authentication":
+                console.error(message.status);
+                break;
+            case "chat":
+                console.error(message.message);
+                break;
+        }
+    }
+}
+
+/**
+ * Authenticates the websocket, given an auth token.
+ * @param token The auth token to authenticate with.
+ */
+export function authenticateWebSocket(token: `${Uuid}$${Uuid}`) {
+    const message: ClientAuthenticationMessage = {
+        type: "authentication",
+        token: token
+    }
+    webSocket.send(JSON.stringify(message));
+}
+
+/**
+ * Sends a chat message, given the message string.
+ * @param message The message to send.
+ * @param chatroom_id The chatroom to send the message into.
+ */
+export function sendChatMessage(message: string, chatroom_id: Uuid) {
+    const to_send: ClientSendChatMessage = {
+        type: "chat",
+        message: message,
+        room_id: chatroom_id,
+    }
+
+    if (webSocketAuthenticated) {
+        webSocket.send(JSON.stringify(to_send))
+    }
+}
