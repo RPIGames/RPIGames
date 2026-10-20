@@ -383,7 +383,7 @@ export interface GameInfo {
 }
 
 export async function getGameData(): Promise<GameInfo[]> {
-    return new Promise(() => [{
+    return new Promise((resolve, _reject) => resolve([{
         name: "Sample Game",
         game_id: "sample_game",
         player_range: [0, 500],
@@ -393,5 +393,5 @@ export async function getGameData(): Promise<GameInfo[]> {
             ["points_for_hiding", ["Points per minute hidden:", "number"]],
             ["points_for_seeking", ["Points per hider found:", "number"]]
         ])
-    }])
+    }]))
 }
