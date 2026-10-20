@@ -378,6 +378,7 @@ export type Type = "string" | "number" | "boolean";
 export interface GameInfo {
     name: string,
     game_id: string,
+    player_range: [number, number],
     config: Map<string, [string, Type]>
 }
 
@@ -385,6 +386,7 @@ export async function getGameData(): Promise<GameInfo[]> {
     return new Promise(() => [{
         name: "Sample Game",
         game_id: "sample_game",
+        player_range: [0, 500],
         config: new Map([
             ["welcome_message", ["Welcome message", "string"]],
             ["time_to_hide", ["Time to Hide (minutes):", "number"]],
