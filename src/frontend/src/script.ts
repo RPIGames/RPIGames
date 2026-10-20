@@ -1,5 +1,7 @@
 import {
     getAllLobbies,
+    getGameData as getGameDataBackend,
+    type GameInfo,
     getNewUserId,
     getSelfUserInfo,
     joinLobby as joinLobbyBackend,
@@ -565,6 +567,11 @@ async function setPageContent(
                 }, 10000);
                 break;
             }
+            case "createLobby":{
+                await setupGameData();
+                await makeCreateButtonsInteractable();
+                break;
+            }
             case "home": {
                 //setup ping button
                 const pingButton = document.getElementById("ping-button");
@@ -591,7 +598,6 @@ async function setPageContent(
                     "leave-lobby-button",
                 ) as HTMLButtonElement;
 
-                //
                 leaveLobbyButton.addEventListener("click", async () => {
                     leaveLobby();
                 });
@@ -599,6 +605,44 @@ async function setPageContent(
             }
         }
     }
+}
+
+const gameData = new Map<string, GameInfo>();
+async function setupGameData(){
+    //select dropdown
+    const gameTypeSelect=document.getElementById("game-type-select") as HTMLSelectElement;
+
+    //get backend game data
+    let backendGameData=await getGameDataBackend();
+    for(const data of backendGameData){
+        //add game data to map
+        gameData.set(data.game_id,data)
+
+        //add game data to game type dropdown
+        const gameOption=document.createElement("option")
+        gameOption.innerHTML=data.name;
+        gameOption.id=data.game_id;
+        gameTypeSelect.append(gameOption)
+    }
+
+    gameTypeSelect.addEventListener("input",()=>{
+        if(gameTypeSelect.value!="default"){
+            //remove default "select game type" option
+            const defaultOption=document.getElementById("default-game-option") as HTMLOptionElement;
+            defaultOption.remove()
+        }
+    })
+}
+
+async function makeCreateButtonsInteractable() {
+    //Return to lobby page button
+    const returnButton = document.getElementById(
+        "return-lobby-list",
+    ) as HTMLButtonElement;
+    returnButton.addEventListener("click", ()=>{
+        setPageContent("lobbies", "", "lobby-main");
+    });
+
 }
 
 //set hamburger menu to closed state
