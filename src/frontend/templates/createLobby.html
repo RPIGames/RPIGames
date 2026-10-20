@@ -1,0 +1,28 @@
+<template id="create-main">
+  <div class="red-black-border lobby-wrapper">
+    <div id="lobbies-topbar" class="flex justify-between center-align">
+      <h1>Create Lobby</h1>
+    </div>
+    <div class="lobby-middle-content create-lobby-wrapper">
+        <label for="username">Lobby Name</label>
+        <input class="lobby-input" type="text" name="username" id="username-input" />
+
+        <label for="password">Password (optional)</label>
+        <input class="lobby-input" type="text" name="password" id="password-input" />
+
+        <select id="game-type-select">
+            <option id="default-game-option" value="default" selected>
+                Select Game Type...
+            </option>
+        </select>
+
+        </option>
+    </div>
+    <div id="lobby-footer" class="flex">
+      <div class="lobby-button-wrapper">
+        <button id="return-lobby-list">Back</button>
+        <button id="create-lobby">Create Lobby</button>
+      </div>
+    </div>
+  </div>
+  </template>
