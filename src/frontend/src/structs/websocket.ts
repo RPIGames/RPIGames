@@ -4,7 +4,9 @@
  */
 
 // uuid in format 'd67fa7ce-a76f-435b-a173-fac9ad3652b8'.
-// cannot be fully specified in ts without complex generics
+// A sized string cannot be fully specified in typescript
+// without complex generics, so we do the feasible next best
+// thing and expect a string with 5 segments delimited by '-'
 export type Uuid = `${string}-${string}-${string}-${string}-${string}`;
 
 // A ServerMessage is a message from the server to the client.
@@ -105,7 +107,9 @@ export interface ServerRecieveChatMessage {
 
 // Errors
 
-export type ServerErrorMessage = ServerChatErrorMessage;
+export type ServerErrorMessage =
+    | ServerChatErrorMessage
+    | ServerAuthenticationErrorMessage;
 
 export interface ServerChatErrorMessage {
     type: "error";
