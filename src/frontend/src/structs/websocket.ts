@@ -38,7 +38,7 @@ export interface ServerUpdateTimerMessage {
 export interface ServerDeleteTimerMessage {
     type: "timer";
     action: "delete";
-    id: Uuid; // uuid of the timer to delete
+    id: string; // id of the timer to delete
 }
 
 export interface ServerRecieveAllTimerMessage {
@@ -48,7 +48,7 @@ export interface ServerRecieveAllTimerMessage {
 }
 
 export interface TimerData {
-    id: Uuid; // uuid of the timer that this identifies
+    id: string; // id of the timer that this identifies
     name: string;
     time: string; // time in ??? format
 }
@@ -127,7 +127,8 @@ export interface ServerAuthenticationErrorMessage {
 export type ClientMessage =
     | ClientAuthenticationMessage
     | ClientRequestMessage
-    | ClientSendChatMessage;
+    | ClientSendChatMessage
+    | ClientSendLocationMessage;
 
 export interface ClientAuthenticationMessage {
     type: "authentication";
@@ -143,6 +144,23 @@ export interface ClientSendChatMessage {
     type: "chat";
     message: string;
     room_id: Uuid;
+}
+
+// location
+export interface ClientSendLocationMessage {
+    type: "map";
+    location: GeolocationData;
+}
+
+export interface GeolocationData {
+    accuracy: number;
+    latitude: number;
+    longitude: number;
+    altitude?: number;
+    altitude_accuracy?: number;
+    heading?: number;
+    speed?: number;
+    time: EpochTimeStamp;
 }
 
 // TODO: Add map message models when schema is stabilized
