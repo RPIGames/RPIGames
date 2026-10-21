@@ -6,8 +6,14 @@ if ! command -v nginx &> /dev/null;
 fi
 
 if [[ -f /tmp/nginx.pid ]]; then
-  echo "Nginx has already been started. Stop nginx or delete /tmp/nginx.pid if nginx stopped incorrectly."
-  exit 1
+  echo "Nginx has already been started. Attempting to restart nginx..."
+
+  ./quick_frontend_stop.sh
+
+  if [[ "$?" -ne 0 ]]; then
+    echo "Nginx could not be stopped. Stop nginx or delete /tmp/nginx.pid if nginx stopped incorrectly."
+    exit 1
+  fi
 fi
 
 ./compile_typescript.sh
