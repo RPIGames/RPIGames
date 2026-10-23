@@ -58,7 +58,7 @@ def parse_credentials(
     return extract_credentials(credentials.credentials)
 
 def optional_authorization(
-    credentials: Annotated[tuple[str, str | None], Depends(parse_credentials)],
+    credentials: Annotated[tuple[str, str] | None, Depends(parse_credentials)],
     session: Annotated[Session, Depends(get_session)],
 ) -> Player | None:
     """
