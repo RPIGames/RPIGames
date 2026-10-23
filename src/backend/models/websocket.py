@@ -1,18 +1,31 @@
-from uuid import UUID
-from typing import Any, Literal
 import datetime
+from typing import Literal
+from uuid import UUID
 
 from pydantic import BaseModel
 
+### Base classes
+
+class ClientMessage(BaseModel):
+    pass
+
+class ServerMessage(BaseModel):
+    pass
+
+class ServerErrorMessage(ServerMessage):
+    type: Literal["error"] = "error"
+
+### Data structs
+
 class TimerData(BaseModel):
     """A class to store the timer data"""
-    id: UUID
+    id: str
     name: str
     time: datetime.datetime
 
 class ScoreboardData(BaseModel):
     """A class to store the scoreboard data"""
-    id: UUID
+    id: str
     name: str
     sortable: bool
     headers: list[str]
@@ -20,132 +33,190 @@ class ScoreboardData(BaseModel):
 
 class LocationData(BaseModel):
     """A class to store the location data"""
-    accuracy: float | None
-    latitude: float | None
-    longitude: float | None
+    accuracy: float
+    latitude: float
+    longitude: float
     altitude: float | None
     altitude_accuracy: float | None
     heading: float | None
     speed: float | None
+    time: datetime.datetime
 
 class MarkerData(BaseModel):
-    """A class to store the marker data"""
+    """A class to store a marker's data"""
+    id: str
+    name: str
+    latitude: float
+    longitude: float
+
+class ButtonData(BaseModel):
+    """A class to store a button's data"""
     id: UUID
     name: str
-    location: LocationData
+    needs_arguments: bool
 
-class ButtonData:
-    """A class to store the button data"""
-    id: UUID
-    name: str
-    arguments: list[list[str]]
+### Authentication flow messages
 
-class HandshakeConnectionEstablishedResponseModel(BaseModel):
-    """A Response to send to the user when the connection is established. Contains the phrase "connection established". """
-    type: str = "status"
-    status: str = "connection established"
+class ServerStatusMessage(ServerMessage):
+    """A Response to send to the user when the status of the connection changed. """
+    type: Literal["status"] = "status"
+    status: Literal["connection established", "authenticated"]
 
-class HandshakeAuthenticationTokenModel(BaseModel):
+class ClientAuthenticationMessage(ClientMessage):
     """The user sends a token with this format with the authentication credentials"""
-    type: str = "authentication"
+    type: Literal["authentication"]
     token: str
 
-class HandshakeAuthenticationResponseModel(BaseModel):
-    """A Response to send to the user when the authentication is successful"""
-    type: str = "status"
-    status: Literal["authenticated", "authentication_failed"]
+class ServerAuthenticationErrorMessage(ServerErrorMessage):
+    """A Response to send to the user when there was an error authenticating"""
+    type: Literal["error"] = "error"
+    status: Literal["authentication_failed"] = "authentication_failed"
 
-class TimerUpdateResponseModel(BaseModel):
+### Server update timer messages
+
+class ServerTimerMessage(ServerMessage):
+    """A base class all timer server messages are derived from"""
+    type: Literal["timer"] = "timer"
+
+class ServerUpdateTimerMessage(ServerTimerMessage):
     """A Response to send to the user when a timer is updated or a new one created."""
-    type: str = "timer"
-    action: str = "update"
+    action: Literal["update"] = "update"
     data: TimerData
 
-class TimerDeleteResponseModel(BaseModel):
+class ServerDeleteTimerMessage(ServerTimerMessage):
     """A Response to send to the user when a timer is deleted"""
-    type: str = "timer"
-    action: str = "delete"
+    action: Literal["delete"] = "delete"
     id: UUID
 
-class TimerRequestAllModel(BaseModel):
+class ClientRequestMessage(ClientMessage):
     """A model for when the user wants all the timers data"""
-    type: str = "timer"
-    action: str = "request_all"
+    type: Literal["timer", "scoreboard"]
+    action: Literal["request_all"]
 
-class TimerRequestAllResponseModel(BaseModel):
+class ServerRecieveAllTimerMessage(ServerTimerMessage):
     """A Response to send to the user when all the timers are requested"""
-    type: str = "timer"
-    action: str = "receive_all"
+    action: Literal["recieve_all"] = "recieve_all"
     data: list[TimerData]
 
-class ScoreboardUpdateResponseModel(BaseModel):
-    """A Response to send to the user when a scoreboard is updated or a new scoreboard is created."""
-    type: str = "scoreboard"
-    action: str = "update"
+### Scoreboard messages
+
+class ServerScoreboardMessage(ServerMessage):
+    """A base class for all scoreboard server messages"""
+    type: Literal["scoreboard"] = "scoreboard"
+
+class ServerUpdateScoreboardMessage(ServerScoreboardMessage):
+    """A Response to send to the user when a scoreboard is updated or a new
+    scoreboard is created."""
+    action: Literal["update"] = "update"
     data: ScoreboardData
 
-class ScoreboardDeleteResponseModel(BaseModel):
+class ServerDeleteScoreboardMessage(ServerScoreboardMessage):
     """A Response to send to the user when a scoreboard is deleted"""
-    type: str = "scoreboard"
-    action: str = "delete"
+    action: Literal["delete"] = "delete"
     id: UUID
 
-class ScoreboardRequestAllModel(BaseModel):
-    """A model for when the user wants all the scoreboard data"""
-    type: str = "scoreboard"
-    action: str = "request_all"
-
-class ScoreboardRequestAllResponseModel(BaseModel):
+class ServerRecieveAllScoreboardMessage(ServerScoreboardMessage):
     """A Response to send to the user when all the scoreboard data is requested"""
-    type: str = "scoreboard"
-    action: str = "receive_all"
+    action: Literal["recieve_all"] = "recieve_all"
     data: list[ScoreboardData]
 
-class ChatSendMessageModel(BaseModel):
-    """A model for when the user sends a message"""
-    type: str = "chat"
-    message: str
-    room_id: UUID
+### Chat messages
 
-class ChatSendMessageErrorResponseModel(BaseModel):
+class ClientSendChatMessage(ClientMessage):
+    """A model for when the user sends a message"""
+    type: Literal["chat"]
+    message: str
+    room_id: str
+
+class ServerChatErrorMessage(ServerErrorMessage):
     """A Response to send to the user after they send a message, if there's an error"""
-    type: str = "error"
-    category: str = "chat"
+    type: Literal["error"] = "error"
+    category: Literal["chat"] = "chat"
     message: Literal["no chat room", "bad message"]
 
-class ChatReceiveMessageResponseModel(BaseModel):
+class ServerChatMessage(ServerMessage):
+    """A base response to send to a user when an event about char happens"""
+    type: Literal["chat"] = "chat"
+
+class ServerRecieveChatMessage(ServerChatMessage):
     """A Response to send to the user when they receive a message"""
-    type: str = "chat"
-    room_id: UUID
-    author_id: UUID | -1
+    room_id: str
+    author_id: UUID | Literal["-1"] = "-1"
     message: str
 
-class MapSendLocationModel(BaseModel):
-    """A model for when the user sends their location"""
-    type: str = "map"
-    location: LocationData
+class ServerNewChatroomPermissionsMessage(ServerChatMessage):
+    """
+    A response to sent to the user when a chatroom they are in changes permissions
+    or they have access to a new chatroom.
+    """
+    room_id: str
+    read: bool
+    write: bool
 
-class MapUpdateMarkerResponseModel(BaseModel):
+### Map messages
+
+class ServerMarkerMessage(ServerMessage):
+    """A base response to send to a user when a map message needs to be sent"""
+    type: Literal["map"] = "map"
+
+class ServerUpdateMarkerMessage(ServerMarkerMessage):
     """A Response to send to the user when a marker is updated or a new one created."""
-    type: str = "map"
-    action: str = "update_marker"
+    action: Literal["update_marker"] = "update_marker"
     data: MarkerData
 
-class MapDeleteMarkerResponseModel(BaseModel):
+class ServerDeleteMarkerMessage(ServerMarkerMessage):
     """A Response to send to the user when a marker is deleted"""
-    type: str = "map"
-    action: str = "delete_marker"
-    id: UUID
+    action: Literal["delete_marker"] = "delete_marker"
+    id: str
 
-class ButtonSendModel(BaseModel):
+class ClientSendLocationMessage(ClientMessage):
+    """A model for when the user sends their location"""
+    type: Literal["map"] = "map"
+    location: LocationData
+
+## Button messages
+
+class ClientSendButtonPressMessage(ClientMessage):
     """A model for when the user sends a button"""
-    type: str = "button"
-    id: UUID
-    args: list[Any]
+    type: Literal["button"] = "button"
+    id: str
+    args: list[str] | None
 
-class ButtonUpdateResponseModel(BaseModel):
+class ServerButtonMessage(ServerMessage):
+    """A base response to send to a user from the server when a button
+    message needs to be sent"""
+    type: Literal["button"] = "button"
+
+class ServerUpdateButtonMessage(ServerButtonMessage):
     """A Response to send to the user when a button is updated or a new one created."""
-    type: str = "button"
-    action: str = "update"
+    action: Literal["update"] = "update"
     data: ButtonData
 
+class ServerDeleteButtonMessage(ServerButtonMessage):
+    """A Response to send to the user when a button is deleted."""
+    action: Literal["delete"] = "delete"
+    id: str
+
+class ClientFetchButtonArgumentsMessage(ClientMessage):
+    """
+    A message sent from the client to the server when they clicked on a button
+    and wish to know what parameters to select from.
+    """
+    type: Literal["button"]
+    action: Literal["get_params"]
+    id: str # button id
+
+class ServerSendButtonArgumentsMessage(ServerButtonMessage):
+    """A message sent from the server to supply the parameter options for a user"""
+    action: Literal["params"] = "params"
+    id: str
+    params: list[list[str]]
+
+### Notifications
+
+class ServerSendNotificationMessage(ServerMessage):
+    """A message sent from the server to notify the user's device"""
+    type: Literal["notification"] = "notification"
+    level: Literal["normal", "debug", "warning", "error"] = "normal"
+    native: bool
+    text: str
