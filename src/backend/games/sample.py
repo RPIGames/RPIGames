@@ -2,7 +2,7 @@
 Here's a sample game made using the Game API.
 This shouldn't work until we get the API implemented.
 """
-
+import schedule
 from random import shuffle
 from typing import Annotated, Any, ClassVar, TypedDict
 from uuid import UUID
@@ -56,7 +56,7 @@ class SampleGame:
             """,
             )
 
-        game.schedule(self.hide_time, self._wait_time_ended)
+        schedule.schedule(self.hide_time, self._wait_time_ended)
 
         self.game_started = True
 
@@ -104,3 +104,4 @@ class SampleGame:
         self.scores[selection.uuid] += self.points_per_player
 
         selection.send_notification("You found a player!")
+ 

@@ -14,6 +14,9 @@ from .test_user_modification import create_quick_user, get_uid_from_auth,get_use
 client = TestClient(app)
 
 def test_making_player():
+    """
+    test making a player in general
+    """
     auth = create_quick_user()
     uuid = get_uid_from_auth(auth)
     try:
@@ -22,6 +25,9 @@ def test_making_player():
         assert(False)
 
 def test_making_player_no_user():
+    """
+     Test making a player if there is no user requested
+    """
     uuid = UUID(int=0)
     try:
         player = Player(uuid)
@@ -30,7 +36,12 @@ def test_making_player_no_user():
     else:
         assert(False)
 
+
+#when websockets are implemented fix to test wider variety
 def test_location():
+    """
+    Test the location to see what happens there is not a location and checking to see location overided correctly. 
+    """
     auth = create_quick_user()
     uuid = get_uid_from_auth(auth)
     player = Player(uuid)
@@ -46,6 +57,9 @@ def test_location():
     assert(location==new_location)
 
 def test_name():
+    """
+    test to make sure that player gets name correctly. 
+    """
     auth = create_quick_user()
     user_name = get_user_info(auth)["name"]
     uuid = get_uid_from_auth(auth)

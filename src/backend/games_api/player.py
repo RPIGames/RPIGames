@@ -1,10 +1,11 @@
 """
 This file contains the Player sub-API for the Game API.
 """
-
+import schedule
 from collections.abc import Callable
 from typing import Any, TypeVar
 from uuid import UUID
+from datetime import datetime
 
 from sqlmodel import Session
 
@@ -15,6 +16,7 @@ T = TypeVar("T")
 
 
 class Player:
+    _timers = {}
     def __init__(self, uuid: UUID) -> None:
         self.uuid = uuid
         db_conn = Session(engine)
@@ -24,6 +26,7 @@ class Player:
         self._user = user
         self._location = None
 
+    #when websockets are implemented fix deal with right type of location
     def _set_location(self, new_location: tuple[float, float]) -> None:
         """
         Sets the location of the player.
@@ -35,7 +38,7 @@ class Player:
         Gets the name of this player.
         """
         return self._user.name
-
+    #when websockets are implemented fix deal with right type of location
     def get_location(self) -> tuple[float, float] | None:
         """
         Gets the location of the current player. May return None if no location can be found
@@ -64,6 +67,29 @@ class Player:
         also be a push notification if permission is available.
         """
         raise NotImplementedError("Notifications have not been implemented yet")
+
+    def make_timer(
+        self,
+        timer_id : str | UUID,
+        timer_end: datetime,
+        timer_name: str = "Untitled Timer",
+        timer_end_function: Callable[[], None] | None = None,
+        disappear_on_completion: bool = True,        
+    ) -> tuple[str,str, datetime,Callable[[], None], bool ]: #id , name  , time of end, function called at end,  disappear on completion
+        """
+
+        """
+        self._timers.update({timer_id:(timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)})
+        amount_of_seconds = timer_end.timestamp - (datetime.datetime.now()).timestamp() 
+        amount_of_seconds = amount_of_seconds/60
+        schedule.schedule(amount_of_seconds,timer_end_function) #todo add function that is a helper function that when the function is called makes sure the called function is in the list of timers.
+        #add so that it gets sent to the player
+        return (timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)
+    
+    # Timer_request_all(): this player has requested all timers
+    #stop timer
+    
+
 
     def assign_button(
         self,
