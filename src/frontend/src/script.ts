@@ -631,54 +631,78 @@ async function setupGameData() {
     gameTypeSelect.addEventListener("input", () => {
         if (gameTypeSelect.value !== "internal_default") {
             //remove default "select game type" option, if it was selected
-            const defaultOption = document.getElementById("default-game-option")
-            if(defaultOption){
+            const defaultOption = document.getElementById(
+                "default-game-option",
+            );
+            if (defaultOption) {
                 defaultOption.remove();
             }
-            
-            const currentGameOption=gameData.get(gameTypeSelect.value) as GameInfo;
-            updateCreateLobbyGameOptions(currentGameOption)
+
+            //enable button
+            const createLobbyButton = document.getElementById(
+                "create-lobby",
+            ) as HTMLButtonElement;
+            createLobbyButton.disabled = false;
+
+            const currentGameOption = gameData.get(
+                gameTypeSelect.value,
+            ) as GameInfo;
+            updateCreateLobbyGameOptions(currentGameOption);
         }
     });
 }
 
-async function updateCreateLobbyGameOptions(currentGame : GameInfo){
-    const gameContentWrapper=document.getElementById("create-game-settings-wrapper") as HTMLDivElement;
+async function updateCreateLobbyGameOptions(currentGame: GameInfo) {
+    const gameContentWrapper = document.getElementById(
+        "create-game-settings-wrapper",
+    ) as HTMLDivElement;
     //clear current wrapper content
-    gameContentWrapper.innerHTML="";
+    gameContentWrapper.innerHTML = "";
 
     //get max values for the game
-    const min=currentGame.player_range[0];
-    const max=currentGame.player_range[1];
+    const min = currentGame.player_range[0];
+    const max = currentGame.player_range[1];
 
     //get div for max input
-    const maxInputTemplate=await getPageContent("createLobby","max-input-template") as HTMLElement;
-    const maxInputElement=(maxInputTemplate.querySelector("input") as HTMLInputElement)
-    
+    const maxInputTemplate = (await getPageContent(
+        "createLobby",
+        "max-input-template",
+    )) as HTMLElement;
+    const maxInputElement = maxInputTemplate.querySelector(
+        "input",
+    ) as HTMLInputElement;
+
     //set max of input to max of game
-    maxInputElement.max=max.toString();
-    maxInputElement.min=min.toString();
+    maxInputElement.max = max.toString();
+    maxInputElement.min = min.toString();
 
     //add max input to game wrapper
     gameContentWrapper.append(maxInputTemplate);
 
     //iterate over other input fields to add
-    const gameFields=currentGame.config
-    for(const [fieldId,data] of gameFields){
-        const fieldName=data[0]
-        const fieldType=data[1]
+    const gameFields = currentGame.config;
+    for (const [fieldId, data] of gameFields) {
+        const fieldName = data[0];
+        const fieldType = data[1];
 
         //get element data
-        const elementTemplate=(await getPageContent("createLobby",`input-template-${fieldType}`) as HTMLElement);       
-        const label=(elementTemplate.querySelector("label") as HTMLLabelElement);
-        const input=(elementTemplate.querySelector("input") as HTMLInputElement);
-        
+        const elementTemplate = (await getPageContent(
+            "createLobby",
+            `input-template-${fieldType}`,
+        )) as HTMLElement;
+        const label = elementTemplate.querySelector(
+            "label",
+        ) as HTMLLabelElement;
+        const input = elementTemplate.querySelector(
+            "input",
+        ) as HTMLInputElement;
+
         //set input data
-        label.htmlFor=fieldName;
-        label.innerHTML=fieldName;
-        input.name=fieldName;
-        input.id=fieldId;
-        input.type=fieldType;
+        label.htmlFor = fieldName;
+        label.innerHTML = fieldName;
+        input.name = fieldName;
+        input.id = fieldId;
+        input.type = fieldType;
 
         //add input field
         gameContentWrapper.append(elementTemplate);
