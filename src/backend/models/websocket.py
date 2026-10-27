@@ -4,24 +4,23 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-### Base classes
+##############################################################################
+########################### Base classes #####################################
+##############################################################################
 
-class ClientMessage(BaseModel):
-    pass
-
-class ServerMessage(BaseModel):
-    pass
-
-class ServerErrorMessage(ServerMessage):
+class ServerErrorMessage(BaseModel):
     type: Literal["error"] = "error"
 
-### Data structs
+##############################################################################
+########################### Structs ##########################################
+##############################################################################
 
 class TimerData(BaseModel):
     """A class to store the timer data"""
     id: str
     name: str
     time: datetime.datetime
+    disappear_on_completion: bool
 
 class ScoreboardData(BaseModel):
     """A class to store the scoreboard data"""
@@ -36,11 +35,11 @@ class LocationData(BaseModel):
     accuracy: float
     latitude: float
     longitude: float
-    altitude: float | None
-    altitude_accuracy: float | None
-    heading: float | None
-    speed: float | None
     time: datetime.datetime
+    altitude: float | None = None
+    altitude_accuracy: float | None = None
+    heading: float | None = None
+    speed: float | None = None
 
 class MarkerData(BaseModel):
     """A class to store a marker's data"""
@@ -49,58 +48,65 @@ class MarkerData(BaseModel):
     latitude: float
     longitude: float
 
+class ChatroomPermissionsData(BaseModel):
+    """A class that stores the permission data for a chatroom"""
+    room_id: str
+    read: bool
+    write: bool
+
 class ButtonData(BaseModel):
     """A class to store a button's data"""
-    id: UUID
+    id: str
     name: str
     needs_arguments: bool
 
-### Authentication flow messages
+##############################################################################
+########################### AUTHENTICATION ###################################
+##############################################################################
 
-class ServerStatusMessage(ServerMessage):
+class ServerConnectionStatusMessage(BaseModel):
     """A Response to send to the user when the status of the connection changed. """
     type: Literal["status"] = "status"
     status: Literal["connection established", "authenticated"]
 
-class ClientAuthenticationMessage(ClientMessage):
+class ClientAuthenticationMessage(BaseModel):
     """The user sends a token with this format with the authentication credentials"""
     type: Literal["authentication"]
     token: str
 
 class ServerAuthenticationErrorMessage(ServerErrorMessage):
     """A Response to send to the user when there was an error authenticating"""
-    type: Literal["error"] = "error"
-    status: Literal["authentication_failed"] = "authentication_failed"
+    category: Literal["authentication"] = "authentication"
+    status: Literal["authentication failed"] = "authentication failed"
 
-### Server update timer messages
+##############################################################################
+########################### Timer ############################################
+##############################################################################
 
-class ServerTimerMessage(ServerMessage):
+class ServerTimerMessage(BaseModel):
     """A base class all timer server messages are derived from"""
     type: Literal["timer"] = "timer"
 
 class ServerUpdateTimerMessage(ServerTimerMessage):
     """A Response to send to the user when a timer is updated or a new one created."""
     action: Literal["update"] = "update"
-    data: TimerData
+    data: list[TimerData]
 
 class ServerDeleteTimerMessage(ServerTimerMessage):
     """A Response to send to the user when a timer is deleted"""
     action: Literal["delete"] = "delete"
-    id: UUID
+    ids: list[str]
 
-class ClientRequestMessage(ClientMessage):
+class ClientRequestTimersMessage(BaseModel):
     """A model for when the user wants all the timers data"""
-    type: Literal["timer", "scoreboard"]
+    type: Literal["timer"]
     action: Literal["request_all"]
 
-class ServerRecieveAllTimerMessage(ServerTimerMessage):
-    """A Response to send to the user when all the timers are requested"""
-    action: Literal["recieve_all"] = "recieve_all"
-    data: list[TimerData]
+##############################################################################
+########################### Scoreboard #######################################
+##############################################################################
 
-### Scoreboard messages
-
-class ServerScoreboardMessage(ServerMessage):
+class ServerScoreboardMessage(BaseModel):
     """A base class for all scoreboard server messages"""
     type: Literal["scoreboard"] = "scoreboard"
 
@@ -108,21 +114,26 @@ class ServerUpdateScoreboardMessage(ServerScoreboardMessage):
     """A Response to send to the user when a scoreboard is updated or a new
     scoreboard is created."""
     action: Literal["update"] = "update"
-    data: ScoreboardData
+    data: list[ScoreboardData]
 
 class ServerDeleteScoreboardMessage(ServerScoreboardMessage):
     """A Response to send to the user when a scoreboard is deleted"""
     action: Literal["delete"] = "delete"
-    id: UUID
+    ids: list[str]
 
-class ServerRecieveAllScoreboardMessage(ServerScoreboardMessage):
-    """A Response to send to the user when all the scoreboard data is requested"""
-    action: Literal["recieve_all"] = "recieve_all"
-    data: list[ScoreboardData]
+class ClientRequestScoreboardsMessage(BaseModel):
+    type: Literal["scoreboard"]
+    action: Literal["request_all"]
 
-### Chat messages
+##############################################################################
+########################### Chat #############################################
+##############################################################################
 
-class ClientSendChatMessage(ClientMessage):
+class ServerChatMessage(BaseModel):
+    """A base class for all chat server messages"""
+    type: Literal["chat"] = "chat"
+
+class ClientSendChatMessage(BaseModel):
     """A model for when the user sends a message"""
     type: Literal["chat"]
     message: str
@@ -130,15 +141,10 @@ class ClientSendChatMessage(ClientMessage):
 
 class ServerChatErrorMessage(ServerErrorMessage):
     """A Response to send to the user after they send a message, if there's an error"""
-    type: Literal["error"] = "error"
     category: Literal["chat"] = "chat"
     message: Literal["no chat room", "bad message"]
 
-class ServerChatMessage(ServerMessage):
-    """A base response to send to a user when an event about char happens"""
-    type: Literal["chat"] = "chat"
-
-class ServerRecieveChatMessage(ServerChatMessage):
+class ServerReceiveChatMessage(ServerChatMessage):
     """A Response to send to the user when they receive a message"""
     room_id: str
     author_id: UUID | Literal["-1"] = "-1"
@@ -149,62 +155,64 @@ class ServerNewChatroomPermissionsMessage(ServerChatMessage):
     A response to sent to the user when a chatroom they are in changes permissions
     or they have access to a new chatroom.
     """
-    room_id: str
-    read: bool
-    write: bool
+    data: list[ChatroomPermissionsData]
 
-### Map messages
+##############################################################################
+########################### MAP ##############################################
+##############################################################################
 
-class ServerMarkerMessage(ServerMessage):
+class ServerMarkerMessage(BaseModel):
     """A base response to send to a user when a map message needs to be sent"""
     type: Literal["map"] = "map"
 
 class ServerUpdateMarkerMessage(ServerMarkerMessage):
     """A Response to send to the user when a marker is updated or a new one created."""
     action: Literal["update_marker"] = "update_marker"
-    data: MarkerData
+    data: list[MarkerData]
 
 class ServerDeleteMarkerMessage(ServerMarkerMessage):
     """A Response to send to the user when a marker is deleted"""
     action: Literal["delete_marker"] = "delete_marker"
-    id: str
+    ids: list[str]
 
-class ClientSendLocationMessage(ClientMessage):
+class ClientSendLocationMessage(BaseModel):
     """A model for when the user sends their location"""
     type: Literal["map"] = "map"
     location: LocationData
 
-## Button messages
+##############################################################################
+########################### BUTTON ###########################################
+##############################################################################
 
-class ClientSendButtonPressMessage(ClientMessage):
+class ClientSendButtonPressMessage(BaseModel):
     """A model for when the user sends a button"""
-    type: Literal["button"] = "button"
+    type: Literal["button"]
     id: str
     args: list[str] | None
 
-class ServerButtonMessage(ServerMessage):
+class ServerButtonMessage(BaseModel):
     """A base response to send to a user from the server when a button
     message needs to be sent"""
     type: Literal["button"] = "button"
 
-class ServerUpdateButtonMessage(ServerButtonMessage):
+class ServerUpdateButtonsMessage(ServerButtonMessage):
     """A Response to send to the user when a button is updated or a new one created."""
     action: Literal["update"] = "update"
-    data: ButtonData
+    data: list[ButtonData]
 
 class ServerDeleteButtonMessage(ServerButtonMessage):
     """A Response to send to the user when a button is deleted."""
     action: Literal["delete"] = "delete"
     id: str
 
-class ClientFetchButtonArgumentsMessage(ClientMessage):
+class ClientFetchButtonArgumentsMessage(BaseModel):
     """
     A message sent from the client to the server when they clicked on a button
     and wish to know what parameters to select from.
     """
     type: Literal["button"]
+    id: str  # button id
     action: Literal["get_params"]
-    id: str # button id
 
 class ServerSendButtonArgumentsMessage(ServerButtonMessage):
     """A message sent from the server to supply the parameter options for a user"""
@@ -212,9 +220,11 @@ class ServerSendButtonArgumentsMessage(ServerButtonMessage):
     id: str
     params: list[list[str]]
 
-### Notifications
+##############################################################################
+########################### NOTIFICATIONS ####################################
+##############################################################################
 
-class ServerSendNotificationMessage(ServerMessage):
+class ServerSendNotificationMessage(BaseModel):
     """A message sent from the server to notify the user's device"""
     type: Literal["notification"] = "notification"
     level: Literal["normal", "debug", "warning", "error"] = "normal"

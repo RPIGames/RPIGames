@@ -19,8 +19,18 @@ class ConnectionManager:
     """A Class to manage the websockets for all the different users."""
     def __init__(self):
         # active_connections is a dictionary from websockets to user ids.
-        # if a websocket points to None, that means its not authenticated yet
+        # if a websocket points to None, that means it's not authenticated yet
         self.active_connections: dict[WebSocket, UUID | None] = {}
+        self.callable_map = {
+
+        }
+
+    async def handle(self, message: str):
+        pass
+
+    ##############################################################################
+    ########################### CONNECTION #######################################
+    ##############################################################################
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
@@ -29,26 +39,69 @@ class ConnectionManager:
     def disconnect(self, websocket: WebSocket):
         self.active_connections.pop(websocket, None)
 
-    def authenticated(self, websocket: WebSocket) -> bool:
+    ##############################################################################
+    ########################### AUTHENTICATION ###################################
+    ##############################################################################
+
+    def authenticated(self, player_id: UUID) -> bool:
+        for websocket, pid in self.active_connections.items():
+            if pid == player_id:
+                return self._websocket_authenticated(websocket)
+        return False
+
+    def _websocket_authenticated(self, websocket: WebSocket):
         return self.active_connections.get(websocket, None) is not None
 
-    def authenticate(self, credentials: ClientAuthenticationMessage, websocket: WebSocket) -> bool:
-        """Authenticates a user's websocket connection, given a ClientAuthenticationMessage and the respective websocket"""
-        if self.authenticated(websocket):
-            return True
-        creds = extract_credentials(credentials.token)
+    async def _authenticate(self, websocket: WebSocket, credentials: ClientAuthenticationMessage) -> None:
+        if self._websocket_authenticated(websocket):
+            return
         user = None
         # this has to be a for loop because get_session() is a generator (which it has to be to close the session).
         for session in get_session():
-            user = optional_authorization(creds, session)
+            user = optional_authorization(credentials.token, session)
         if user is None:
-            return False
-        self.active_connections[websocket] = user.id
-        return True
+            pass
+
+    ##############################################################################
+    ########################### TIMER ############################################
+    ##############################################################################
+
+    ##############################################################################
+    ########################### SCOREBOARD #######################################
+    ##############################################################################
+
+    ##############################################################################
+    ########################### CHAT #############################################
+    ##############################################################################
+
+    ##############################################################################
+    ########################### MAP ##############################################
+    ##############################################################################
+
+    ##############################################################################
+    ########################### BUTTON ###########################################
+    ##############################################################################
+
+    ##############################################################################
+    ########################### NOTIFICATION #####################################
+    ##############################################################################
+
+    ##############################################################################
+    ########################### HELPERS ##########################################
+    ##############################################################################
+
+    async def _send_personal_message(self, player_id: UUID, message: str):
+        for websocket, pid in self.active_connections.items():
+            if pid == player_id:
+                await self._send_websocket_message(websocket, message)
 
     @staticmethod
-    async def send_personal_message(message: str, websocket: WebSocket):
-        await websocket.send_text(message)
+    async def _send_websocket_message(websocket: WebSocket, message: str):
+        await websocket.send_json(message)
+
+    async def _broadcast(self, message: str):
+        for websocket, _ in self.active_connections.items():
+            await websocket.send_json(message)
 
 manager = ConnectionManager()
 
@@ -60,18 +113,7 @@ async def websocket_endpoint(
     await manager.connect(websocket)
     try:
         while True:
-            message = await websocket.receive_text()
-            if not manager.authenticated(websocket):
-                try:
-                    message = ClientAuthenticationMessage.model_validate_json(message)
-                except ValidationError:
-                    await manager.send_personal_message(ServerAuthenticationErrorMessage().model_dump_json(), websocket)
-                    continue
-                if manager.authenticate(message, websocket):
-                    await manager.send_personal_message("Authentication Successful", websocket)
-                else:
-                    await manager.send_personal_message("We fed your credentials to THE SNAKE.", websocket)
-            else:
-                await manager.send_personal_message(message, websocket)
+            message = await websocket.receive_json()
+            await manager.handle(message)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
