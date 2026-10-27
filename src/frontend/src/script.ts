@@ -1,7 +1,7 @@
 import {
+    type GameInfo,
     getAllLobbies,
     getGameData as getGameDataBackend,
-    type GameInfo,
     getNewUserId,
     getSelfUserInfo,
     joinLobby as joinLobbyBackend,
@@ -261,11 +261,11 @@ async function makeLobbyButtonsInteractable() {
     //Create lobby button
     const createLobbyButton = document.getElementById(
         "create-lobby",
-    ) as HTMLButtonElement; 
-    createLobbyButton
-    createLobbyButton.addEventListener("click",async ()=>{
+    ) as HTMLButtonElement;
+    createLobbyButton;
+    createLobbyButton.addEventListener("click", async () => {
         await setPageContent("createLobby", "", "create-main");
-    })
+    });
 }
 
 async function checkLobbyJoinStatus() {
@@ -567,7 +567,7 @@ async function setPageContent(
                 }, 10000);
                 break;
             }
-            case "createLobby":{
+            case "createLobby": {
                 await setupGameData();
                 await makeCreateButtonsInteractable();
                 break;
@@ -608,30 +608,34 @@ async function setPageContent(
 }
 
 const gameData = new Map<string, GameInfo>();
-async function setupGameData(){
+async function setupGameData() {
     //select dropdown
-    const gameTypeSelect=document.getElementById("game-type-select") as HTMLSelectElement;
+    const gameTypeSelect = document.getElementById(
+        "game-type-select",
+    ) as HTMLSelectElement;
 
     //get backend game data
-    let backendGameData=await getGameDataBackend();
-    for(const data of backendGameData){
+    const backendGameData = await getGameDataBackend();
+    for (const data of backendGameData) {
         //add game data to map
-        gameData.set(data.game_id,data)
+        gameData.set(data.game_id, data);
 
         //add game data to game type dropdown
-        const gameOption=document.createElement("option")
-        gameOption.innerHTML=data.name;
-        gameOption.id=data.game_id;
-        gameTypeSelect.append(gameOption)
+        const gameOption = document.createElement("option");
+        gameOption.innerHTML = data.name;
+        gameOption.id = data.game_id;
+        gameTypeSelect.append(gameOption);
     }
 
-    gameTypeSelect.addEventListener("input",()=>{
-        if(gameTypeSelect.value!="default"){
+    gameTypeSelect.addEventListener("input", () => {
+        if (gameTypeSelect.value !== "default") {
             //remove default "select game type" option
-            const defaultOption=document.getElementById("default-game-option") as HTMLOptionElement;
-            defaultOption.remove()
+            const defaultOption = document.getElementById(
+                "default-game-option",
+            ) as HTMLOptionElement;
+            defaultOption.remove();
         }
-    })
+    });
 }
 
 async function makeCreateButtonsInteractable() {
@@ -639,10 +643,9 @@ async function makeCreateButtonsInteractable() {
     const returnButton = document.getElementById(
         "return-lobby-list",
     ) as HTMLButtonElement;
-    returnButton.addEventListener("click", ()=>{
+    returnButton.addEventListener("click", () => {
         setPageContent("lobbies", "", "lobby-main");
     });
-
 }
 
 //set hamburger menu to closed state
