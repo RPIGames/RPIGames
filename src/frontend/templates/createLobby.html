@@ -11,12 +11,15 @@
         <input class="lobby-input" type="text" name="password" id="password-input" />
 
         <select id="game-type-select">
-            <option id="default-game-option" value="default" selected>
+            <option id="default-game-option" value="internal_default" selected>
                 Select Game Type...
             </option>
         </select>
 
         </option>
+        <div id="create-game-settings-wrapper">
+
+        </div>
     </div>
     <div id="lobby-footer" class="flex">
       <div class="lobby-button-wrapper">
@@ -25,4 +28,25 @@
       </div>
     </div>
   </div>
+  </template>
+
+  <template id="max-input-template">
+    <div>
+      <label for="maxPlayers">Max Players</label>
+      <input class="lobby-input input-number" type="number" name="maxPlayers" id="max-player-input" />
+    </div>
+  </template>
+
+  <template id="input-template-number">
+    <div>
+      <label for=""></label>
+      <input class="lobby-input input-number" type="number" name="" />
+    </div>
+  </template>
+
+  <template id="input-template-string">
+    <div>
+      <label for=""></label>
+      <input class="lobby-input" type="string" name="" />
+    </div>
   </template>
