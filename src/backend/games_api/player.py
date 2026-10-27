@@ -44,6 +44,7 @@ class Player:
         Gets the name of this player.
         """
         return self._user.name
+        
     #when websockets are implemented fix deal with right type of location
     def get_location(self) -> tuple[float, float] | None:
         """
