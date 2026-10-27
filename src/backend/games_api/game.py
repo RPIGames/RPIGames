@@ -13,7 +13,8 @@ from abc import ABC,abstractmethod
 
 
 class Game(ABC):
-
+    players =[]#replace with double hash map b/w players and games
+    scoreboard = []
     def __init__(self, lobby_id: UUID):
         self._lobby_id = lobby_id
 
@@ -25,7 +26,11 @@ class Game(ABC):
     #also adds it to the list of scoreboards
     #Scoreboard_request_all(Player UUID): this player has requested all scoreboards
 
-    
+    async def Scoreboard_get_all(
+       self,
+       player_UUID: str | UUID
+       ) -> list[ScoreboardData]:
+       return scoreboard
     #have a start game function
     @abstractmethod
     async def start_game(self, config: dict[str, Any]) -> None:
@@ -37,8 +42,7 @@ class Game(ABC):
         pass
 
     #All of these the children class can not change
-	#Chat_Send_Message(Room UUID, Player UUID, message): this player has sent this message
-	#Button_Send(Player UUID, Button ID, arguments): this player pushed this button
+	
 
 
 

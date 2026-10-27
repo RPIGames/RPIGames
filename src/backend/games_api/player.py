@@ -27,7 +27,7 @@ class Player:
         self._location = None
 
     #when websockets are implemented fix deal with right type of location
-    def _set_location(self, new_location: tuple[float, float]) -> None:
+    async def _set_location(self, new_location: tuple[float, float]) -> None:
         """
         Sets the location of the player.
         """
@@ -38,6 +38,7 @@ class Player:
         Gets the name of this player.
         """
         return self._user.name
+        
     #when websockets are implemented fix deal with right type of location
     def get_location(self) -> tuple[float, float] | None:
         """
@@ -59,6 +60,14 @@ class Player:
         """
         raise NotImplementedError("Chatrooms have not been implemented yet")
 
+    #Chat_Send_Message(Room UUID, message): this player has sent this message
+    async def chat_send_message(
+        self,
+        Room_UUID:str|UUID,
+        message:str
+        ) -> None:
+        pass
+
     def send_notification(
         self, notification_title: str, notification_body: str | None = None
     ):
@@ -79,16 +88,32 @@ class Player:
         """
 
         """
-        self._timers.update({timer_id:(timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)})
+        self._timers[timer_id] = (timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)
         amount_of_seconds = timer_end.timestamp - (datetime.datetime.now()).timestamp() 
         amount_of_seconds = amount_of_seconds/60
-        schedule.schedule(amount_of_seconds,timer_end_function) #todo add function that is a helper function that when the function is called makes sure the called function is in the list of timers.
+        schedule.schedule(amount_of_seconds,timer_end_function) 
         #add so that it gets sent to the player
         return (timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)
     
     # Timer_request_all(): this player has requested all timers
-    #stop timer
-    
+    async def _timer_request_all(self)->list[str|UUID:tuple[str,str, datetime,Callable[[], None], bool ]]:
+        return _timers
+
+    #stop timer\
+    def stop_timer(self,
+        timer_id : str | UUID):
+        raise NotImplementedError("Notifications have not been implemented yet")
+
+
+    #todo add function that is a helper function that when the function is called makes sure the called function is in the list of timers.
+    # has atributes of fuction being called and timer id
+    def check_timer(
+        self,
+
+    )-> asyncio.Task[Any]:
+        raise NotImplementedError("Notifications have not been implemented yet")
+
+
 
 
     def assign_button(
@@ -102,3 +127,12 @@ class Player:
         if isinstance(button_id, str):
             button_id = UUID(bytes=button_id.encode("ascii"))
         raise NotImplementedError("Buttons have not been implemented yet")
+
+    async def button_send(
+        self,
+        Button_ID: str| UUID, 
+        arguments: list[str]
+        )-> None:
+         pass
+        #: this player pushed this button
+
