@@ -21,6 +21,7 @@ from sqlmodel import Session
 
 from db.engine import get_session
 from db.models import User
+from games_api.player import Player
 
 security_optional = HTTPBearer(auto_error=False)
 
@@ -53,12 +54,12 @@ def parse_credentials(
 def optional_authorization(
     credentials: Annotated[tuple[str, str | None], Depends(parse_credentials)],
     session: Annotated[Session, Depends(get_session)],
-) -> User | None:
+) -> Player | None:
     """
     This dependency allows the user to authenticate themselves, as
     long as the user passes a Bearer auth with the respective details.
 
-    It returns the User object corresponding to that authentication,
+    It returns the Player object corresponding to that authentication,
     or None if the authentication failed or was non-existent
     """
     if credentials is None:
@@ -81,12 +82,12 @@ def optional_authorization(
     if not constant_time.bytes_eq(user.secret.bytes, secret_uuid.bytes):
         return None
 
-    return user
+    return Player(user_uuid)
 
 
 def require_authorization(
-    possible_auth: Annotated[User | None, Depends(optional_authorization)],
-) -> User:
+    possible_auth: Annotated[Player | None, Depends(optional_authorization)],
+) -> Player:
     """
     This dependency forces the user to have a valid, active, user session,
     and that the user passes a Bearer auth with the respective details.

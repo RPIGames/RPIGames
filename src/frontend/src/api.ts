@@ -156,9 +156,19 @@ export async function getAllLobbies() {
  *
  * @returns A {@link LobbyResponse} that represents the lobby just created.
  */
-export async function makeLobby(name?: string, secret?: string) {
+export async function makeLobby(
+    game_type: string,
+    game_capacity: number,
+    game_config: Map<string, number | string | boolean>,
+    name?: string,
+    secret?: string,
+) {
     // Construct request body
-    const body: MakeLobbyRequest = {};
+    const body: MakeLobbyRequest = {
+        game_type_id: game_type,
+        game_capacity: game_capacity,
+        game_config: game_config,
+    };
     if (name) {
         body.name = name;
     }
@@ -273,6 +283,47 @@ export async function leaveLobby() {
         return true;
     }
     throw `${response.status} error while leaving current lobby: ${JSON.stringify(await response.json())}`;
+}
+
+export type Type = "string" | "number" | "boolean";
+
+export interface GameInfo {
+    name: string;
+    game_id: string;
+    player_range: [number, number];
+    config: Map<string, [string, Type]>;
+}
+
+/**
+ * Gets the possible game types
+ *
+ *
+ *
+ * @returns a list of GameInfo objects
+ *
+ */
+export async function getGameData(): Promise<GameInfo[]> {
+    return new Promise((resolve, _reject) =>
+        resolve([
+            {
+                name: "Sample Game",
+                game_id: "sample_game",
+                player_range: [0, 500],
+                config: new Map([
+                    ["welcome_message", ["Welcome message", "string"]],
+                    ["time_to_hide", ["Time to Hide (minutes):", "number"]],
+                    [
+                        "points_for_hiding",
+                        ["Points per minute hidden:", "number"],
+                    ],
+                    [
+                        "points_for_seeking",
+                        ["Points per hider found:", "number"],
+                    ],
+                ]),
+            },
+        ]),
+    );
 }
 
 /**

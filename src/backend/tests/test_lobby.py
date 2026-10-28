@@ -23,15 +23,34 @@ def create_quick_user() -> str:
     return f"Bearer {uuid}${secret}"
 
 
-def create_quick_lobby(auth: str, *, secret: str | None = None) -> UUID:
+def create_quick_lobby(auth: str, *,
+    game_type: str = "sample_game",
+    capacity: int = 8,
+    config: dict[str, str | int | float | bool] | None = None,
+    secret: str | None = None) -> UUID:
     """Helper method that creates a quick lobby given an auth string. Returns lobby uuid."""
+    if config is None:
+        config = {"welcome_message": "hello", "time_to_hide": 5, "points_for_hiding": 10, "points_for_seeking": 15}
     if secret is None:
-        response = client.post("/v1/lobby/new", headers={"Authorization": auth})
+        response = client.post("/v1/lobby/new", json={
+            "game_type_id": game_type,
+            "game_capacity": capacity,
+            "game_config": config,
+        }, headers={"Authorization": auth})
     else:
         response = client.post(
-            "/v1/lobby/new", json={"secret": secret}, headers={"Authorization": auth}
+            "/v1/lobby/new", json={
+                "game_type_id": game_type,
+                "game_capacity": capacity,
+                "game_config": config,
+                "secret": secret
+            }, headers={"Authorization": auth}
         )
         print(response.request.content)
+
+    if response.status_code != 200:
+        raise ValueError(f"there was an error making a quick lobby: {response.text}")
+
     return UUID(response.json()["id"])
 
 
@@ -89,6 +108,14 @@ def test_create_lobby():
         "/v1/lobby/new",
         json={
             "name": "Test Lobby",
+            "game_type_id": "sample_game",
+            "game_capacity": 8,
+            "game_config": {
+                "welcome_message": "hello",
+                "time_to_hide": 5,
+                "points_for_hiding": 10,
+                "points_for_seeking": 15,
+            }
         },
         headers={"Authorization": auth},
     )
@@ -107,8 +134,8 @@ def test_leave_lobby():
     """Tests the /leave endpoint"""
     auth = create_quick_user()
     _lobby = create_quick_lobby(auth)
-    assert get_user_info(auth)["leader"]
     assert get_user_info(auth)["lobby_id"] is not None
+    assert get_user_info(auth)["leader"]
 
     response = client.post("/latest/lobby/leave", headers={"Authorization": auth})
     assert response.status_code == status.HTTP_200_OK

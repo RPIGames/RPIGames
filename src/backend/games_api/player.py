@@ -1,22 +1,21 @@
 """
 This file contains the Player sub-API for the Game API.
 """
-import schedule
+import asyncio
 from collections.abc import Callable
+from datetime import datetime
 from typing import Any, TypeVar
 from uuid import UUID
-from datetime import datetime
 
 from sqlmodel import Session
 
 from db.engine import engine
 from db.models import User
+from games_api.schedule import schedule
 
 T = TypeVar("T")
 
-
 class Player:
-    _timers = {}
     def __init__(self, uuid: UUID) -> None:
         self.uuid = uuid
         db_conn = Session(engine)
@@ -25,6 +24,12 @@ class Player:
             raise ValueError
         self._user = user
         self._location = None
+        self._timers : dict[str, tuple[str, str, datetime, Callable[[], None], bool ]] = {}
+
+    def __eq__(self, value: object, /) -> bool:
+        if type(value) == Player:
+            return value.uuid == self.uuid
+        return False
 
     #when websockets are implemented fix deal with right type of location
     async def _set_location(self, new_location: tuple[float, float]) -> None:
@@ -38,7 +43,7 @@ class Player:
         Gets the name of this player.
         """
         return self._user.name
-        
+
     #when websockets are implemented fix deal with right type of location
     def get_location(self) -> tuple[float, float] | None:
         """
@@ -83,21 +88,26 @@ class Player:
         timer_end: datetime,
         timer_name: str = "Untitled Timer",
         timer_end_function: Callable[[], None] | None = None,
-        disappear_on_completion: bool = True,        
-    ) -> tuple[str,str, datetime,Callable[[], None], bool ]: #id , name  , time of end, function called at end,  disappear on completion
+        disappear_on_completion: bool = True,
+    ) -> tuple[str, str, datetime, Callable[[], None], bool ]: #id , name  , time of end, function called at end,  disappear on completion
         """
 
         """
+        if timer_end_function is None:
+            timer_end_function = lambda : None
+        if type(timer_id) is not str:
+            assert type(timer_id) is UUID
+            timer_id = timer_id.hex
         self._timers[timer_id] = (timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)
-        amount_of_seconds = timer_end.timestamp - (datetime.datetime.now()).timestamp() 
+        amount_of_seconds = timer_end.timestamp() - (datetime.now()).timestamp()
         amount_of_seconds = amount_of_seconds/60
-        schedule.schedule(amount_of_seconds,timer_end_function) 
+        schedule.schedule(amount_of_seconds,timer_end_function)
         #add so that it gets sent to the player
         return (timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)
-    
+
     # Timer_request_all(): this player has requested all timers
-    async def _timer_request_all(self)->list[str|UUID:tuple[str,str, datetime,Callable[[], None], bool ]]:
-        return _timers
+    async def _timer_request_all(self) -> dict[str, tuple[str,str, datetime,Callable[[], None], bool]]:
+        return self._timers
 
     #stop timer\
     def stop_timer(self,
@@ -114,8 +124,6 @@ class Player:
         raise NotImplementedError("Notifications have not been implemented yet")
 
 
-
-
     def assign_button(
         self,
         button_id: UUID | str,
@@ -130,9 +138,8 @@ class Player:
 
     async def button_send(
         self,
-        Button_ID: str| UUID, 
+        Button_ID: str| UUID,
         arguments: list[str]
         )-> None:
          pass
         #: this player pushed this button
-

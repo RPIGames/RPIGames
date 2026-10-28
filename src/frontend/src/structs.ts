@@ -27,6 +27,9 @@ export interface LobbyJoinRequest {
 }
 
 export interface MakeLobbyRequest {
+    game_type_id: string;
+    game_capacity: number;
+    game_config: Map<string, number | string | boolean>;
     name?: string; // (optional )name of the new lobby
     secret?: string; // (optional) secret that the private lobby needs to join
 }
