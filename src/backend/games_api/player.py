@@ -5,7 +5,6 @@ from collections.abc import Awaitable, Callable
 from datetime import datetime
 from typing import Any, TypeVar
 from uuid import UUID
-from datetime import datetime
 
 from sqlmodel import Session
 
@@ -16,7 +15,6 @@ from games_api.schedule import schedule
 T = TypeVar("T")
 
 class Player:
-    _timers = {}
     def __init__(self, uuid: UUID) -> None:
         self.uuid = uuid
         db_conn = Session(engine)
