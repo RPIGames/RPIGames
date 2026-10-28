@@ -36,6 +36,7 @@ class Game(ABC):
     #    return self.scoreboard
 
     #have a start game function
+
     @abstractmethod
     async def start_game(self, config: dict[str, Any]) -> None:
         pass
