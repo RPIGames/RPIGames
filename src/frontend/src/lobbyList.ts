@@ -12,7 +12,7 @@ import {
     getPageContent,
     setPageContent,
 } from "./dynamicPages.js";
-import type { LobbyResponse } from "./structs.js";
+import type { LobbyResponse } from "./structs/api.js";
 
 //map of data for all lobbies
 //stored as id, lobby pair

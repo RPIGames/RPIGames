@@ -1,11 +1,11 @@
 /// <reference lib="webworker" />
 declare const self: ServiceWorkerGlobalScope;
 
+import type { ResourceInfo } from "./structs/misc.js";
 import type {
     MessageFromServiceWorker,
     MessageToServiceWorker,
-    ResourceInfo,
-} from "./structs.js";
+} from "./structs/serviceWorker.js";
 
 // Puts a request into the cache.
 async function putInCache(request: Request, response: Response) {
