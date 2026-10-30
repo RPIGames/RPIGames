@@ -34,7 +34,7 @@ async function registerServiceWorker() {
 registerServiceWorker();
 
 // Enum of different notification types. The color is based off of this.
-enum MessageType {
+export enum MessageType {
     Info = "info",
     Success = "success",
     Warning = "warning",
