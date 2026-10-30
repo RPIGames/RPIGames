@@ -5,3 +5,11 @@ export interface ResourceInfo {
     mtime: string;
     size: number;
 }
+
+// Enum of different notification types. The color is based off of this.
+export enum MessageType {
+    Info = "info",
+    Success = "success",
+    Warning = "warning",
+    Error = "error",
+}
