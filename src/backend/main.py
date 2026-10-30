@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 
 from db.engine import create_db_and_tables
-from games import sample  # initialize games
+from games import games
 from routers.v1_router import router as router_v1
+
+games.init_all()
 
 create_db_and_tables()
 
