@@ -239,7 +239,7 @@ async function getUserInfo(userId: string) {
     } else if (response.status === 404){
         // backend server reached, but uuid is invalid or some other issue
         await sendUINotification(
-            "The UUID seems to be invalid. Making a new one...",
+            "The UUID seems to be invalid. Making a new one..",
             MessageType.Error,
             false,
         );
@@ -282,16 +282,28 @@ async function start() {
     //ADD SOMETHING HERE? nvm
 
     // check if still active
-    const selfInfo = await getUserInfo(userId);
+    var selfInfo = await getUserInfo(userId);
     if (selfInfo == null) {
         // couldn't get user info, just return
         console.log("userString invalid, getting a new one!");
         userId = await getNewUserId();
         if (userId == null) {
-            // wait 15 seconds until next request
-            setTimeout(start, 15000);
+            await sendUINotification(
+                "nullUUID",
+                MessageType.Error,
+                false,
+            );
+            // wait 1 seconds until next request
+            setTimeout(start, 1000);
+            return;
         }
-        return;
+        selfInfo = await getUserInfo(userId);
+        if (selfInfo == null) {
+            // wait 1 seconds until next request
+            setTimeout(start, 1000);
+            return;
+        }
+        
     }
     if(typeof selfInfo === 'number'){
         //some non-404 issue, just return
