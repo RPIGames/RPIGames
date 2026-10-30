@@ -2,10 +2,10 @@ import type {
     LobbyJoinRequest,
     LobbyResponse,
     MakeLobbyRequest,
-    MessageFromServiceWorker,
     PublicUserInfo,
     UserTokenResponse,
-} from "./structs.js";
+} from "./structs/api.js";
+import type { MessageFromServiceWorker } from "./structs/serviceWorker.js";
 
 /**
  * Shows a native notification.

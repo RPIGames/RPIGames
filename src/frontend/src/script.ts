@@ -4,7 +4,7 @@ import {
     getSelfUserInfo,
     showNotification,
 } from "./api.js";
-import type { LobbyResponse } from "./structs";
+import type { LobbyResponse } from "./structs/api.js";
 
 // Registers a service worker to cache requests for offline navigation and faster loading. Also reduces server strain.
 async function registerServiceWorker() {
