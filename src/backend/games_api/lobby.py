@@ -39,13 +39,18 @@ class Lobby:
         self.capacity = lobby_size
         self.name = name
         self.secret = secret
-
         self._game = game_type(leader)
 
     def get_players(self) -> list[Player]:
+        """
+        Get all of the players
+        """
         return self._players
 
     async def add_player(self, to_add: Player) -> None:
+        """
+        Adds a player to a lobby
+        """
         if len(self._players) == self.capacity:
             raise ValueError("the lobby is full")
 
@@ -54,6 +59,9 @@ class Lobby:
         await self._game.join_lobby(to_add)
 
     async def remove_player(self, to_remove: Player) -> None:
+        """
+        Removes the players
+        """
         await self._game.leave_lobby(to_remove)
 
         self._players.remove(to_remove)
@@ -73,6 +81,9 @@ class Lobby:
 GLOBAL_LOBBY_MAP: dict[UUID, Lobby] = {}
 
 def get_players_lobby(player: Player) -> Lobby | None:
+    """
+    gets the lobby of the given player
+    """
     lobby_id = PLAYER_TO_LOBBY_MAP.get(player.uuid)
 
     if lobby_id is None:

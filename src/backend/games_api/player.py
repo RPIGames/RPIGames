@@ -91,7 +91,7 @@ class Player:
         disappear_on_completion: bool = True,
     ) -> tuple[str, str, datetime, Callable[[], None], bool ]: #id , name  , time of end, function called at end,  disappear on completion
         """
-
+        This makes the timer and adds it to the list of timers that the player sees 
         """
         if timer_end_function is None:
             timer_end_function = lambda : None
@@ -101,27 +101,41 @@ class Player:
         self._timers[timer_id] = (timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)
         amount_of_seconds = timer_end.timestamp() - (datetime.now()).timestamp()
         amount_of_seconds = amount_of_seconds/60
-        schedule.schedule(amount_of_seconds,timer_end_function)
-        #add so that it gets sent to the player
+        schedule.schedule(amount_of_seconds,_check_timer,timer_id,timer_end_function)
         return (timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)
 
     # Timer_request_all(): this player has requested all timers
     async def _timer_request_all(self) -> dict[str, tuple[str,str, datetime,Callable[[], None], bool]]:
         return self._timers
 
-    #stop timer\
-    def stop_timer(self,
+    #stop timer
+    async def stop_timer(self,
         timer_id : str | UUID):
-        raise NotImplementedError("Notifications have not been implemented yet")
+        """
+        Tries to remove the time if the timer does not exist return false otherwise return true
+        """
+        checking = self._timers.pop(timer_id,None)
+        if(checking == None):
+            return False
+        else:
+            return True
+
 
 
     #todo add function that is a helper function that when the function is called makes sure the called function is in the list of timers.
     # has atributes of fuction being called and timer id
-    def check_timer(
+    async def _check_timer(
         self,
-
+        timer_id : str | UUID,
+        timer_end_function: Callable[[], None] | None = None,
     )-> asyncio.Task[Any]:
-        raise NotImplementedError("Notifications have not been implemented yet")
+        """
+        Does the action that is to be called by the timer if the timer still exists.
+        """
+        if timer_id in _timer:
+            return await timer_end_function()
+        else:
+            pass
 
 
     def assign_button(

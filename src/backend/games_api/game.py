@@ -19,6 +19,7 @@ class Game(ABC):
 
     def __init__(self, initial_player: Player):
         self.scoreboard = []
+        
 
 
     #add scoreboard
@@ -26,15 +27,15 @@ class Game(ABC):
     #takes in an amount of scores that are being stored
     #also takes the which score it is
     #also adds it to the list of scoreboards
-    #Scoreboard_request_all(Player UUID): this player has requested all scoreboards
 
-    # async def scoreboard_get_all(
-    #    self,
+    #Scoreboard_request_all(Player UUID): this player has requested all scoreboards
+    #async def scoreboard_get_all(
+    #   self,
     #    player_UUID: str | UUID
     #    ) -> list[ScoreboardData]:
-    #    return scoreboard
-    #have a start game function
+    #    return self.scoreboard
 
+    #have a start game function
     @abstractmethod
     async def start_game(self, config: dict[str, Any]) -> None:
         pass
