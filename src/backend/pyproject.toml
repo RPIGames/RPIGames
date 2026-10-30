@@ -35,5 +35,6 @@ namespace-packages = ["."]
 [dependency-groups]
 dev = [
     "httpx2>=2.13.0",
+    "coverage>=7.16.2",
     "pytest>=9.1.1",
 ]
