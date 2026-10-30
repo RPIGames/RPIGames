@@ -1,3 +1,4 @@
+import { MessageType, sendUINotification } from "./script.js";
 import type {
     LobbyJoinRequest,
     LobbyResponse,
@@ -6,7 +7,13 @@ import type {
     UserTokenResponse,
 } from "./structs/api.js";
 import type { MessageFromServiceWorker } from "./structs/serviceWorker.js";
-import type { ClientAuthenticationMessage, ClientSendChatMessage, ServerMessage, Uuid } from "./structs/websocket.js";
+import type {
+    ClientAuthenticationMessage,
+    ClientSendChatMessage,
+    ClientSendLocationMessage,
+    ServerMessage,
+    Uuid,
+} from "./structs/websocket.js";
 
 /**
  * Shows a native notification.
@@ -138,7 +145,9 @@ export async function getAllLobbies() {
     //get lobby data
     const response = await fetch("/api/latest/lobby/all");
     if (!response.ok) {
-        throw new Error(`Failed to get lobbies: Status code from fetching lobbies is ${response.status}`);
+        throw new Error(
+            `Failed to get lobbies: Status code from fetching lobbies is ${response.status}`,
+        );
     }
 
     //create list of lobbies
@@ -187,7 +196,9 @@ export async function makeLobby(
     if (response.ok) {
         return (await response.json()) as LobbyResponse;
     }
-    throw new Error(`${response.status} error while making a new lobby: ${response.json()}`);
+    throw new Error(
+        `${response.status} error while making a new lobby: ${response.json()}`,
+    );
 }
 
 /**
@@ -385,25 +396,27 @@ navigator.serviceWorker.addEventListener("message", (e: MessageEvent) => {
     }
 });
 
-
 // Client side Websocket things are defined here:
 
 // makes a URL for the websocket
-const wsUri = new URL("/api/v1/ws/connect/");
+
+const wsUri = new URL("/api/v1/websocket/", window.location.href);
 
 // actually opens the websocket
-let webSocket: WebSocket = new WebSocket(wsUri);
+const webSocket: WebSocket = new WebSocket(wsUri);
 // variable that keeps track of the authentication state of the websocket
 let webSocketAuthenticated = false;
 
 // add the handleMessage function as an event listener on the websocket
-webSocket.addEventListener("message", handleMessage, { "passive": true })
+webSocket.addEventListener("message", handleMessage, { passive: true });
 
 // adds a close event so that we can see (in the log) when the websocket dies
 // or closes
 webSocket.addEventListener("close", (event) => {
     if (event.wasClean) {
-        console.log(`Closed cleanly, code=${event.code}, reason=${event.reason}`);
+        console.log(
+            `Closed cleanly, code=${event.code}, reason=${event.reason}`,
+        );
     } else {
         console.log("Connection died");
     }
@@ -417,10 +430,14 @@ function handleMessage(event: MessageEvent<string>) {
             case "connection established":
                 // Send user auth, if we have it.
                 try {
-                    authenticateWebSocket(getAuthToken())
-                } catch (e) {
-                    console.warn(`authstring is not in localstorage, websocket will not work
-                        make sure to call authenticateWebSocket(token) after you have gotten a token`)
+                    authenticateWebSocket(getAuthToken());
+                } catch (error) {
+                    if (error instanceof Error) {
+                        console.warn(`authstring is not in localstorage, websocket will not work
+                            make sure to call authenticateWebSocket(token) after you have gotten a token`);
+                    } else {
+                        throw error;
+                    }
                 }
                 break;
             case "authenticated":
@@ -447,8 +464,8 @@ function handleMessage(event: MessageEvent<string>) {
 export function authenticateWebSocket(token: `${Uuid}$${Uuid}`) {
     const message: ClientAuthenticationMessage = {
         type: "authentication",
-        token: token
-    }
+        token: token,
+    };
     webSocket.send(JSON.stringify(message));
 }
 
@@ -462,9 +479,54 @@ export function sendChatMessage(message: string, chatroom_id: Uuid) {
         type: "chat",
         message: message,
         room_id: chatroom_id,
-    }
+    };
 
     if (webSocketAuthenticated) {
-        webSocket.send(JSON.stringify(to_send))
+        webSocket.send(JSON.stringify(to_send));
+    }
+}
+
+// setup sending location
+navigator.geolocation.watchPosition(
+    sendPosition,
+    () => {
+        sendUINotification("error getting location", MessageType.Error);
+    },
+    {
+        enableHighAccuracy: true,
+    },
+);
+
+function sendPosition(position: GeolocationPosition) {
+    console.log("got position", position);
+    if (webSocketAuthenticated) {
+        const to_send: ClientSendLocationMessage = {
+            type: "map",
+            location: {
+                accuracy: position.coords.accuracy,
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                time: position.timestamp,
+            },
+        };
+        if (position.coords.speed) {
+            to_send.location.speed = position.coords.speed;
+        }
+        if (position.coords.altitude) {
+            to_send.location.altitude = position.coords.altitude;
+        }
+        if (position.coords.altitudeAccuracy) {
+            to_send.location.altitude_accuracy =
+                position.coords.altitudeAccuracy;
+        }
+        if (position.coords.heading) {
+            to_send.location.heading = position.coords.heading;
+        }
+        webSocket.send(JSON.stringify(to_send));
+    } else {
+        console.error(
+            "could not send geolocation data because websocket is not authenticated at: ",
+            position.timestamp,
+        );
     }
 }
