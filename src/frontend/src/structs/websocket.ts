@@ -11,13 +11,14 @@ export type Uuid = `${string}-${string}-${string}-${string}-${string}`;
 
 // A ServerMessage is a message from the server to the client.
 export type ServerMessage =
-    | ServerStatusMessage
+    | ServerConnectionStatusMessage
     | ServerTimerMessage
     | ServerScoreboardMessage
     | ServerChatMessage
-    | ServerErrorMessage;
+    | ServerErrorMessage
+    | ServerSendNotificationMessage;
 
-export interface ServerStatusMessage {
+export interface ServerConnectionStatusMessage {
     type: "status";
     status: "connection established" | "authenticated";
 }
@@ -25,26 +26,19 @@ export interface ServerStatusMessage {
 // Timers
 
 export type ServerTimerMessage =
-    | ServerUpdateTimerMessage
-    | ServerDeleteTimerMessage
-    | ServerRecieveAllTimerMessage;
+    | ServerUpdateTimersMessage
+    | ServerDeleteTimersMessage;
 
-export interface ServerUpdateTimerMessage {
+export interface ServerUpdateTimersMessage {
     type: "timer";
     action: "update";
-    data: TimerData;
+    data: TimerData[];
 }
 
-export interface ServerDeleteTimerMessage {
+export interface ServerDeleteTimersMessage {
     type: "timer";
     action: "delete";
-    id: string; // id of the timer to delete
-}
-
-export interface ServerRecieveAllTimerMessage {
-    type: "timer";
-    action: "recieve_all";
-    data: TimerData[];
+    id: string[]; // ids of the timers to delete
 }
 
 export interface TimerData {
@@ -56,30 +50,30 @@ export interface TimerData {
 // Scoreboard
 
 export type ServerScoreboardMessage =
-    | ServerUpdateScoreboardMessage
-    | ServerDeleteScoreboardMessage
-    | ServerRecieveAllScoreboardMessage;
+    | ServerUpdateScoreboardsMessage
+    | ServerDeleteScoreboardsMessage
+    | ServerReceiveAllScoreboardsMessage;
 
-export interface ServerUpdateScoreboardMessage {
+export interface ServerUpdateScoreboardsMessage {
     type: "scoreboard";
     action: "update";
     data: ScoreboardData;
 }
 
-export interface ServerDeleteScoreboardMessage {
+export interface ServerDeleteScoreboardsMessage {
     type: "scoreboard";
     action: "delete";
     id: Uuid; // the uuid of the scoreboard
 }
 
-export interface ServerRecieveAllScoreboardMessage {
+export interface ServerReceiveAllScoreboardsMessage {
     type: "scoreboard";
-    action: "recieve_all";
+    action: "receive_all";
     data: ScoreboardData[];
 }
 
 export interface ScoreboardData {
-    id: Uuid; // uuid of the scoreboard
+    id: string; // uuid of the scoreboard
     name: string;
     sortable: boolean; // if the scoreboard is sortable from the frontend
     headers: string[]; // list of headers
@@ -88,22 +82,94 @@ export interface ScoreboardData {
 
 // Chat
 
-export type ServerChatMessage = ServerRecieveChatMessage;
+export type ServerChatMessage =
+    | ServerReceiveChatMessage
+    | ServerUpdateChatroomsPermissionsMessage;
 
-export interface ServerRecieveChatMessage {
+export interface ServerReceiveChatMessage {
     type: "chat";
-    room_id: Uuid;
+    room_id: string;
     author_id: Uuid;
     message: string;
 }
 
+export interface ServerUpdateChatroomsPermissionsMessage {
+    type: "chat";
+    data: ChatroomPermissions[];
+}
+
+export interface ChatroomPermissions {
+    room_id: string;
+    read: boolean;
+    write: boolean;
+}
+
 // Map
 
-// TODO: Add map message models when schema is stabilized
+export type ServerMapMessage =
+    | ServerUpdateMarkersMessage
+    | ServerDeleteMarkersMessage;
+
+
+export interface ServerUpdateMarkersMessage {
+    type: "map";
+    action: "update_marker";
+    data: MarkerData[];
+}
+
+export interface ServerDeleteMarkersMessage {
+    type: "map";
+    action: "delete_marker";
+    ids: string[];
+}
+
+export interface MarkerData {
+    id: string;
+    name: string;
+    latitude: number;
+    longitude: number;
+}
 
 // Buttons
 
-// TODO: Add button message models when schema is stabilized
+export type ServerButtonMessage =
+    | ServerUpdateButtonsMessage
+    | ServerDeleteButtonsMessage
+    | ServerSendButtonArgumentsMessage;
+
+export interface ServerUpdateButtonsMessage {
+    type: "button";
+    action: "update";
+    data: ButtonData[];
+}
+
+export interface ServerDeleteButtonsMessage {
+    type: "button";
+    action: "delete";
+    id: string[];
+}
+
+export interface ServerSendButtonArgumentsMessage {
+    type: "button";
+    action: "params";
+    id: string;
+    params: string[][];
+}
+
+export interface ButtonData {
+    id: string;
+    name: string;
+    needs_arguments: boolean;
+}
+
+// Notifications
+
+export interface ServerSendNotificationMessage {
+    type: "notification";
+    level: "normal" | "debug" | "warning" | "error";
+    native: boolean;
+    text: string;
+}
 
 // Errors
 
@@ -128,7 +194,9 @@ export type ClientMessage =
     | ClientAuthenticationMessage
     | ClientRequestMessage
     | ClientSendChatMessage
-    | ClientSendLocationMessage;
+    | ClientSendLocationMessage
+    | ClientSendButtonPressMessage
+    | ClientFetchButtonArgumentsMessage;
 
 export interface ClientAuthenticationMessage {
     type: "authentication";
@@ -163,5 +231,14 @@ export interface GeolocationData {
     time: EpochTimeStamp;
 }
 
-// TODO: Add map message models when schema is stabilized
-// TODO: Add button message models when schema is stabilized
+export interface ClientSendButtonPressMessage {
+    type: "button";
+    id: string;
+    args?: string[];
+}
+
+export interface ClientFetchButtonArgumentsMessage {
+    type: "button";
+    action: "get_params";
+    id: string;
+}
