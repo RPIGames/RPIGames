@@ -724,17 +724,58 @@ async function makeCreateButtonsInteractable() {
     const createButton = document.getElementById(
         "create-lobby",
     ) as HTMLButtonElement;
-    createButton.addEventListener("click", () => {
-        createLobby();
+    createButton.addEventListener("click", async () => {
+        try {
+            resetInputStyling();
+            await createLobby();
+        } catch (error: unknown) {
+            if (error instanceof validationError) {
+                //iterate over all affected input fields
+                for (const input of error.inputIds) {
+                    //set border of input field to red
+                    const invalidField = document.getElementById(
+                        input,
+                    ) as HTMLInputElement;
+                    invalidField.style.border = "2px solid red";
+                }
+            }
+        }
     });
 }
 
+//error for input field not being filled
+class validationError extends Error {
+    //stores list of input field Ids
+    inputIds: string[];
+    constructor(inputIds: string[], message?: string) {
+        super(message);
+        this.message = `Missing required value for ${inputIds}`;
+        this.name = "Validation Error";
+        Object.setPrototypeOf(this, validationError.prototype);
+        this.inputIds = inputIds;
+    }
+}
+
+//reset all invalid input fields to black
+function resetInputStyling() {
+    //get all input elements
+    const allInputs = document.querySelectorAll("input");
+    if (allInputs.length !== 0) {
+        for (const input of allInputs) {
+            //remove all border styling on elements
+            input.style.border = "";
+        }
+    }
+}
+
 async function createLobby() {
+    const invalidFields: string[] = [];
+
     //get lobby name value, throw error if it doesn't exist
     const lobbyName = (
         document.getElementById("username-input") as HTMLInputElement
     ).value;
-    if (lobbyName === "") throw "Missing required value for lobby name";
+    if (lobbyName === "") invalidFields.push("username-input");
 
     //get lobby password value, if it exists
     const lobbySecret = (
@@ -746,14 +787,14 @@ async function createLobby() {
         (document.getElementById("max-player-input") as HTMLInputElement).value,
         10,
     );
-    if (!maxPlayers) throw "Missing required value for maxPlayers";
+    if (!maxPlayers) invalidFields.push("max-player-input");
 
     //get lobby game type
     const lobbyGameType = (
         document.getElementById("game-type-select") as HTMLSelectElement
     ).value;
 
-    //map to contain config values for to-be-created lobby 
+    //map to contain config values for to-be-created lobby
     const gameConfigValues: Map<string, number | string | boolean> = new Map();
 
     //config for current game type
@@ -762,27 +803,30 @@ async function createLobby() {
     for (const [valueName, valueData] of gameFields) {
         //type for current config value
         const valueType = valueData[1];
-        
+
         //raw value of input field storing the config value
         const inputValueRaw = (
             document.getElementById(valueName) as HTMLInputElement
         ).value;
 
         //throw error if field empty
-        if (inputValueRaw === "")
-            throw `Missing required value for ${valueName}`;
+        if (inputValueRaw === "") invalidFields.push(valueName);
 
         let inputValue: string | number | boolean;
 
-        //convert input to a number if type is a number 
+        //convert input to a number if type is a number
         if (valueType === "number") {
             inputValue = parseInt(inputValueRaw, 10);
         } else {
             inputValue = inputValueRaw;
         }
 
-        //set config value in map 
+        //set config value in map
         gameConfigValues.set(valueName, inputValue);
+    }
+
+    if (invalidFields.length !== 0) {
+        throw new validationError(invalidFields);
     }
 
     //attempt to create lobby in backend

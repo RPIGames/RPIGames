@@ -176,8 +176,6 @@ export async function makeLobby(
         body.secret = secret;
     }
 
-    console.log(JSON.stringify(body));
-
     // do the fetch
     const response = await fetch("/api/v1/lobby/new", {
         method: "POST",

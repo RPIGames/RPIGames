@@ -256,6 +256,7 @@ button {
     min-height:100px;
 }
 
+/*create lobby styling*/
 #create-game-settings-wrapper{
     display: flex;
     flex-direction: column;
@@ -323,6 +324,7 @@ button {
     width:100px;
 }
 
+/*lobby list card styling*/
 .card {
     border-top: solid 1px var(--color-neutral-200);
     border-bottom: solid 1px var(--color-neutral-200);
