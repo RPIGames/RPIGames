@@ -8,12 +8,14 @@ def test_websocket_authenticate():
         data = websocket.receive_text()
         assert data == "Authentication Successful"
 
+
 def test_websocket_authenticate_garbage():
     with client.websocket_connect("/v1/websocket/") as websocket:
         for header in GARBAGE_AUTH_HEADERS:
             websocket.send_text(next(iter(header.values())))
             data = websocket.receive_text()
             assert data == "We fed your credentials to THE SNAKE."
+
 
 def test_websocket_message_authenticated():
     user = create_quick_user()
@@ -25,7 +27,7 @@ def test_websocket_message_authenticated():
             "thing",
             "why is this happening",
             "heeeeeeeeellllllllllllllllllllllp",
-            "you like jazzzz?"
+            "you like jazzzz?",
         ]
         for message in test_messages:
             websocket.send_text(message)

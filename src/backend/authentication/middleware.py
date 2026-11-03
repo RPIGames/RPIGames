@@ -25,11 +25,12 @@ from games_api.player import Player
 
 security_optional = HTTPBearer(auto_error=False)
 
+
 def extract_credentials(credential_str: str) -> tuple[str, str] | None:
     """
     This function extracts a user and secret token from a string, or returns None if the format is invalid.
     """
-    if '$' not in credential_str:
+    if "$" not in credential_str:
         return None
     credentials_list = credential_str.split("$")
     if len(credentials_list) != 2:
@@ -38,6 +39,7 @@ def extract_credentials(credential_str: str) -> tuple[str, str] | None:
     if len(user_token) != len(secret_token):
         return None
     return user_token, secret_token
+
 
 def parse_credentials(
     credentials: Annotated[
@@ -56,6 +58,7 @@ def parse_credentials(
     ):
         return None
     return extract_credentials(credentials.credentials)
+
 
 def optional_authorization(
     credentials: Annotated[tuple[str, str] | None, Depends(parse_credentials)],

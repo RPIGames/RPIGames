@@ -2,6 +2,7 @@
 Here's a sample game made using the Game API.
 This shouldn't work until we get the API implemented.
 """
+
 from random import shuffle
 from typing import Any, ClassVar
 from uuid import UUID
@@ -13,10 +14,11 @@ from games_api.schedule import schedule
 
 
 class SampleGame(Game):
-
     name: ClassVar[str] = "Sample Game!"
     max_players: ClassVar[tuple[int, int]] = (2, 500)
-    game_config: ClassVar[dict[str, tuple[str, type, int | str | bool | float | None]]] = {
+    game_config: ClassVar[
+        dict[str, tuple[str, type, int | str | bool | float | None]]
+    ] = {
         "welcome_message": ("Welcome message", str, "Welcome to the game!"),
         "time_to_hide": ("Time to Hide (minutes):", int, 5),
         "points_for_hiding": ("Points per minute hidden:", int, 10),
@@ -96,7 +98,7 @@ class SampleGame(Game):
                 """,
                 )
             except NotImplementedError:
-                print ("uh oh")
+                print("uh oh")
 
     async def leave_lobby(self, player: Player) -> None:
         pass
@@ -110,5 +112,6 @@ class SampleGame(Game):
         self.scores[selection.uuid] += self.points_per_player
 
         selection.send_notification("You found a player!")
+
 
 GAMES["sample_game"] = SampleGame

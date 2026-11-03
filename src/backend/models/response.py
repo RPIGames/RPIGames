@@ -53,7 +53,9 @@ class PublicUserInfoResponse(PublicUserInfo):
 class PrivateUserInfoResponse(PrivateUserInfo):
     pass
 
+
 ConfigType = Literal["string", "number", "boolean"]
+
 
 class GameInfo(BaseModel):
     name: str

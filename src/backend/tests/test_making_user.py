@@ -83,6 +83,7 @@ def test_create_already_signed_in():
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert "already sending a valid user token" in response.json()["error"]
 
+
 def test_create_with_random_garbage_auth_header():
     """
     This test tests creating a new user with garbage authentication headers.

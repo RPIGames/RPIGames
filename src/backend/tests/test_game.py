@@ -17,11 +17,12 @@ def test_making_player():
         player = Player(uuid)
         assert player.uuid == uuid
     except ValueError:
-        assert(False)
+        assert False
+
 
 def test_making_player_no_user():
     """
-     Test making a player if there is no user requested
+    Test making a player if there is no user requested
     """
     uuid = UUID(int=0)
     try:
@@ -30,10 +31,10 @@ def test_making_player_no_user():
     except ValueError:
         pass
     else:
-        assert(False)
+        assert False
 
 
-#when websockets are implemented fix to test wider variety
+# when websockets are implemented fix to test wider variety
 @pytest.mark.anyio
 async def test_location():
     """
@@ -43,15 +44,16 @@ async def test_location():
     uuid = get_uid_from_auth(auth)
     player = Player(uuid)
     location = player.get_location()
-    assert(location == None)
-    old_location = (0.0,0.0)
+    assert location == None
+    old_location = (0.0, 0.0)
     await player._set_location(old_location)
     location = player.get_location()
-    assert(location==old_location)
-    new_location = (1.0,1.0)
+    assert location == old_location
+    new_location = (1.0, 1.0)
     await player._set_location(new_location)
     location = player.get_location()
-    assert(location==new_location)
+    assert location == new_location
+
 
 def test_name():
     """
@@ -62,4 +64,4 @@ def test_name():
     uuid = get_uid_from_auth(auth)
     player = Player(uuid)
     player_name = player.get_name()
-    assert(user_name == player_name)
+    assert user_name == player_name

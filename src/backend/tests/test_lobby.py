@@ -51,7 +51,7 @@ def test_create_lobby():
                 "time_to_hide": 5,
                 "points_for_hiding": 10,
                 "points_for_seeking": 15,
-            }
+            },
         },
         headers={"Authorization": auth},
     )
@@ -102,9 +102,14 @@ def test_join_lobby():
 def test_grant_leadership():
     """Tests the /lobby/leadership/grant endpoint"""
     auth = create_quick_user()
-    lobby = create_quick_lobby(auth, )
+    lobby = create_quick_lobby(
+        auth,
+    )
     auth2 = create_quick_user()
-    assert join_lobby(auth2, lobby, )
+    assert join_lobby(
+        auth2,
+        lobby,
+    )
 
     assert get_user_info(auth)["leader"]
     assert get_user_info(auth)["lobby_id"] is not None

@@ -12,7 +12,8 @@ from games_api.private_maps import PLAYER_TO_LOBBY_MAP
 
 
 class Lobby:
-    def __init__(self,
+    def __init__(
+        self,
         game_name: str,
         game_settings: dict[str, str | float | int | bool],
         leader: Player,
@@ -29,7 +30,9 @@ class Lobby:
             if config_option[0] not in game_settings:
                 raise ValueError(f"{config_option[0]} not in game_settings")
             if type(game_settings[config_option[0]]) is not config_option[1][1]:
-                raise TypeError(f"{config_option[0]} is not of required type f{type(config_option[1])}")
+                raise TypeError(
+                    f"{config_option[0]} is not of required type f{type(config_option[1])}"
+                )
 
         self._uuid = uuid4()
         PLAYER_TO_LOBBY_MAP[leader.uuid] = self._uuid
@@ -67,18 +70,17 @@ class Lobby:
         self._players.remove(to_remove)
         PLAYER_TO_LOBBY_MAP.pop(to_remove.uuid)
 
-
         if len(self._players) == 0:
             # here we need to delete the lobby
             GLOBAL_LOBBY_MAP.pop(self._uuid)
-        elif (self.leader == to_remove):
+        elif self.leader == to_remove:
             self.leader = choice(self._players)
 
         assert self.leader != to_remove or GLOBAL_LOBBY_MAP.get(self._uuid) is None
 
 
-
 GLOBAL_LOBBY_MAP: dict[UUID, Lobby] = {}
+
 
 def get_players_lobby(player: Player) -> Lobby | None:
     """
