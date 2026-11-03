@@ -13,7 +13,7 @@ from db.engine import get_session
 from models.websocket import TimerData, ClientAuthenticationMessage, ServerAuthenticationErrorMessage, \
     ServerUpdateTimerMessage, ServerDeleteTimerMessage, ScoreboardData, ServerUpdateScoreboardMessage, \
     ServerDeleteScoreboardMessage, ChatroomData, ServerNewChatroomPermissionsMessage, MarkerData, \
-    ServerUpdateMarkerMessage, ServerDeleteMarkerMessage, LocationData, ClientSendChatMessage, \
+    ServerUpdateMarkerMessage, ServerDeleteMarkerMessage, ClientSendChatMessage, \
     ClientSendLocationMessage, ClientSendButtonPressMessage, ButtonData, ServerUpdateButtonsMessage, \
     ServerDeleteButtonsMessage, ClientFetchButtonArgumentsMessage, ServerSendNotificationMessage
 
