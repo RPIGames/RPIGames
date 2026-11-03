@@ -17,14 +17,14 @@ class ServerErrorMessage(BaseModel):
 
 class TimerData(BaseModel):
     """A class to store the timer data"""
-    id: str
+    id: UUID
     name: str
     time: datetime.datetime
     disappear_on_completion: bool
 
 class ScoreboardData(BaseModel):
     """A class to store the scoreboard data"""
-    id: str
+    id: UUID
     name: str
     sortable: bool
     headers: list[str]
@@ -43,20 +43,21 @@ class LocationData(BaseModel):
 
 class MarkerData(BaseModel):
     """A class to store a marker's data"""
-    id: str
+    id: UUID
     name: str
     latitude: float
     longitude: float
 
-class ChatroomPermissionsData(BaseModel):
-    """A class that stores the permission data for a chatroom"""
-    room_id: str
+class ChatroomData(BaseModel):
+    """A class that stores the data for a chatroom"""
+    name: str
+    room_id: UUID
     read: bool
     write: bool
 
 class ButtonData(BaseModel):
     """A class to store a button's data"""
-    id: str
+    id: UUID
     name: str
     needs_arguments: bool
 
@@ -95,7 +96,7 @@ class ServerUpdateTimerMessage(ServerTimerMessage):
 class ServerDeleteTimerMessage(ServerTimerMessage):
     """A Response to send to the user when a timer is deleted"""
     action: Literal["delete"] = "delete"
-    ids: list[str]
+    ids: list[UUID]
 
 class ClientRequestTimersMessage(BaseModel):
     """A model for when the user wants all the timers data"""
@@ -119,7 +120,7 @@ class ServerUpdateScoreboardMessage(ServerScoreboardMessage):
 class ServerDeleteScoreboardMessage(ServerScoreboardMessage):
     """A Response to send to the user when a scoreboard is deleted"""
     action: Literal["delete"] = "delete"
-    ids: list[str]
+    ids: list[UUID]
 
 class ClientRequestScoreboardsMessage(BaseModel):
     type: Literal["scoreboard"]
@@ -137,7 +138,7 @@ class ClientSendChatMessage(BaseModel):
     """A model for when the user sends a message"""
     type: Literal["chat"]
     message: str
-    room_id: str
+    room_id: UUID
 
 class ServerChatErrorMessage(ServerErrorMessage):
     """A Response to send to the user after they send a message, if there's an error"""
@@ -146,7 +147,7 @@ class ServerChatErrorMessage(ServerErrorMessage):
 
 class ServerReceiveChatMessage(ServerChatMessage):
     """A Response to send to the user when they receive a message"""
-    room_id: str
+    room_id: UUID
     author_id: UUID | Literal["-1"] = "-1"
     message: str
 
@@ -155,7 +156,7 @@ class ServerNewChatroomPermissionsMessage(ServerChatMessage):
     A response to sent to the user when a chatroom they are in changes permissions
     or they have access to a new chatroom.
     """
-    data: list[ChatroomPermissionsData]
+    data: list[ChatroomData]
 
 ##############################################################################
 ########################### MAP ##############################################
@@ -173,7 +174,7 @@ class ServerUpdateMarkerMessage(ServerMarkerMessage):
 class ServerDeleteMarkerMessage(ServerMarkerMessage):
     """A Response to send to the user when a marker is deleted"""
     action: Literal["delete_marker"] = "delete_marker"
-    ids: list[str]
+    ids: list[UUID]
 
 class ClientSendLocationMessage(BaseModel):
     """A model for when the user sends their location"""
@@ -187,7 +188,7 @@ class ClientSendLocationMessage(BaseModel):
 class ClientSendButtonPressMessage(BaseModel):
     """A model for when the user sends a button"""
     type: Literal["button"]
-    id: str
+    id: UUID
     args: list[str] | None
 
 class ServerButtonMessage(BaseModel):
@@ -200,10 +201,10 @@ class ServerUpdateButtonsMessage(ServerButtonMessage):
     action: Literal["update"] = "update"
     data: list[ButtonData]
 
-class ServerDeleteButtonMessage(ServerButtonMessage):
+class ServerDeleteButtonsMessage(ServerButtonMessage):
     """A Response to send to the user when a button is deleted."""
     action: Literal["delete"] = "delete"
-    id: str
+    ids: list[UUID]
 
 class ClientFetchButtonArgumentsMessage(BaseModel):
     """
@@ -211,13 +212,13 @@ class ClientFetchButtonArgumentsMessage(BaseModel):
     and wish to know what parameters to select from.
     """
     type: Literal["button"]
-    id: str  # button id
+    id: UUID # button id
     action: Literal["get_params"]
 
 class ServerSendButtonArgumentsMessage(ServerButtonMessage):
     """A message sent from the server to supply the parameter options for a user"""
     action: Literal["params"] = "params"
-    id: str
+    id: UUID
     params: list[list[str]]
 
 ##############################################################################
