@@ -1,4 +1,5 @@
 import {
+    makeLobby as createLobbyBackend,
     type GameInfo,
     getAllLobbies,
     getGameData as getGameDataBackend,
@@ -717,6 +718,85 @@ async function makeCreateButtonsInteractable() {
     returnButton.addEventListener("click", () => {
         setPageContent("lobbies", "", "lobby-main");
     });
+
+    //Create lobby page button
+
+    const createButton = document.getElementById(
+        "create-lobby",
+    ) as HTMLButtonElement;
+    createButton.addEventListener("click", () => {
+        createLobby();
+    });
+}
+
+async function createLobby() {
+    //get lobby name value, throw error if it doesn't exist
+    const lobbyName = (
+        document.getElementById("username-input") as HTMLInputElement
+    ).value;
+    if (lobbyName === "") throw "Missing required value for lobby name";
+
+    //get lobby password value, if it exists
+    const lobbySecret = (
+        document.getElementById("password-input") as HTMLInputElement
+    ).value;
+
+    //get max players value, throw error if it doesn't exist
+    const maxPlayers = parseInt(
+        (document.getElementById("max-player-input") as HTMLInputElement).value,
+        10,
+    );
+    if (!maxPlayers) throw "Missing required value for maxPlayers";
+
+    //get lobby game type
+    const lobbyGameType = (
+        document.getElementById("game-type-select") as HTMLSelectElement
+    ).value;
+
+    //map to contain config values for to-be-created lobby 
+    const gameConfigValues: Map<string, number | string | boolean> = new Map();
+
+    //config for current game type
+    const gameFields = (gameData.get(lobbyGameType) as GameInfo).config;
+
+    for (const [valueName, valueData] of gameFields) {
+        //type for current config value
+        const valueType = valueData[1];
+        
+        //raw value of input field storing the config value
+        const inputValueRaw = (
+            document.getElementById(valueName) as HTMLInputElement
+        ).value;
+
+        //throw error if field empty
+        if (inputValueRaw === "")
+            throw `Missing required value for ${valueName}`;
+
+        let inputValue: string | number | boolean;
+
+        //convert input to a number if type is a number 
+        if (valueType === "number") {
+            inputValue = parseInt(inputValueRaw, 10);
+        } else {
+            inputValue = inputValueRaw;
+        }
+
+        //set config value in map 
+        gameConfigValues.set(valueName, inputValue);
+    }
+
+    //attempt to create lobby in backend
+    const createdLobby = await createLobbyBackend(
+        lobbyGameType,
+        maxPlayers,
+        gameConfigValues,
+        lobbyName,
+        lobbySecret,
+    );
+
+    //join lobby in frontend
+    localStorage.setItem("currentLobby", createdLobby.id);
+    await setPageContent("game", "", "game-main");
 }
 
 //set hamburger menu to closed state

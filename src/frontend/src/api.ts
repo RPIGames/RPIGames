@@ -167,7 +167,7 @@ export async function makeLobby(
     const body: MakeLobbyRequest = {
         game_type_id: game_type,
         game_capacity: game_capacity,
-        game_config: game_config,
+        game_config: Object.fromEntries(game_config),
     };
     if (name) {
         body.name = name;
@@ -175,6 +175,8 @@ export async function makeLobby(
     if (secret) {
         body.secret = secret;
     }
+
+    console.log(JSON.stringify(body));
 
     // do the fetch
     const response = await fetch("/api/v1/lobby/new", {
