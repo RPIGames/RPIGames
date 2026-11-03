@@ -1,9 +1,3 @@
-<<<<<<< HEAD:src/frontend/src/structs.ts
-// A response from the $api/user/new endpoint
-export type UserTokenResponse = {
-    id: string;
-    secret: string;
-};
 
 // A response from the $api/user/info endpoint
 export type PublicUserInfo = {
