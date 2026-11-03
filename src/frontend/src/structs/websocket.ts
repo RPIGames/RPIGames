@@ -110,7 +110,6 @@ export type ServerMapMessage =
     | ServerUpdateMarkersMessage
     | ServerDeleteMarkersMessage;
 
-
 export interface ServerUpdateMarkersMessage {
     type: "map";
     action: "update_marker";
