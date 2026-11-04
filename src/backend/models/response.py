@@ -2,6 +2,7 @@
 This module contains possible response models.
 """
 
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -51,3 +52,11 @@ class PublicUserInfoResponse(PublicUserInfo):
 
 class PrivateUserInfoResponse(PrivateUserInfo):
     pass
+
+ConfigType = Literal["string", "number", "boolean"]
+
+class GameInfo(BaseModel):
+    name: str
+    game_id: str
+    player_range: tuple[int, int]
+    config: dict[str, tuple[str, ConfigType, str | int | float | bool | None]]

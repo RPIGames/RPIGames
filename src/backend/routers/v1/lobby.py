@@ -8,11 +8,12 @@ from typing import Annotated
 
 from cryptography.hazmat.primitives import constant_time
 from fastapi import APIRouter, Depends, Response, status
-from sqlmodel import Session, select
 
 from authentication.middleware import require_authorization
-from db.engine import get_session
-from db.models import Lobby, User
+from games.registry import GAMES
+from games_api.lobby import GLOBAL_LOBBY_MAP, Lobby, get_players_lobby
+from games_api.player import Player
+from games_api.private_maps import PLAYER_TO_LOBBY_MAP
 from models.request import (
     LobbyJoinRequest,
     LobbyPassLeadershipRequest,
@@ -37,23 +38,21 @@ def mk_lobby_response_from_lobby(lobby: Lobby) -> LobbyResponse:
     make a `LobbyResponse` from the `Lobby` passed into it.
     """
     return LobbyResponse(
-        id=lobby.id,
+        id=lobby._uuid,
         name=lobby.name,
-        max_members=lobby.max_size,
-        curr_members=len(lobby.users),
+        max_members=lobby.capacity,
+        curr_members=len(lobby._players),
         needs_secret=lobby.secret is not None,
     )
 
 
 @router.get("/all")
-def get_all_lobbies(
-    session: Annotated[Session, Depends(get_session)],
-) -> list[LobbyResponse]:
+def get_all_lobbies() -> list[LobbyResponse]:
     """
     Gets all the currently available lobbies.
     """
 
-    database_lobbies = session.exec(select(Lobby)).all()
+    database_lobbies = GLOBAL_LOBBY_MAP.values()
 
     lobbies: list[LobbyResponse] = []
     for lobby in database_lobbies:
@@ -69,35 +68,36 @@ def get_all_lobbies(
         status.HTTP_401_UNAUTHORIZED: {"model": AuthenticationErrorResponse},
     },
 )
-def make_lobby(
-    user: Annotated[User, Depends(require_authorization)],
-    session: Annotated[Session, Depends(get_session)],
+async def make_lobby(
+    player: Annotated[Player, Depends(require_authorization)],
     response: Response,
-    body: MakeLobbyRequest | None = None,
+    body: MakeLobbyRequest,
 ):
     """
     Creates a lobby. Needs an authorization from a user.
 
     The lobby will be initialized to contain the user, which gains leadership of the party.
     """
-    if body is None:
-        body = MakeLobbyRequest()
 
-    if user.lobby is not None:
+    if PLAYER_TO_LOBBY_MAP.get(player.uuid) is not None:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return ErrorResponse(error="You are already in a lobby!")
 
     if body.name is None:
         body.name = f"Unnamed group {random.randint(1, 1000)}"
 
-    created_lobby = Lobby(name=body.name, max_size=8, secret=body.secret)
-    session.add(created_lobby)
+    if body.game_type_id not in GAMES:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return ErrorResponse(error=f"{body.game_type_id} is not a valid game_id")
 
-    user.lobby = created_lobby
-    user.leader = True
-
-    session.commit()
-
+    created_lobby = Lobby(
+        game_name=body.game_type_id,
+        game_settings=body.game_config,
+        leader=Player(player.uuid),
+        lobby_size=body.game_capacity,
+        name=body.name,
+        secret=body.secret
+    )
     return mk_lobby_response_from_lobby(created_lobby)
 
 
@@ -111,9 +111,8 @@ def make_lobby(
         status.HTTP_404_NOT_FOUND: {"model": ErrorResponse},
     },
 )
-def join_lobby(
-    user: Annotated[User, Depends(require_authorization)],
-    session: Annotated[Session, Depends(get_session)],
+async def join_lobby(
+    player: Annotated[Player, Depends(require_authorization)],
     response: Response,
     body: LobbyJoinRequest,
 ):
@@ -123,9 +122,11 @@ def join_lobby(
     If the lobby is a secret lobby, pass the lobby_secret parameter with the password to the lobby.
     """
 
-    if user.lobby is not None:
+    lobby_id = PLAYER_TO_LOBBY_MAP.get(player.uuid)
+
+    if lobby_id is not None:
         response.status_code = status.HTTP_400_BAD_REQUEST
-        if user.lobby_id == body.lobby_id:
+        if lobby_id == body.lobby_id:
             return ErrorResponse(
                 error="You are already in the lobby you are trying to join."
             )
@@ -134,9 +135,7 @@ def join_lobby(
                 error="You are already in a lobby! Leave your current lobby to join another one."
             )
 
-    assert user.leader == False
-
-    lobby = session.get(Lobby, body.lobby_id)
+    lobby = GLOBAL_LOBBY_MAP.get(body.lobby_id)
     if lobby is None:
         response.status_code = status.HTTP_404_NOT_FOUND
         return ErrorResponse(error="The lobby you are trying to join does not exist.")
@@ -164,13 +163,15 @@ def join_lobby(
                 response.status_code = status.HTTP_403_FORBIDDEN
                 return ErrorResponse(error="The passphrase was incorrect.")
 
-    if lobby.max_size <= len(lobby.users):
+    if lobby.capacity <= len(lobby._players):
         response.status_code = status.HTTP_400_BAD_REQUEST
         return ErrorResponse(error="The lobby you are trying to join is full.")
 
-    user.lobby = lobby
-
-    session.commit()
+    try:
+        await lobby.add_player(player)
+    except ValueError as err:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return ErrorResponse(error=str(err))
 
     return OkResponse()
 
@@ -183,38 +184,23 @@ def join_lobby(
         status.HTTP_401_UNAUTHORIZED: {"model": AuthenticationErrorResponse},
     },
 )
-def leave_lobby(
-    user: Annotated[User, Depends(require_authorization)],
-    session: Annotated[Session, Depends(get_session)],
+async def leave_lobby(
+    player: Annotated[Player, Depends(require_authorization)],
     response: Response,
 ):
     """
     Leaves the lobby you are currently in.
     """
 
-    if user.lobby is None:
+    lobby_id = PLAYER_TO_LOBBY_MAP.get(player.uuid)
+
+    if lobby_id is None:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return ErrorResponse(error="You aren't currently in a lobby.")
 
-    lobby = user.lobby
-    user.lobby = None
+    lobby = GLOBAL_LOBBY_MAP[lobby_id]
 
-    if user.leader:
-        user.leader = False
-        if len(lobby.users) == 0:
-            # delete the lobby
-            session.delete(lobby)
-        else:
-            # if there are no other leaders in the group, reassign leadership to random user
-            leader_exists = False
-            for group_member in lobby.users:
-                if group_member.leader:
-                    leader_exists = True
-                    break
-            if not leader_exists:
-                random.choice(lobby.users).leader = True
-
-    session.commit()
+    await lobby.remove_player(Player(player.uuid))
 
     return OkResponse()
 
@@ -228,8 +214,7 @@ def leave_lobby(
     },
 )
 def pass_leadership(
-    user: Annotated[User, Depends(require_authorization)],
-    session: Annotated[Session, Depends(get_session)],
+    user: Annotated[Player, Depends(require_authorization)],
     response: Response,
     body: LobbyPassLeadershipRequest,
 ):
@@ -239,17 +224,22 @@ def pass_leadership(
     The grant_to_user_id expects a valid user id that is in your same lobby.
     """
 
-    if user.lobby is None:
+    lobby = get_players_lobby(user)
+
+    if lobby is None:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return ErrorResponse(error="You aren't currently in a lobby.")
 
-    if not user.leader:
+    if lobby.leader != user:
         response.status_code = status.HTTP_403_FORBIDDEN
         return ErrorResponse(
             error="You aren't currently a leader, and thus cannot grant leadership to someone else."
         )
 
-    new_leader = session.get(User, body.grantee_id)
+    try:
+        new_leader = Player(body.grantee_id)
+    except ValueError:
+        new_leader = None
 
     if new_leader is None:
         response.status_code = status.HTTP_400_BAD_REQUEST
@@ -257,15 +247,12 @@ def pass_leadership(
             error="The user that you are trying to pass leadership to is not in your lobby."
         )
 
-    if new_leader.lobby != user.lobby:
+    if get_players_lobby(new_leader) != lobby:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return ErrorResponse(
             error="The user that you are trying to pass leadership to is not in your lobby."
         )
 
-    user.leader = False
-    new_leader.leader = True
-
-    session.commit()
+    lobby.leader = new_leader
 
     return OkResponse()

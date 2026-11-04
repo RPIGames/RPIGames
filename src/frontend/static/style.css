@@ -238,9 +238,10 @@ button {
 #lobbies-topbar{
     border-bottom: 2px solid black;
     padding-left: 2px;
+    align-items: center;
 }
 
-#lobbies-list{
+.lobby-middle-content{
     overflow-y: scroll;
     border-radius: 10px;
     height: 100%;
@@ -255,6 +256,75 @@ button {
     min-height:100px;
 }
 
+/*create lobby styling*/
+#create-game-settings-wrapper{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top:20px;
+    width:100%;
+}
+
+.create-lobby-wrapper{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding:20px;
+    font-size: 20px;
+}
+
+.create-lobby-wrapper input{
+    margin-bottom:20px;
+}
+
+.create-lobby-wrapper select{
+   height:50px;
+   font-size: 20px;
+   border-radius: 20px;
+   border: 2px solid black;
+   background-color: white;
+   padding:10px;   
+}
+
+.create-lobby-wrapper select:hover{
+    cursor:pointer;
+    background-color: lightgray;
+}
+
+.lobby-input{
+    border: 2px solid black;
+    border-radius: 10px;
+    padding:10px;
+    height:50px;
+    font-size: 20px;
+    width:clamp(190px,50%,300px);
+}
+
+.create-lobby-input-wrapper{
+    display: grid;
+    grid-template-columns:45% 55%;
+    width:100%;
+    gap:10px;
+}
+
+.create-lobby-input-wrapper label{
+    grid-column: 1/1;
+    text-align: right;
+    align-items: center;
+    justify-content: right;
+    display: flex;
+    width: 100%;
+    height:50px;
+}
+.create-lobby-input-wrapper input{
+    grid-column: 2/2;
+}
+
+.lobby-input.input-number{
+    width:100px;
+}
+
+/*lobby list card styling*/
 .card {
     border-top: solid 1px var(--color-neutral-200);
     border-bottom: solid 1px var(--color-neutral-200);
@@ -291,13 +361,10 @@ button {
     width: 100%;
 }
 
-#join-lobby{
-    position: absolute;
-    right: 0;
-}
-
 .lobby-button-wrapper{
-    width:50%;
+    width:100%;
+    display: flex;
+    justify-content: space-between;
 }
 
 .lobby-button-wrapper button{
@@ -318,9 +385,84 @@ button {
     cursor: not-allowed;
 }
 
-.lobby-button-wrapper.right{
+#refresh-lobbies{
+    margin-right:10px;
+    height:25px;
+    background-color: rgb(199, 0, 0);
+    color:white;
+    border-radius: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+#refresh-lobbies:hover{
+    background-color: rgb(235, 144, 144);
+    cursor: pointer;
+}
+
+/*lobby password modal styling*/
+
+.password-modal-wrapper{
+    position: absolute;
+    background-color: #0000001a;
+    top:0;
+    left:0;
     display: flex;
-    justify-content: end;
+    width:100dvw;
+    height:100dvh;
+    align-items: center;
+    justify-content: center;
+}
+
+.password-modal{
+    position: relative;
+    font-size:20px;
+    background-color: white;
+    gap:10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 2px solid black;
+     width:clamp(300px,70%,500px);
+    height: 200px;
+    border-radius: 20px;
+}
+
+.password-modal button{
+    height:50px;
+    width: 100px;
+    border-radius: 10px;
+    background-color: rgb(199, 0, 0);
+    color:white;
+}
+
+.password-modal button:hover{
+    background-color: rgb(235, 144, 144);
+    cursor: pointer;
+}
+
+.password-modal input{
+    border: 2px solid black;
+    border-radius: 10px;
+    width:90%;
+}
+
+/*Text that shows when invalid password entered*/
+.password-invalid{
+    font-size: 15px;
+    color: red;
+    text-align: center;
+    display: none;
+}
+
+.password-button-wrapper{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;    
+    width:90%;
+    gap:50px;
 }
 
 /*lobby password modal styling*/

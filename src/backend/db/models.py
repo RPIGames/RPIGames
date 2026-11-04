@@ -1,24 +1,11 @@
 import uuid
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, SQLModel
 
 from .default.random_username import random_username
-
-
-class Lobby(SQLModel, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    name: str
-    max_size: int
-    secret: str | None = Field(default=None)
-
-    users: list["User"] = Relationship(back_populates="lobby")
 
 
 class User(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     secret: uuid.UUID = Field(default_factory=uuid.uuid4)
     name: str = Field(default_factory=random_username)
-    leader: bool = Field(default=False)
-
-    lobby_id: uuid.UUID | None = Field(default=None, foreign_key="lobby.id")
-    lobby: Lobby | None = Relationship(back_populates="users")

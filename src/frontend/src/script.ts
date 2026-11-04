@@ -1,5 +1,8 @@
 import {
+    makeLobby as createLobbyBackend,
+    type GameInfo,
     getAllLobbies,
+    getGameData as getGameDataBackend,
     getNewUserId,
     getSelfUserInfo,
     joinLobby as joinLobbyBackend,
@@ -148,9 +151,12 @@ async function createLobbyCard(lobby: LobbyResponse) {
 //stored as id, lobby pair
 const allLobbiesData = new Map<string, LobbyResponse>();
 
+//saves id of currently selected card
+let currentSelectedCardId: string | null = null;
+
 async function refreshLobbyData() {
-    allLobbiesData.clear();
     const lobbyList = await getAllLobbies();
+    allLobbiesData.clear();
     //add each lobby to map
     for (const lobby of lobbyList) {
         allLobbiesData.set(lobby.id, lobby);
@@ -158,16 +164,21 @@ async function refreshLobbyData() {
 }
 
 // refreshes the lobbies, getting new data from the api
-async function setLobbyCards() {
+async function updateLobbyCards(fullRefresh: boolean = true) {
+    console.log("Updating Lobby Cards...");
     const lobbyListElement = document.getElementById(
         "lobbies-list",
     ) as HTMLElement;
+
+    if (fullRefresh) {
+        //HTML to display while lobby data is being fetched
+        lobbyListElement.innerHTML = "Fetching Lobbies...";
+    }
 
     await refreshLobbyData();
 
     const lobbyCardList: HTMLElement[] = [];
 
-    //create list of html element cards containing lobby data
     for (const [, lobby] of allLobbiesData) {
         lobbyCardList.push(await createLobbyCard(lobby));
     }
@@ -189,22 +200,20 @@ async function setLobbyCards() {
                     }
                 });
             }
-            //set existing card as selected
+            //set existing card as selected and save id
             card.classList.add("selected");
+            currentSelectedCardId = card.getAttribute(
+                "data-lobby-id",
+            ) as string;
 
             //get join lobby button
             const joinButton = document.getElementById(
-                "joinLobby",
+                "join-lobby",
             ) as HTMLButtonElement;
-
-            //get id of lobby
-            const lobbyId = (
-                document.querySelector(".card.selected") as HTMLElement
-            ).getAttribute("data-lobby-id") as string;
 
             //get lobby data
             const lobby = allLobbiesData.get(
-                lobbyId as string,
+                currentSelectedCardId,
             ) as LobbyResponse;
 
             //If lobby is full, disable join button
@@ -217,29 +226,56 @@ async function setLobbyCards() {
         });
     });
 
-    if (lobbyCardList.length === 0) {
-        //if no lobbies exist, show no lobbies template
-        await setPageContent("lobbies", "lobbies-list", "no-lobbies-template");
-    } else {
+    if (lobbyCardList.length !== 0) {
         //add lobbies to html
         lobbyListElement.replaceChildren(...lobbyCardList);
+    } else {
+        //if no lobbies exist, show no lobbies template
+        await setPageContent("lobbies", "lobbies-list", "no-lobbies-template");
+    }
+
+    //if card is saved as selected, show it as selected by internally clicking it
+    if (currentSelectedCardId) {
+        (
+            document.querySelector(
+                `[data-lobby-id="${currentSelectedCardId}"]`,
+            ) as HTMLButtonElement
+        ).click();
     }
 }
 
 async function makeLobbyButtonsInteractable() {
+    //Join lobby button
     const joinButton = document.getElementById(
-        "joinLobby",
+        "join-lobby",
     ) as HTMLButtonElement;
     joinButton.addEventListener("click", checkLobbyJoinStatus);
+
+    //Refresh lobbies button
+    const refreshButton = document.getElementById(
+        "refresh-lobbies",
+    ) as HTMLButtonElement;
+    refreshButton.addEventListener("click", () => {
+        updateLobbyCards();
+    });
+
+    //Create lobby button
+    const createLobbyButton = document.getElementById(
+        "create-lobby",
+    ) as HTMLButtonElement;
+    createLobbyButton;
+    createLobbyButton.addEventListener("click", async () => {
+        await setPageContent("createLobby", "", "create-main");
+    });
 }
 
 async function checkLobbyJoinStatus() {
-    //get id of lobby
-    const lobbyId = (
-        document.querySelector(".card.selected") as HTMLElement
-    ).getAttribute("data-lobby-id") as string;
+    //Refresh data just in case there has been a change since last join
+    await refreshLobbyData();
 
-    const lobby = allLobbiesData.get(lobbyId as string) as LobbyResponse;
+    const lobby = allLobbiesData.get(
+        currentSelectedCardId as string,
+    ) as LobbyResponse;
 
     //Don't join lobby directly if secret is needed
     //Instead create password modal and join lobby when submit button pressed
@@ -472,6 +508,14 @@ async function setPageContent(
     //close menu, if open
     closeHamburgerMenu();
 
+    //deselect any saved card id, if it exists
+    currentSelectedCardId = null;
+
+    //stop constant lobby refreshing, if active
+    if (lobbyUpdateId) {
+        clearInterval(lobbyUpdateId);
+    }
+
     //find div to append to; if parameter not initialized, set to null
     let parentDiv: HTMLElement | null = parentDivId
         ? document.querySelector(`#${parentDivId}`)
@@ -515,8 +559,18 @@ async function setPageContent(
         //location-specific code to run on page change
         switch (pageLocation) {
             case "lobbies": {
-                void setLobbyCards();
-                void makeLobbyButtonsInteractable();
+                await updateLobbyCards();
+                await makeLobbyButtonsInteractable();
+
+                //update lobby data every 10 seconds
+                lobbyUpdateId = setInterval(() => {
+                    updateLobbyCards(false);
+                }, 10000);
+                break;
+            }
+            case "createLobby": {
+                await setupGameData();
+                await makeCreateButtonsInteractable();
                 break;
             }
             case "home": {
@@ -545,7 +599,6 @@ async function setPageContent(
                     "leave-lobby-button",
                 ) as HTMLButtonElement;
 
-                //
                 leaveLobbyButton.addEventListener("click", async () => {
                     leaveLobby();
                 });
@@ -555,10 +608,246 @@ async function setPageContent(
     }
 }
 
+const gameData = new Map<string, GameInfo>();
+async function setupGameData() {
+    //select dropdown
+    const gameTypeSelect = document.getElementById(
+        "game-type-select",
+    ) as HTMLSelectElement;
+
+    //get backend game data
+    const backendGameData = await getGameDataBackend();
+    for (const data of backendGameData) {
+        //add game data to map
+        gameData.set(data.game_id, data);
+
+        //add game data to game type dropdown
+        const gameOption = document.createElement("option");
+        gameOption.innerHTML = data.name;
+        gameOption.id = data.game_id;
+        gameOption.value = data.game_id;
+        gameTypeSelect.append(gameOption);
+    }
+
+    gameTypeSelect.addEventListener("input", () => {
+        if (gameTypeSelect.value !== "internal_default") {
+            //remove default "select game type" option, if it was selected
+            const defaultOption = document.getElementById(
+                "default-game-option",
+            );
+            if (defaultOption) {
+                defaultOption.remove();
+            }
+
+            //enable button
+            const createLobbyButton = document.getElementById(
+                "create-lobby",
+            ) as HTMLButtonElement;
+            createLobbyButton.disabled = false;
+
+            const currentGameOption = gameData.get(
+                gameTypeSelect.value,
+            ) as GameInfo;
+            updateCreateLobbyGameOptions(currentGameOption);
+        }
+    });
+}
+
+async function updateCreateLobbyGameOptions(currentGame: GameInfo) {
+    const gameContentWrapper = document.getElementById(
+        "create-game-settings-wrapper",
+    ) as HTMLDivElement;
+    //clear current wrapper content
+    gameContentWrapper.innerHTML = "";
+
+    //get max values for the game
+    const min = currentGame.player_range[0];
+    const max = currentGame.player_range[1];
+
+    //get div for max input
+    const maxInputTemplate = (await getPageContent(
+        "createLobby",
+        "max-input-template",
+    )) as HTMLElement;
+    const maxInputElement = maxInputTemplate.querySelector(
+        "input",
+    ) as HTMLInputElement;
+
+    //set max of input to max of game
+    maxInputElement.max = max.toString();
+    maxInputElement.min = min.toString();
+
+    //add max input to game wrapper
+    gameContentWrapper.append(maxInputTemplate);
+
+    //iterate over other input fields to add
+    const gameFields = currentGame.config;
+    for (const [fieldId, data] of gameFields) {
+        const fieldName = data[0];
+        const fieldType = data[1];
+
+        //get element data
+        const elementTemplate = (await getPageContent(
+            "createLobby",
+            `input-template-${fieldType}`,
+        )) as HTMLElement;
+        const label = elementTemplate.querySelector(
+            "label",
+        ) as HTMLLabelElement;
+        const input = elementTemplate.querySelector(
+            "input",
+        ) as HTMLInputElement;
+
+        //set input data
+        label.htmlFor = fieldName;
+        label.innerHTML = fieldName;
+        input.name = fieldName;
+        input.id = fieldId;
+        input.type = fieldType;
+
+        //add input field
+        gameContentWrapper.append(elementTemplate);
+    }
+}
+
+async function makeCreateButtonsInteractable() {
+    //Return to lobby page button
+    const returnButton = document.getElementById(
+        "return-lobby-list",
+    ) as HTMLButtonElement;
+    returnButton.addEventListener("click", () => {
+        setPageContent("lobbies", "", "lobby-main");
+    });
+
+    //Create lobby page button
+
+    const createButton = document.getElementById(
+        "create-lobby",
+    ) as HTMLButtonElement;
+    createButton.addEventListener("click", async () => {
+        try {
+            resetInputStyling();
+            await createLobby();
+        } catch (error: unknown) {
+            if (error instanceof validationError) {
+                //iterate over all affected input fields
+                for (const input of error.inputIds) {
+                    //set border of input field to red
+                    const invalidField = document.getElementById(
+                        input,
+                    ) as HTMLInputElement;
+                    invalidField.style.border = "2px solid red";
+                }
+            }
+        }
+    });
+}
+
+//error for input field not being filled
+class validationError extends Error {
+    //stores list of input field Ids
+    inputIds: string[];
+    constructor(inputIds: string[], message?: string) {
+        super(message);
+        this.message = `Missing required value for ${inputIds}`;
+        this.name = "Validation Error";
+        Object.setPrototypeOf(this, validationError.prototype);
+        this.inputIds = inputIds;
+    }
+}
+
+//reset all invalid input fields to black
+function resetInputStyling() {
+    //get all input elements
+    const allInputs = document.querySelectorAll("input");
+    if (allInputs.length !== 0) {
+        for (const input of allInputs) {
+            //remove all border styling on elements
+            input.style.border = "";
+        }
+    }
+}
+
+async function createLobby() {
+    const invalidFields: string[] = [];
+
+    //get lobby name value, throw error if it doesn't exist
+    const lobbyName = (
+        document.getElementById("username-input") as HTMLInputElement
+    ).value;
+    if (lobbyName === "") invalidFields.push("username-input");
+
+    //get lobby password value, if it exists
+    const lobbySecret = (
+        document.getElementById("password-input") as HTMLInputElement
+    ).value;
+
+    //get max players value, throw error if it doesn't exist
+    const maxPlayers = parseInt(
+        (document.getElementById("max-player-input") as HTMLInputElement).value,
+        10,
+    );
+    if (!maxPlayers) invalidFields.push("max-player-input");
+
+    //get lobby game type
+    const lobbyGameType = (
+        document.getElementById("game-type-select") as HTMLSelectElement
+    ).value;
+
+    //map to contain config values for to-be-created lobby
+    const gameConfigValues: Map<string, number | string | boolean> = new Map();
+
+    //config for current game type
+    const gameFields = (gameData.get(lobbyGameType) as GameInfo).config;
+
+    for (const [valueName, valueData] of gameFields) {
+        //type for current config value
+        const valueType = valueData[1];
+
+        //raw value of input field storing the config value
+        const inputValueRaw = (
+            document.getElementById(valueName) as HTMLInputElement
+        ).value;
+
+        //throw error if field empty
+        if (inputValueRaw === "") invalidFields.push(valueName);
+
+        let inputValue: string | number | boolean;
+
+        //convert input to a number if type is a number
+        if (valueType === "number") {
+            inputValue = parseInt(inputValueRaw, 10);
+        } else {
+            inputValue = inputValueRaw;
+        }
+
+        //set config value in map
+        gameConfigValues.set(valueName, inputValue);
+    }
+
+    if (invalidFields.length !== 0) {
+        throw new validationError(invalidFields);
+    }
+
+    //attempt to create lobby in backend
+    const createdLobby = await createLobbyBackend(
+        lobbyGameType,
+        maxPlayers,
+        gameConfigValues,
+        lobbyName,
+        lobbySecret,
+    );
+
+    //join lobby in frontend
+    localStorage.setItem("currentLobby", createdLobby.id);
+    await setPageContent("game", "", "game-main");
+}
+
 //set hamburger menu to closed state
 closeHamburgerMenu();
 //Set page to home
 let activeWindow = "home";
+let lobbyUpdateId: number | null;
 
 //go to game page if user already logged into lobby
 if (localStorage.getItem("currentLobby")) {

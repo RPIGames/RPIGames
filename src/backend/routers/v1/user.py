@@ -11,6 +11,9 @@ from sqlmodel import Session
 from authentication.middleware import parse_credentials, require_authorization
 from db.engine import get_session
 from db.models import User
+from games_api.lobby import GLOBAL_LOBBY_MAP, get_players_lobby
+from games_api.player import Player
+from games_api.private_maps import PLAYER_TO_LOBBY_MAP
 from models.response import (
     AuthenticationErrorResponse,
     ErrorResponse,
@@ -61,17 +64,26 @@ def get_new_user_token(
     },
 )
 def get_user_info(
-    user: Annotated[User, Depends(require_authorization)],
+    user: Annotated[Player, Depends(require_authorization)],
 ):
     """
     Gets user info. Since this returns private data, it requires the user's authorization.
     """
 
+    lobby_id = PLAYER_TO_LOBBY_MAP.get(user.uuid)
+
+    leader = False
+
+    if lobby_id is not None:
+        lobby = GLOBAL_LOBBY_MAP.get(lobby_id)
+        if lobby is not None:
+            leader = lobby.leader == user
+
     return PrivateUserInfoResponse(
-        id=user.id,
-        name=user.name,
-        leader=user.leader,
-        lobby_id=user.lobby_id,
+        id=user.uuid,
+        name=user.get_name(),
+        leader=leader,
+        lobby_id=lobby_id,
     )
 
 
@@ -84,23 +96,32 @@ def get_user_info(
 )
 def get_public_user_info(
     user_id: UUID,
-    session: Annotated[Session, Depends(get_session)],
     response: Response,
 ):
     """
     Gets public user info. Requires a user_id, a UUID that uniquely defines the user.
     """
 
-    user = session.get(User, user_id)
-    if user is None:
+    player = None
+    try:
+        player = Player(user_id)
+    except ValueError:
         response.status_code = status.HTTP_404_NOT_FOUND
         return ErrorResponse(error="User not found.")
 
+    leader = False
+    lobby = get_players_lobby(player)
+    lobby_id = None
+    if lobby is not None:
+        lobby_id = lobby._uuid
+        if lobby.leader == player:
+            leader = True
+
     return PublicUserInfoResponse(
-        id=user.id,
-        name=user.name,
-        leader=user.leader,
-        lobby_id=user.lobby_id,
+        id=player.uuid,
+        name=player.get_name(),
+        leader=leader,
+        lobby_id=lobby_id,
     )
 
 
@@ -114,7 +135,7 @@ def get_public_user_info(
 )
 def rename_self(
     new_name: str,
-    user: Annotated[User, Depends(require_authorization)],
+    player: Annotated[Player, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
 ):
@@ -140,6 +161,10 @@ def rename_self(
             response.status_code = status.HTTP_400_BAD_REQUEST
             return ErrorResponse(error="new_name is not alphanumeric")
 
+    user = session.get(User, player.uuid)
+
+    assert user is not None
+
     user.name = new_name
 
     session.commit()
@@ -156,7 +181,7 @@ def rename_self(
     },
 )
 def sign_out(
-    user: Annotated[User, Depends(require_authorization)],
+    player: Annotated[Player, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
     response: Response,
 ):
@@ -165,15 +190,17 @@ def sign_out(
 
     -User must not be in a lobby
     """
-    if user is None:
-        response.status_code = status.HTTP_400_BAD_REQUEST
-        return ErrorResponse(error="You are already logged out.")
 
-    if user.lobby is not None:
+    if get_players_lobby(player) is not None:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return ErrorResponse(error="You are currently in a lobby.")
 
     # delete user row
+    user = session.get(User, player.uuid)
+
+    if user is None:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return ErrorResponse(error="Your user seems to not exist anymore.")
     session.delete(user)
     session.commit()
 
