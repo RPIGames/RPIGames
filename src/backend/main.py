@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 
 from db.engine import create_db_and_tables
-from games import sample  # initialize games
-from routers.v1_router import router as router_v1
+from games.games import initialize_games  # initialize games
 
+initialize_games()
 create_db_and_tables()
+
+from routers.v1_router import router as router_v1
 
 description = """
 This is the backend documentation for this project. It shows the schema of the api and can be used for testing.

@@ -1,15 +1,11 @@
-from typing import Any
 from uuid import UUID
 
 import pytest
-from fastapi import status
 from fastapi.testclient import TestClient
 
-from games_api import game
 from games_api.player import Player
 from main import app
 
-from .test_lobby import create_quick_lobby
 from .test_user_modification import create_quick_user, get_uid_from_auth, get_user_info
 
 client = TestClient(app)
@@ -22,6 +18,7 @@ def test_making_player():
     uuid = get_uid_from_auth(auth)
     try:
         player = Player(uuid)
+        assert player.uuid == uuid
     except ValueError:
         assert(False)
 
@@ -32,6 +29,7 @@ def test_making_player_no_user():
     uuid = UUID(int=0)
     try:
         player = Player(uuid)
+        assert player.uuid == uuid
     except ValueError:
         pass
     else:

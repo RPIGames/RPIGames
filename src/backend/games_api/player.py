@@ -1,8 +1,7 @@
 """
 This file contains the Player sub-API for the Game API.
 """
-import asyncio
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from datetime import datetime
 from typing import Any, TypeVar
 from uuid import UUID
@@ -24,7 +23,7 @@ class Player:
             raise ValueError
         self._user = user
         self._location = None
-        self._timers : dict[str, tuple[str, str, datetime, Callable[[], None], bool ]] = {}
+        self._timers : dict[str, tuple[str, str, datetime, Callable[[], Awaitable[Any]] | None, bool ]] = {}
 
     def __eq__(self, value: object, /) -> bool:
         if type(value) == Player:
@@ -87,38 +86,34 @@ class Player:
         timer_id : str | UUID,
         timer_end: datetime,
         timer_name: str = "Untitled Timer",
-        timer_end_function: Callable[[], None] | None = None,
+        timer_end_function: Callable[[], Awaitable[Any]] | None = None,
         disappear_on_completion: bool = True,
-    ) -> tuple[str, str, datetime, Callable[[], None], bool ]: #id , name  , time of end, function called at end,  disappear on completion
+    ) -> tuple[str, str, datetime, Callable[[], Awaitable[Any]] | None, bool ]: #id , name  , time of end, function called at end,  disappear on completion
         """
-        This makes the timer and adds it to the list of timers that the player sees 
+        This makes the timer and adds it to the list of timers that the player sees
         """
-        if timer_end_function is None:
-            timer_end_function = lambda : None
         if type(timer_id) is not str:
             assert type(timer_id) is UUID
             timer_id = timer_id.hex
         self._timers[timer_id] = (timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)
         amount_of_seconds = timer_end.timestamp() - (datetime.now()).timestamp()
         amount_of_seconds = amount_of_seconds/60
-        schedule.schedule(amount_of_seconds,_check_timer,timer_id,timer_end_function)
+        if timer_end_function is not None:
+            schedule(amount_of_seconds,timer_end_function)
         return (timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)
 
     # Timer_request_all(): this player has requested all timers
-    async def _timer_request_all(self) -> dict[str, tuple[str,str, datetime,Callable[[], None], bool]]:
+    async def _timer_request_all(self) -> dict[str, tuple[str,str, datetime,Callable[[], Awaitable[Any]] | None, bool]]:
         return self._timers
 
     #stop timer
     async def stop_timer(self,
-        timer_id : str | UUID):
+        timer_id : str):
         """
         Tries to remove the time if the timer does not exist return false otherwise return true
         """
         checking = self._timers.pop(timer_id,None)
-        if(checking == None):
-            return False
-        else:
-            return True
+        return checking != None
 
 
 
@@ -127,15 +122,15 @@ class Player:
     async def _check_timer(
         self,
         timer_id : str | UUID,
-        timer_end_function: Callable[[], None] | None = None,
-    )-> asyncio.Task[Any]:
+        timer_end_function: Callable[[], Awaitable[Any]] | None = None,
+    ):
         """
         Does the action that is to be called by the timer if the timer still exists.
         """
-        if timer_id in _timer:
-            return await timer_end_function()
-        else:
-            pass
+        if timer_end_function is None:
+            return
+        if timer_id in self._timers:
+            await timer_end_function()
 
 
     def assign_button(

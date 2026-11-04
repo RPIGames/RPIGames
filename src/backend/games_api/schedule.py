@@ -3,6 +3,7 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from typing import Any
 
+
 def schedule(
     delay_minutes: float,
     function: Callable[..., Awaitable[Any]],
