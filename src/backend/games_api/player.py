@@ -132,7 +132,10 @@ class Player:
         button_id: UUID,
         button_function: Callable[["Player", T], Any],
         button_name: str = "Unnamed Button",
+        *,
+        selection: None | list[T] = None,
     ) -> None:
+        
         raise NotImplementedError("Buttons have not been implemented yet")
 
     async def button_send(
