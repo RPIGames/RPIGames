@@ -6,6 +6,9 @@ lives here.
 
 from abc import ABC, abstractmethod
 from typing import Any, ClassVar
+from uuid import UUID
+from datetime import datetime
+from collections.abc import Callable
 
 from games_api.player import Player
 
@@ -19,6 +22,7 @@ class Game(ABC):
 
     def __init__(self, initial_player: Player):
         self.scoreboard = []
+        self.chat_room_players :dict[UUID,List[UUID]] = {}
         
 
 
@@ -34,6 +38,12 @@ class Game(ABC):
     #    player_UUID: str | UUID
     #    ) -> list[ScoreboardData]:
     #    return self.scoreboard
+
+    #Chat_Send_Message(Room UUID, message): gets all the players that are in the chatroom 
+    async def get_room(self,
+        room_id: UUID) -> list[UUID]:
+        if room_id in self.chat_room_players:
+            return self.chat_room_players[room_id]
 
     #have a start game function
 
@@ -52,5 +62,17 @@ class Game(ABC):
     @abstractmethod
     async def leave_lobby(self, player: Player) -> None:
         pass
-
-    #All of these the children class can not change
+    
+    #define function to get timers to all players
+    async def assign_mass_timer(self,
+        players: list[Player],
+        timer_id : UUID,
+        timer_end: datetime,
+        timer_name: str = "Untitled Timer",
+        timer_end_function: Callable[[], None] | None = None,
+        disappear_on_completion: bool = True
+        )-> bool:
+        for player in players:
+            if(player.make_timer(timer_id,timer_end,timer_name,timer_end_function,disappear_on_completion)!=tuple[str, str, datetime, Callable[[], None], bool ]):
+                return False
+        return True

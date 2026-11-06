@@ -64,16 +64,10 @@ class Player:
         """
         raise NotImplementedError("Chatrooms have not been implemented yet")
 
-    #Chat_Send_Message(Room UUID, message): this player has sent this message
-    async def chat_send_message(
-        self,
-        Room_UUID:str|UUID,
-        message:str
-        ) -> None:
-        pass
+    
 
     def send_notification(
-        self, notification_title: str, notification_body: str | None = None
+        self, notification_title: str, notification_body: str | None = None, native: bool =False
     ):
         """
         Sends a notification to a player. This is implied to be a in-app notification, but may
@@ -83,7 +77,7 @@ class Player:
 
     def make_timer(
         self,
-        timer_id : str | UUID,
+        timer_id : UUID,
         timer_end: datetime,
         timer_name: str = "Untitled Timer",
         timer_end_function: Callable[[], Awaitable[Any]] | None = None,
@@ -135,19 +129,15 @@ class Player:
 
     def assign_button(
         self,
-        button_id: UUID | str,
+        button_id: UUID,
         button_function: Callable[["Player", T], Any],
         button_name: str = "Unnamed Button",
-        *,
-        selection: None | list[T] = None,
     ) -> None:
-        if isinstance(button_id, str):
-            button_id = UUID(bytes=button_id.encode("ascii"))
         raise NotImplementedError("Buttons have not been implemented yet")
 
     async def button_send(
         self,
-        Button_ID: str| UUID,
+        Button_ID: UUID,
         arguments: list[str]
         )-> None:
          pass
