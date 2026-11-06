@@ -4,6 +4,9 @@ import { setPageContent } from "./dynamicPages.js";
 
 import { closeHamburgerMenu } from "./hamburgerMenu.js";
 
+//initialize global variable
+globalThis.currentLobby=null;
+
 // Registers a service worker to cache requests for offline navigation and faster loading. Also reduces server strain.
 async function registerServiceWorker() {
     console.log(window.isSecureContext);
