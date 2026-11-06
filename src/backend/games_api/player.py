@@ -23,7 +23,7 @@ class Player:
             raise ValueError
         self._user = user
         self._location = None
-        self._timers : dict[str, tuple[str, str, datetime, Callable[[], Awaitable[Any]] | None, bool ]] = {}
+        self._timers : dict[UUID, tuple[UUID, str, datetime, Callable[[], Awaitable[Any]] | None, bool ]] = {}
 
     def __eq__(self, value: object, /) -> bool:
         if type(value) == Player:
@@ -82,7 +82,7 @@ class Player:
         timer_name: str = "Untitled Timer",
         timer_end_function: Callable[[], None] | None = None,
         disappear_on_completion: bool = True,
-    ) -> tuple[str, str, datetime, Callable[[], Awaitable[Any]] | None, bool ]: #id , name  , time of end, function called at end,  disappear on completion
+    ) -> tuple[UUID, str, datetime, Callable[[], Awaitable[Any]] | None, bool ]: #id , name  , time of end, function called at end,  disappear on completion
         """
         This makes the timer and adds it to the list of timers that the player sees 
         """
@@ -96,12 +96,12 @@ class Player:
         return (timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)
 
     # Timer_request_all(): this player has requested all timers
-    async def _timer_request_all(self) -> dict[str, tuple[str,str, datetime,Callable[[], Awaitable[Any]] | None, bool]]:
+    async def _timer_request_all(self) -> dict[UUID, tuple[UUID,str, datetime,Callable[[], Awaitable[Any]] | None, bool]]:
         return self._timers
 
     #stop timer
     async def stop_timer(self,
-        timer_id : str):
+        timer_id : UUID):
         """
         Tries to remove the time if the timer does not exist return false otherwise return true
         """
@@ -114,7 +114,7 @@ class Player:
     # has atributes of fuction being called and timer id
     async def _check_timer(
         self,
-        timer_id : str | UUID,
+        timer_id : UUID,
         timer_end_function: Callable[[], Awaitable[Any]] | None = None,
     ):
         """
@@ -125,20 +125,3 @@ class Player:
         if timer_id in self._timers:
             await timer_end_function()
 
-
-    def assign_button(
-        self,
-        button_id: UUID,
-        button_function: Callable[["Player", T], Any],
-        button_name: str = "Unnamed Button",
-    ) -> None:
-        
-        raise NotImplementedError("Buttons have not been implemented yet")
-
-    async def button_send(
-        self,
-        Button_ID: UUID,
-        arguments: list[str]
-        )-> None:
-         pass
-        #: this player pushed this button

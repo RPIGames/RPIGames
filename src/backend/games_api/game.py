@@ -74,6 +74,7 @@ class Game(ABC):
         timer_end_function: Callable[[],Awaitable[Any] ] | None = None,
         disappear_on_completion: bool = True
         )-> bool:
+        #add way to stop already started timers
         for player in players:
             if(player.make_timer(timer_id,timer_end,timer_name,timer_end_function,disappear_on_completion)!=tuple[timer_id,timer_end,timer_name,timer_end_function,disappear_on_completion ]):
                 return False
