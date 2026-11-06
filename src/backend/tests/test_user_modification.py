@@ -18,6 +18,7 @@ from .test_lobby import create_quick_lobby
 client = TestClient(app)
 
 
+
 def create_quick_user() -> str:
     """Helper method that creates a user. Returns an auth bearer string"""
     response = client.post("/v1/user/new")

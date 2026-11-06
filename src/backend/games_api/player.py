@@ -5,7 +5,6 @@ from collections.abc import Awaitable, Callable
 from datetime import datetime
 from typing import Any, TypeVar
 from uuid import UUID
-from datetime import datetime
 
 from sqlmodel import Session
 
@@ -16,7 +15,6 @@ from games_api.schedule import schedule
 T = TypeVar("T")
 
 class Player:
-    _timers = {}
     def __init__(self, uuid: UUID) -> None:
         self.uuid = uuid
         db_conn = Session(engine)
@@ -44,7 +42,7 @@ class Player:
         Gets the name of this player.
         """
         return self._user.name
-        
+
     #when websockets are implemented fix deal with right type of location
     def get_location(self) -> tuple[float, float] | None:
         """
@@ -82,11 +80,11 @@ class Player:
         timer_id : UUID,
         timer_end: datetime,
         timer_name: str = "Untitled Timer",
-        timer_end_function: Callable[[], Awaitable[Any]] | None = None,
+        timer_end_function: Callable[[], None] | None = None,
         disappear_on_completion: bool = True,
     ) -> tuple[str, str, datetime, Callable[[], Awaitable[Any]] | None, bool ]: #id , name  , time of end, function called at end,  disappear on completion
         """
-        This makes the timer and adds it to the list of timers that the player sees
+        This makes the timer and adds it to the list of timers that the player sees 
         """
         if type(timer_id) is not str:
             assert type(timer_id) is UUID
@@ -94,8 +92,7 @@ class Player:
         self._timers[timer_id] = (timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)
         amount_of_seconds = timer_end.timestamp() - (datetime.now()).timestamp()
         amount_of_seconds = amount_of_seconds/60
-        if timer_end_function is not None:
-            schedule(amount_of_seconds,timer_end_function)
+        schedule.schedule(amount_of_seconds,_check_timer,timer_id,timer_end_function)
         return (timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)
 
     # Timer_request_all(): this player has requested all timers
@@ -134,8 +131,6 @@ class Player:
         button_id: UUID,
         button_function: Callable[["Player", T], Any],
         button_name: str = "Unnamed Button",
-        *,
-        selection: None | list[T] = None,
     ) -> None:
         
         raise NotImplementedError("Buttons have not been implemented yet")
