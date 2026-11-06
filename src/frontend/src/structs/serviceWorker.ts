@@ -1,4 +1,3 @@
-
 // A response from the $api/user/info endpoint
 export type PublicUserInfo = {
     id: string;
@@ -41,8 +40,6 @@ export interface ResourceInfo {
     size: number;
 }
 
-=======
->>>>>>> 3cb8ddf (split structs into specific folders):src/frontend/src/structs/serviceWorker.ts
 // This is the type of a message to a service worker.
 // It is a union of different types, each with their own "type" class;
 
