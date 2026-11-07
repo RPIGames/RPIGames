@@ -2,7 +2,7 @@
 Code for Lobby List page.
 Exports:
     initializeLobbyListPage
-    lobbyUpdateId - stores id for interval function that refreshes cards every 10s
+    lobbyUpdateIntervalId - stores id for interval function that refreshes cards every 10s
     deselectCard - setter to deselect currently selected card
 */
 
@@ -160,6 +160,10 @@ async function updateLobbyCards(fullRefresh: boolean = true) {
         } else {
             //card no longer exists; if so, reset cardId
             currentSelectedCardId = null;
+            const joinButton = document.getElementById(
+                "join-lobby",
+            ) as HTMLButtonElement;
+            joinButton.disabled = true;
         }
     }
 }
