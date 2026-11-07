@@ -1,3 +1,7 @@
+/*
+Code for leaving a lobby
+Will probably be integrated into another page in the future
+*/
 import { leaveLobby as leaveLobbyBackend } from "./api.js";
 
 import { setPageContent } from "./dynamicPages.js";

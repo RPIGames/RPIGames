@@ -1,3 +1,7 @@
+/*
+Code for showing website and external notifications
+Exports sendUINotification
+*/
 import { showNotification } from "./api.js";
 
 // Enum of different notification types. The color is based off of this.

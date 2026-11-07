@@ -1,18 +1,21 @@
+/*
+Code for dynamically changing the page.
+Exports the following functions:
+    - getPageContent - returns a stored HTML element so it can be manipulated before adding to page 
+    - setPageContent - sets a section of the page (usually all of centerContent) to contain a stored HTML template
+Also exports centerContent, which stores an HTML element that is the highest wrapper for dynamic content 
+*/
+
 import { closeHamburgerMenu } from "./hamburgerMenu.js";
 
-import {
-    makeCreateButtonsInteractable,
-    setupGameData,
-} from "./lobbyCreation.js";
+import { initializeLobbyCreationPage } from "./lobbyCreation.js";
 
 import { leaveLobby } from "./lobbyLeave.js";
 
 import {
     deselectCard,
-    lobbyUpdateId,
-    makeLobbyButtonsInteractable,
-    startLobbyUpdateInterval,
-    updateLobbyCards,
+    initializeLobbyListPage,
+    lobbyUpdateIntervalId,
 } from "./lobbyList.js";
 
 import { sendUINotification } from "./notifications.js";
@@ -21,8 +24,17 @@ export const centerContent: HTMLDivElement = document.querySelector(
     "#center-content",
 ) as HTMLDivElement;
 
+//currently active page, used for determining what should be initialized
 let activeWindow = "home";
 
+/**
+retrieves content from a template page
+ * @param pageLocation - name of html file containing page (w/o file extension)
+ * @param divId - id of html element to retrieve. If empty, defaults to pageLocation
+ * @param leaveAsTemplate - bool to determine if an HTML element should be returned 
+    as an HTML element or left in template form. Defaults to returning an HTML element
+ * @returns HTML Element or HTML template depending on value of leaveAsTemplate
+*/
 export async function getPageContent(
     pageLocation: NonNullable<string>,
     divId?: string,
@@ -59,6 +71,14 @@ export async function getPageContent(
     }
 }
 
+/**
+sets part of page to contain stored template
+If page location changes, initializes new page
+ * @param pageLocation - name of html file containing page (w/o file extension)
+ * @param parentDivId - id of html element to insert content into. If empty, defaults to centerContent
+ * @param divId - id of html element to retrieve. If empty, defaults to pageLocation
+    as an HTML element or left in template form. Defaults to returning an HTML element
+*/
 export async function setPageContent(
     pageLocation: NonNullable<string>,
     parentDivId?: string,
@@ -71,8 +91,8 @@ export async function setPageContent(
     deselectCard();
 
     //stop constant lobby refreshing, if active
-    if (lobbyUpdateId) {
-        clearInterval(lobbyUpdateId);
+    if (lobbyUpdateIntervalId) {
+        clearInterval(lobbyUpdateIntervalId);
     }
 
     //find div to append to; if parameter not initialized, set to null
@@ -90,6 +110,7 @@ export async function setPageContent(
         await getPageContent(pageLocation, divId, true);
 
     if (pageContentResult) {
+        //actually add content to page
         const divTemplate = pageContentResult as HTMLTemplateElement;
         const templateContent = document.importNode(divTemplate.content, true);
         parentDiv.replaceChildren(templateContent);
@@ -116,51 +137,49 @@ export async function setPageContent(
         activeWindow = pageLocation;
         console.log(`Changing location to: ${activeWindow}`);
         //location-specific code to run on page change
-        switch (pageLocation) {
-            case "lobbies": {
-                await updateLobbyCards();
-                await makeLobbyButtonsInteractable();
+        initializeNewPage(pageLocation);
+    }
+}
 
-                //update lobby data every 10 seconds
-                startLobbyUpdateInterval();
-                break;
+/**
+Initializes newly-loaded page
+@param pageLocation - name of page to initialize
+ */
+async function initializeNewPage(pageLocation: string) {
+    switch (pageLocation) {
+        case "lobbies": {
+            initializeLobbyListPage();
+            break;
+        }
+        case "createLobby": {
+            initializeLobbyCreationPage();
+            break;
+        }
+        case "home": {
+            //setup ping button
+            const pingButton = document.getElementById("ping-button");
+            if (pingButton) {
+                pingButton.onclick = () =>
+                    sendUINotification("pong!", undefined, true, false);
             }
-            case "createLobby": {
-                await setupGameData();
-                await makeCreateButtonsInteractable();
-                break;
+            const nativePingButton =
+                document.getElementById("native-ping-button");
+            if (nativePingButton) {
+                nativePingButton.onclick = () =>
+                    sendUINotification("native pong!", undefined, true, true);
             }
-            case "home": {
-                //setup ping button
-                const pingButton = document.getElementById("ping-button");
-                if (pingButton) {
-                    pingButton.onclick = () =>
-                        sendUINotification("pong!", undefined, true, false);
-                }
-                const nativePingButton =
-                    document.getElementById("native-ping-button");
-                if (nativePingButton) {
-                    nativePingButton.onclick = () =>
-                        sendUINotification(
-                            "native pong!",
-                            undefined,
-                            true,
-                            true,
-                        );
-                }
-                break;
-            }
-            case "game": {
-                //button to leave lobby
-                const leaveLobbyButton = document.getElementById(
-                    "leave-lobby-button",
-                ) as HTMLButtonElement;
+            break;
+        }
+        case "game": {
+            //button to leave lobby
+            const leaveLobbyButton = document.getElementById(
+                "leave-lobby-button",
+            ) as HTMLButtonElement;
 
-                leaveLobbyButton.addEventListener("click", async () => {
-                    leaveLobby();
-                });
-                break;
-            }
+            leaveLobbyButton.addEventListener("click", async () => {
+                leaveLobby();
+            });
+            break;
         }
     }
 }

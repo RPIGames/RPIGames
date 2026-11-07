@@ -1,3 +1,11 @@
+/*
+Code for top-right hamburger menu.
+When module loaded, sets up hamburger menu related events
+Exports the following functions:
+    - openHamburgerMenu - opens the hamburger menu
+    - closeHamburgerMenu - closes the hamburger menu
+*/
+
 //hamburger menu itself
 const hamburgerMenu: HTMLDivElement = document.querySelector(
     "#sidenav",

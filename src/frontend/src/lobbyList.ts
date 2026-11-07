@@ -1,3 +1,11 @@
+/*
+Code for Lobby List page.
+Exports:
+    initializeLobbyListPage
+    lobbyUpdateId - stores id for interval function that refreshes cards every 10s
+    deselectCard - setter to deselect currently selected card
+*/
+
 import { getAllLobbies, joinLobby as joinLobbyBackend } from "./api.js";
 import {
     centerContent,
@@ -13,7 +21,18 @@ const allLobbiesData = new Map<string, LobbyResponse>();
 //saves id of currently selected card
 let currentSelectedCardId: string | null = null;
 
-export let lobbyUpdateId: number | null;
+export async function initializeLobbyListPage() {
+    await updateLobbyCards();
+    await makeButtonsInteractable();
+
+    //update lobby data every 10 seconds
+    lobbyUpdateIntervalId = setInterval(() => {
+        updateLobbyCards(false);
+    }, 10000);
+}
+
+//stores id for interval function that refreshes cards every 10s
+export let lobbyUpdateIntervalId: number | null;
 
 export function deselectCard() {
     currentSelectedCardId = null;
@@ -49,6 +68,7 @@ async function createLobbyCard(lobby: LobbyResponse) {
     return node;
 }
 
+//adds lobby data to map
 async function refreshLobbyData() {
     const lobbyList = await getAllLobbies();
     allLobbiesData.clear();
@@ -59,7 +79,7 @@ async function refreshLobbyData() {
 }
 
 // refreshes the lobbies, getting new data from the api
-export async function updateLobbyCards(fullRefresh: boolean = true) {
+async function updateLobbyCards(fullRefresh: boolean = true) {
     //console.log("Updating Lobby Cards...");
     const lobbyListElement = document.getElementById(
         "lobbies-list",
@@ -72,6 +92,7 @@ export async function updateLobbyCards(fullRefresh: boolean = true) {
 
     await refreshLobbyData();
 
+    //add cards to list
     const lobbyCardList: HTMLElement[] = [];
 
     for (const [, lobby] of allLobbiesData) {
@@ -143,7 +164,8 @@ export async function updateLobbyCards(fullRefresh: boolean = true) {
     }
 }
 
-export async function makeLobbyButtonsInteractable() {
+//Add event listeners to page buttons
+async function makeButtonsInteractable() {
     //Join lobby button
     const joinButton = document.getElementById(
         "join-lobby",
@@ -168,6 +190,8 @@ export async function makeLobbyButtonsInteractable() {
     });
 }
 
+//Determines if password modal should be shown (b/c password is needed)
+//or lobby can be joined immediately
 async function checkLobbyJoinStatus() {
     //Refresh data just in case there has been a change since last join
     await refreshLobbyData();
@@ -255,10 +279,4 @@ async function joinLobby(lobby: LobbyResponse, password?: string) {
     console.log(currentLobby);
     localStorage.setItem("currentLobby", lobby.id);
     setPageContent("game", "", "game-main");
-}
-
-export function startLobbyUpdateInterval() {
-    lobbyUpdateId = setInterval(() => {
-        updateLobbyCards(false);
-    }, 10000);
 }

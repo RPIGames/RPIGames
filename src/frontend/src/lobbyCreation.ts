@@ -1,3 +1,8 @@
+/*
+Code for Lobby Creation menu.
+Exports initializeLobbyCreationPage
+*/
+
 import {
     makeLobby as createLobbyBackend,
     type GameInfo,
@@ -6,8 +11,18 @@ import {
 
 import { getPageContent, setPageContent } from "./dynamicPages.js";
 
+//map of data (game settings and their valid types/ranges) for all games
+//stored as id, gameInfo pair
 const gameData = new Map<string, GameInfo>();
-export async function setupGameData() {
+
+export async function initializeLobbyCreationPage() {
+    await setupGameData();
+    await makeButtonsInteractable();
+}
+
+//Gets game data from backend, adds to select element,
+//and sets up select element for creating settings fields when selection is made
+async function setupGameData() {
     //select dropdown
     const gameTypeSelect = document.getElementById(
         "game-type-select",
@@ -46,10 +61,13 @@ export async function setupGameData() {
             const currentGameOption = gameData.get(
                 gameTypeSelect.value,
             ) as GameInfo;
+
             updateCreateLobbyGameOptions(currentGameOption);
         }
     });
 }
+
+//Adds game settings fields underneath selection element
 async function updateCreateLobbyGameOptions(currentGame: GameInfo) {
     const gameContentWrapper = document.getElementById(
         "create-game-settings-wrapper",
@@ -107,7 +125,8 @@ async function updateCreateLobbyGameOptions(currentGame: GameInfo) {
     }
 }
 
-export async function makeCreateButtonsInteractable() {
+//Adds event listeners for buttons on page
+async function makeButtonsInteractable() {
     //Return to lobby page button
     const returnButton = document.getElementById(
         "return-lobby-list",
@@ -117,7 +136,6 @@ export async function makeCreateButtonsInteractable() {
     });
 
     //Create lobby page button
-
     const createButton = document.getElementById(
         "create-lobby",
     ) as HTMLButtonElement;
@@ -165,6 +183,7 @@ function resetInputStyling() {
     }
 }
 
+//create lobby and redirect user to game page, if successful
 async function createLobby() {
     const invalidFields: string[] = [];
 

@@ -1,3 +1,8 @@
+/*
+Initialization script
+Runs when loaded from index.html
+*/
+
 import { getNewUserId, getSelfUserInfo } from "./api.js";
 import { setPageContent } from "./dynamicPages.js";
 import { closeHamburgerMenu } from "./hamburgerMenu.js";
