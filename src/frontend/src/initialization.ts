@@ -3,7 +3,7 @@ import { setPageContent } from "./dynamicPages.js";
 import { closeHamburgerMenu } from "./hamburgerMenu.js";
 
 //initialize global variable
-globalThis.currentLobby=null;
+globalThis.currentLobby = null;
 
 registerServiceWorker();
 

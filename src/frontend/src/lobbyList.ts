@@ -8,10 +8,10 @@ import type { LobbyResponse } from "./structs.js";
 
 //map of data for all lobbies
 //stored as id, lobby pair
- const allLobbiesData = new Map<string, LobbyResponse>();
+const allLobbiesData = new Map<string, LobbyResponse>();
 
 //saves id of currently selected card
- let currentSelectedCardId: string | null = null;
+let currentSelectedCardId: string | null = null;
 
 export let lobbyUpdateId: number | null;
 
@@ -20,7 +20,7 @@ export function deselectCard() {
 }
 
 // creates a lobby card on the lobby page
- async function createLobbyCard(lobby: LobbyResponse) {
+async function createLobbyCard(lobby: LobbyResponse) {
     //fetch card template
     //TO-DO: only fetch this once
     const node = (await getPageContent(
@@ -49,7 +49,7 @@ export function deselectCard() {
     return node;
 }
 
- async function refreshLobbyData() {
+async function refreshLobbyData() {
     const lobbyList = await getAllLobbies();
     allLobbiesData.clear();
     //add each lobby to map
@@ -131,11 +131,15 @@ export async function updateLobbyCards(fullRefresh: boolean = true) {
 
     //if card is saved as selected, show it as selected by internally clicking it
     if (currentSelectedCardId) {
-        (
-            document.querySelector(
-                `[data-lobby-id="${currentSelectedCardId}"]`,
-            ) as HTMLButtonElement
-        ).click();
+        const currentCardElement: HTMLElement | null = document.querySelector(
+            `[data-lobby-id="${currentSelectedCardId}"]`,
+        );
+        if (currentCardElement) {
+            currentCardElement.click();
+        } else {
+            //card no longer exists; if so, reset cardId
+            currentSelectedCardId = null;
+        }
     }
 }
 
@@ -164,7 +168,7 @@ export async function makeLobbyButtonsInteractable() {
     });
 }
 
- async function checkLobbyJoinStatus() {
+async function checkLobbyJoinStatus() {
     //Refresh data just in case there has been a change since last join
     await refreshLobbyData();
 
@@ -183,7 +187,7 @@ export async function makeLobbyButtonsInteractable() {
     }
 }
 
- async function setupPasswordModal(lobby: LobbyResponse) {
+async function setupPasswordModal(lobby: LobbyResponse) {
     //show password element on page
     const passwordModal = (await getPageContent(
         "lobbies",
@@ -237,7 +241,7 @@ export async function makeLobbyButtonsInteractable() {
     });
 }
 
- async function joinLobby(lobby: LobbyResponse, password?: string) {
+async function joinLobby(lobby: LobbyResponse, password?: string) {
     console.log("Attempting to join lobby...");
     //join lobby with or without password, depending on if public or private
     if (password) {
