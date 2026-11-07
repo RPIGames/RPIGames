@@ -6,7 +6,7 @@ import {
 
 import { getPageContent, setPageContent } from "./dynamicPages.js";
 
-export const gameData = new Map<string, GameInfo>();
+const gameData = new Map<string, GameInfo>();
 export async function setupGameData() {
     //select dropdown
     const gameTypeSelect = document.getElementById(
@@ -50,7 +50,7 @@ export async function setupGameData() {
         }
     });
 }
-export async function updateCreateLobbyGameOptions(currentGame: GameInfo) {
+async function updateCreateLobbyGameOptions(currentGame: GameInfo) {
     const gameContentWrapper = document.getElementById(
         "create-game-settings-wrapper",
     ) as HTMLDivElement;
@@ -154,7 +154,7 @@ class validationError extends Error {
 }
 
 //reset all invalid input fields to black
-export function resetInputStyling() {
+function resetInputStyling() {
     //get all input elements
     const allInputs = document.querySelectorAll("input");
     if (allInputs.length !== 0) {
@@ -165,7 +165,7 @@ export function resetInputStyling() {
     }
 }
 
-export async function createLobby() {
+async function createLobby() {
     const invalidFields: string[] = [];
 
     //get lobby name value, throw error if it doesn't exist
@@ -236,7 +236,7 @@ export async function createLobby() {
     );
 
     //join lobby in frontend
-    currentLobby=createdLobby;
+    currentLobby = createdLobby;
     localStorage.setItem("currentLobby", createdLobby.id);
     await setPageContent("game", "", "game-main");
 }

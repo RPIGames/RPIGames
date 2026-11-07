@@ -1,11 +1,26 @@
 import { getNewUserId, getSelfUserInfo } from "./api.js";
-
 import { setPageContent } from "./dynamicPages.js";
-
 import { closeHamburgerMenu } from "./hamburgerMenu.js";
 
 //initialize global variable
 globalThis.currentLobby=null;
+
+registerServiceWorker();
+
+window.addEventListener("load", async () => {
+    await start();
+});
+
+//set hamburger menu to closed state
+closeHamburgerMenu();
+//Set page to home
+
+//go to game page if user already logged into lobby
+if (localStorage.getItem("currentLobby")) {
+    setPageContent("game", "", "game-main");
+} else {
+    setPageContent("home");
+}
 
 // Registers a service worker to cache requests for offline navigation and faster loading. Also reduces server strain.
 async function registerServiceWorker() {
@@ -31,8 +46,6 @@ async function registerServiceWorker() {
         }
     }
 }
-
-registerServiceWorker();
 
 // the start function. handles all the things when the page is first loaded. fires on "load" event
 async function start() {
@@ -60,19 +73,4 @@ async function start() {
     if (selfInfo.lobbyId != null) {
         // if it is in a lobby, figure out the lobby name
     }
-}
-
-window.addEventListener("load", async () => {
-    await start();
-});
-
-//set hamburger menu to closed state
-closeHamburgerMenu();
-//Set page to home
-
-//go to game page if user already logged into lobby
-if (localStorage.getItem("currentLobby")) {
-    setPageContent("game", "", "game-main");
-} else {
-    setPageContent("home");
 }

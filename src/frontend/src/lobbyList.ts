@@ -8,10 +8,10 @@ import type { LobbyResponse } from "./structs.js";
 
 //map of data for all lobbies
 //stored as id, lobby pair
-export const allLobbiesData = new Map<string, LobbyResponse>();
+ const allLobbiesData = new Map<string, LobbyResponse>();
 
 //saves id of currently selected card
-export let currentSelectedCardId: string | null = null;
+ let currentSelectedCardId: string | null = null;
 
 export let lobbyUpdateId: number | null;
 
@@ -20,7 +20,7 @@ export function deselectCard() {
 }
 
 // creates a lobby card on the lobby page
-export async function createLobbyCard(lobby: LobbyResponse) {
+ async function createLobbyCard(lobby: LobbyResponse) {
     //fetch card template
     //TO-DO: only fetch this once
     const node = (await getPageContent(
@@ -49,7 +49,7 @@ export async function createLobbyCard(lobby: LobbyResponse) {
     return node;
 }
 
-export async function refreshLobbyData() {
+ async function refreshLobbyData() {
     const lobbyList = await getAllLobbies();
     allLobbiesData.clear();
     //add each lobby to map
@@ -164,7 +164,7 @@ export async function makeLobbyButtonsInteractable() {
     });
 }
 
-export async function checkLobbyJoinStatus() {
+ async function checkLobbyJoinStatus() {
     //Refresh data just in case there has been a change since last join
     await refreshLobbyData();
 
@@ -183,7 +183,7 @@ export async function checkLobbyJoinStatus() {
     }
 }
 
-export async function setupPasswordModal(lobby: LobbyResponse) {
+ async function setupPasswordModal(lobby: LobbyResponse) {
     //show password element on page
     const passwordModal = (await getPageContent(
         "lobbies",
@@ -237,7 +237,7 @@ export async function setupPasswordModal(lobby: LobbyResponse) {
     });
 }
 
-export async function joinLobby(lobby: LobbyResponse, password?: string) {
+ async function joinLobby(lobby: LobbyResponse, password?: string) {
     console.log("Attempting to join lobby...");
     //join lobby with or without password, depending on if public or private
     if (password) {
