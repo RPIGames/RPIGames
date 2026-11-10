@@ -1,6 +1,7 @@
 """
 This router file contains definitions for the /ws endpoints of the API.
 """
+from json import JSONDecodeError
 from typing import Literal
 from uuid import UUID
 

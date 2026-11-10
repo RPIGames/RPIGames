@@ -104,15 +104,9 @@ class Player:
             disappear_on_completion,
         )
         amount_of_seconds = timer_end.timestamp() - (datetime.now()).timestamp()
-        amount_of_seconds = amount_of_seconds / 60
-        schedule.schedule(amount_of_seconds, _check_timer, timer_id, timer_end_function)
-        return (
-            timer_id,
-            timer_name,
-            timer_end,
-            timer_end_function,
-            disappear_on_completion,
-        )
+        amount_of_seconds = amount_of_seconds/60
+        schedule.schedule(amount_of_seconds,self._check_timer,timer_id,timer_end_function)
+        return (timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)
 
     # Timer_request_all(): this player has requested all timers
     async def _timer_request_all(

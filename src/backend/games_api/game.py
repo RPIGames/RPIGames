@@ -22,7 +22,8 @@ class Game(ABC):
 
     def __init__(self, initial_player: Player):
         self.scoreboard = []
-        self.chat_room_players: dict[UUID, List[UUID]] = {}
+        self.chat_room_players :dict[UUID,list[UUID]] = {}
+
 
     # add scoreboard
     # takes in a sorted array that this then sends to front end.
