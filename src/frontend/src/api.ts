@@ -420,11 +420,13 @@ webSocket.addEventListener("close", (event) => {
             `Closed cleanly, code=${event.code}, reason=${event.reason}`,
         );
     } else {
-        console.log(`Connection died, code=${event.code}, reason: ${event.reason}`);
+        console.log(
+            `Connection died, code=${event.code}, reason: ${event.reason}`,
+        );
     }
 });
 
-export const GAME_EVENT_INTERFACE: Object = {};
+export const GAME_EVENT_INTERFACE = new EventTarget();
 
 // function that handles a message from the websocket
 function handleMessage(event: MessageEvent<string>) {
@@ -460,7 +462,7 @@ function handleMessage(event: MessageEvent<string>) {
                 break;
         }
     } else {
-        console.error(`Unknown message type ${message.type}, ignoring.`)
+        console.error(`Unknown message type ${message.type}, ignoring.`);
     }
 }
 
@@ -482,13 +484,15 @@ export function authenticateWebSocket(token: `${Uuid}$${Uuid}`) {
  */
 function requestAllGameItems() {
     if (!webSocketAuthenticated) {
-        console.warn("tried to request all game items without the websocket being authenticated")
+        console.warn(
+            "tried to request all game items without the websocket being authenticated",
+        );
     } else {
-        for (let requestType of ["timer", "scoreboard"]) {
+        for (const requestType of ["timer", "scoreboard"]) {
             const message: ClientRequestMessage = {
                 type: requestType as "timer" | "scoreboard",
                 action: "request_all",
-            }
+            };
             webSocket.send(JSON.stringify(message));
         }
     }
