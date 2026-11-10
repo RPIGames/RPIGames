@@ -591,6 +591,12 @@ a:not(:hover) {
     color: var(--text-color);
 }
 
+/*Game css*/
+.game-wrapper{
+    height:100%;
+}
+
+
 /* ~~copied~~ heavily inspired from tailwind css */
 
 :root {
@@ -691,7 +697,7 @@ a:not(:hover) {
 }
 
 .h-windowMax{
-    min-height: calc(100vh - var(--topbar-height) - 31.4px);
+    height:1fr;
 }
 
 .center-align {
