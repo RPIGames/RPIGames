@@ -15,6 +15,7 @@ export type ServerMessage =
     | ServerTimerMessage
     | ServerScoreboardMessage
     | ServerChatMessage
+    | ServerMapMessage
     | ServerErrorMessage
     | ServerSendNotificationMessage;
 
@@ -89,7 +90,7 @@ export type ServerChatMessage =
 export interface ServerReceiveChatMessage {
     type: "chat";
     room_id: string;
-    author_id: Uuid;
+    author_id: Uuid | -1;
     message: string;
 }
 

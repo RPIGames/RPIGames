@@ -428,6 +428,13 @@ webSocket.addEventListener("close", (event) => {
 
 export const GAME_EVENT_INTERFACE = new EventTarget();
 
+export interface ChatMessageData {
+    message: string;
+    room_id: string;
+    system: boolean;
+    author?: Uuid;
+}
+
 // function that handles a message from the websocket
 function handleMessage(event: MessageEvent<string>) {
     const message: ServerMessage = JSON.parse(event.data);
@@ -461,6 +468,87 @@ function handleMessage(event: MessageEvent<string>) {
                 console.error(message.message);
                 break;
         }
+    } else if (message.type === "chat") {
+        if ("message" in message) {
+            // oh we got a message!
+            const message_info: ChatMessageData = {
+                message: message.message,
+                room_id: message.room_id,
+                system: false,
+            };
+            if (message.author_id === -1) {
+                message_info.system = true;
+            } else {
+                message_info.author = message.author_id;
+            }
+            const event = new CustomEvent("chat_message", {
+                detail: message_info,
+            });
+            GAME_EVENT_INTERFACE.dispatchEvent(event);
+        } else {
+            // modify chatroom permissions
+            const event = new CustomEvent("modify_chatroom", {
+                detail: message.data,
+            });
+            GAME_EVENT_INTERFACE.dispatchEvent(event);
+        }
+    } else if (message.type === "map") {
+        switch (message.action) {
+            case "update_marker":
+                GAME_EVENT_INTERFACE.dispatchEvent(
+                    new CustomEvent("update_map_markers", {
+                        detail: message.data,
+                    }),
+                );
+                break;
+            case "delete_marker":
+                GAME_EVENT_INTERFACE.dispatchEvent(
+                    new CustomEvent("delete_map_markers", {
+                        detail: message.ids,
+                    }),
+                );
+                break;
+        }
+    } else if (message.type === "scoreboard") {
+        switch (message.action) {
+            case "update":
+                GAME_EVENT_INTERFACE.dispatchEvent(
+                    new CustomEvent("update_scoreboards", {
+                        detail: message.data,
+                    }),
+                );
+                break;
+            case "delete":
+                GAME_EVENT_INTERFACE.dispatchEvent(
+                    new CustomEvent("delete_scoreboards", {
+                        detail: message.id,
+                    }),
+                );
+                break;
+        }
+    } else if (message.type === "timer") {
+        switch (message.action) {
+            case "update":
+                GAME_EVENT_INTERFACE.dispatchEvent(
+                    new CustomEvent("update_timers", { detail: message.data }),
+                );
+                break;
+            case "delete":
+                GAME_EVENT_INTERFACE.dispatchEvent(
+                    new CustomEvent("delete_timers", { detail: message.id }),
+                );
+                break;
+        }
+    } else if (message.type === "notification") {
+        GAME_EVENT_INTERFACE.dispatchEvent(
+            new CustomEvent("update_timers", {
+                detail: {
+                    notification_text: message.text,
+                    notification_level: message.level,
+                    should_be_native: message.native,
+                },
+            }),
+        );
     } else {
         console.error(`Unknown message type ${message.type}, ignoring.`);
     }
