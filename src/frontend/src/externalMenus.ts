@@ -28,7 +28,9 @@ const hamburgerImageClose: HTMLDivElement = document.querySelector(
     "#hamburgerClose",
 ) as HTMLImageElement;
 
-const bottomButtons: HTMLDivElement = (document.querySelector("#game-bottom-button-wrapper") as HTMLDivElement)
+const bottomButtons: HTMLDivElement = document.querySelector(
+    "#game-bottom-button-wrapper",
+) as HTMLDivElement;
 
 export function openHamburgerMenu() {
     //show menu itself
@@ -52,12 +54,12 @@ export function closeHamburgerMenu() {
     hamburgerImageClose.style.display = "none";
 }
 
-export function showBottomButtons(){
-    bottomButtons.style.display="flex";
+export function showBottomButtons() {
+    bottomButtons.style.display = "flex";
 }
 
-export function hideBottomButtons(){
-    bottomButtons.style.display="none";
+export function hideBottomButtons() {
+    bottomButtons.style.display = "none";
 }
 
 //close menu when middle section (anything but header, footer, or menu) is clicked

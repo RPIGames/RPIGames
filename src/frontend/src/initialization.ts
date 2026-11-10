@@ -5,7 +5,7 @@ Runs when loaded from index.html
 
 import { getNewUserId, getSelfUserInfo } from "./api.js";
 import { setPageContent } from "./dynamicPages.js";
-import { closeHamburgerMenu} from "./externalMenus.js";
+import { closeHamburgerMenu } from "./externalMenus.js";
 
 //initialize global variable
 globalThis.currentLobby = null;
@@ -22,7 +22,7 @@ closeHamburgerMenu();
 
 //go to game page if user already logged into lobby
 if (localStorage.getItem("currentLobby")) {
-    setPageContent("game", "", "game-main");
+    setPageContent("gameLobbyInfo");
 } else {
     setPageContent("home");
 }
