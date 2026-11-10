@@ -5,7 +5,7 @@ Runs when loaded from index.html
 
 import { getNewUserId, getSelfUserInfo } from "./api.js";
 import { setPageContent } from "./dynamicPages.js";
-import { closeHamburgerMenu } from "./hamburgerMenu.js";
+import { closeHamburgerMenu} from "./externalMenus.js";
 
 //initialize global variable
 globalThis.currentLobby = null;
