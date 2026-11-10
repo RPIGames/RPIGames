@@ -257,5 +257,5 @@ async function createLobby() {
     //join lobby in frontend
     currentLobby = createdLobby;
     localStorage.setItem("currentLobby", createdLobby.id);
-    await setPageContent("game", "", "game-main");
+    await setPageContent("gameLobbyInfo");
 }
