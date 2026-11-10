@@ -3,14 +3,7 @@ Code for showing website and external notifications
 Exports sendUINotification
 */
 import { showNotification } from "./api.js";
-
-// Enum of different notification types. The color is based off of this.
-enum MessageType {
-    Info = "info",
-    Success = "success",
-    Warning = "warning",
-    Error = "error",
-}
+import { MessageType } from "./structs/misc.js";
 
 // Sends a UI notification. This is an in-app notification, which means it's not native.
 export async function sendUINotification(
