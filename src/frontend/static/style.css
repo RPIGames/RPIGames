@@ -591,6 +591,29 @@ a:not(:hover) {
     color: var(--text-color);
 }
 
+/*Game button css*/
+#game-bottom-button-wrapper{
+    height:200px;
+    width:100vw;
+    border:4px solid black;
+    display: flex;
+    justify-content: space-between;
+    font-size:300px;
+}
+
+#game-bottom-button-wrapper button{
+    flex:1;
+    background-color: red;
+    height:100%;
+    text-align: center;
+    border:4px solid black;
+    font-size:50px;
+}
+
+#game-bottom-button-wrapper button:hover{
+    background-color: rgb(165, 2, 2);
+}
+
 /*Game css*/
 .game-wrapper{
     height:100%;

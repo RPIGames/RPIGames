@@ -6,7 +6,7 @@ Exports the following functions:
 Also exports centerContent, which stores an HTML element that is the highest wrapper for dynamic content 
 */
 
-import { closeHamburgerMenu } from "./hamburgerMenu.js";
+import { closeHamburgerMenu, hideBottomButtons, showBottomButtons } from "./externalMenus.js";
 
 import { initializeLobbyCreationPage } from "./lobbyCreation.js";
 
@@ -146,6 +146,13 @@ Initializes newly-loaded page
 @param pageLocation - name of page to initialize
  */
 async function initializeNewPage(pageLocation: string) {
+
+    if(pageLocation=="game"){
+        showBottomButtons();
+    }else{
+        hideBottomButtons();
+    }
+
     switch (pageLocation) {
         case "lobbies": {
             initializeLobbyListPage();
