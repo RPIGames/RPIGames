@@ -550,7 +550,7 @@ function handleMessage(event: MessageEvent<string>) {
             }),
         );
     } else {
-        console.error(`Unknown message type ${message.type}, ignoring.`);
+        console.error(`Unknown message ${message}, ignoring.`);
     }
 }
 
