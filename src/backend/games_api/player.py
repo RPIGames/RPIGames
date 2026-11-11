@@ -30,7 +30,7 @@ class Player:
         ] = {}
 
     def __eq__(self, value: object, /) -> bool:
-        if type(value) == Player:
+        if type(value) is Player:
             return value.uuid == self.uuid
         return False
 
@@ -68,6 +68,8 @@ class Player:
         """
         raise NotImplementedError("Chatrooms have not been implemented yet")
 
+
+
     def send_notification(
         self,
         notification_title: str,
@@ -85,7 +87,7 @@ class Player:
         timer_id: UUID,
         timer_end: datetime,
         timer_name: str = "Untitled Timer",
-        timer_end_function: Callable[[], None] | None = None,
+        timer_end_function: Callable[[], Awaitable[Any]] | None = None,
         disappear_on_completion: bool = True,
     ) -> tuple[
         UUID, str, datetime, Callable[[], Awaitable[Any]] | None, bool
@@ -93,19 +95,10 @@ class Player:
         """
         This makes the timer and adds it to the list of timers that the player sees
         """
-        if type(timer_id) is not str:
-            assert type(timer_id) is UUID
-            timer_id = timer_id.hex
-        self._timers[timer_id] = (
-            timer_id,
-            timer_name,
-            timer_end,
-            timer_end_function,
-            disappear_on_completion,
-        )
+        self._timers[timer_id] = (timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)
         amount_of_seconds = timer_end.timestamp() - (datetime.now()).timestamp()
         amount_of_seconds = amount_of_seconds/60
-        schedule.schedule(amount_of_seconds,self._check_timer,timer_id,timer_end_function)
+        schedule(amount_of_seconds,self._check_timer,timer_id,timer_end_function)
         return (timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)
 
     # Timer_request_all(): this player has requested all timers

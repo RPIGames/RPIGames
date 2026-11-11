@@ -84,14 +84,14 @@ class ConnectionManager:
     async def _authenticate(self, websocket: WebSocket, credentials: ClientAuthenticationMessage) -> bool:
         if self._websocket_authenticated(websocket):
             return
-        credentials = extract_credentials(credentials.token)
-        if credentials is None:
+        parsed_credentials = extract_credentials(credentials.token)
+        if parsed_credentials is None:
             await websocket.send_json(ServerAuthenticationErrorMessage())
             return
         user = None
         # this has to be a for loop because get_session() is a generator.
         for session in get_session():
-            user = optional_authorization(credentials, session)
+            user = optional_authorization(parsed_credentials, session)
         if user is None:
             await websocket.send_json(ServerAuthenticationErrorMessage())
             return
@@ -209,15 +209,15 @@ class ConnectionManager:
         for websocket in sockets:
             await websocket.send_json(model)
 
-    def _get_websockets(self, player_id: UUID) -> tuple[WebSocket]:
+    def _get_websockets(self, player_id: UUID) -> list[WebSocket]:
         sockets = []
         for websocket, pid in self.active_connections.items():
             if pid == player_id:
                 sockets.append(websocket)
-        return tuple(sockets)
+        return sockets
 
     async def _broadcast(self, model: BaseModel):
-        for websocket, _ in self.active_connections.items():
+        for websocket in self.active_connections:
             await websocket.send_json(model)
 
 manager = ConnectionManager()
@@ -230,7 +230,11 @@ async def websocket_endpoint(
     await manager._connect(websocket)
     try:
         while True:
-            message = await websocket.receive_json()
-            await manager.handle(websocket, message)
+            try:
+                message = await websocket.receive_json()
+                await manager.handle(websocket, message)
+            except JSONDecodeError:
+                pass
+
     except WebSocketDisconnect:
         manager._disconnect(websocket)
