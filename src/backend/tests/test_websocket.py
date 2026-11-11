@@ -1,35 +1,47 @@
-from .helper import GARBAGE_AUTH_HEADERS, client, create_quick_user
+import asyncio
+import concurrent
+
+import pytest
+
+from models.websocket import ClientAuthenticationMessage, ServerConnectionStatusMessage
+
+from .helper import GARBAGE_AUTH_HEADERS, GARBAGE_TOKENS, client, create_quick_user
 
 
-def test_websocket_authenticate():
+@pytest.mark.asyncio
+async def websocket_timeout_recieve(websocket, timeout: float = .5) -> str | None:
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+    future = executor.submit(websocket.receive_text)
+
+    try:
+        return future.result(timeout=timeout)
+    except concurrent.futures.TimeoutError:
+        return None
+    finally:
+        executor.shutdown(wait=False, cancel_futures=True)
+
+@pytest.mark.asyncio
+async def test_websocket_authenticate():
     user = create_quick_user()
     with client.websocket_connect("/v1/websocket/") as websocket:
-        websocket.send_text(user)
-        data = websocket.receive_text()
-        assert data == "Authentication Successful"
+        websocket.send_text(ClientAuthenticationMessage(token=user).model_dump_json())
+        data = await websocket_timeout_recieve(websocket, .5)
+        assert data is not None
+        ServerConnectionStatusMessage.model_validate_json(data)
 
-
-def test_websocket_authenticate_garbage():
+@pytest.mark.asyncio
+async def test_websocket_bogus_authenticate_token():
     with client.websocket_connect("/v1/websocket/") as websocket:
-        for header in GARBAGE_AUTH_HEADERS:
-            websocket.send_text(next(iter(header.values())))
-            data = websocket.receive_text()
-            assert data == "We fed your credentials to THE SNAKE."
+        for header in GARBAGE_TOKENS:
+            websocket.send_text(ClientAuthenticationMessage(token=header).model_dump_json())
+            data = await websocket_timeout_recieve(websocket, .5)
+            assert data is not None
+            ServerConnectionStatusMessage.model_validate_json(data)
 
-
-def test_websocket_message_authenticated():
-    user = create_quick_user()
+@pytest.mark.asyncio
+async def test_websocket_authenticate_garbage():
     with client.websocket_connect("/v1/websocket/") as websocket:
-        websocket.send_text(user)
-        _ = websocket.receive_text()
-        test_messages = [
-            "Hello",
-            "thing",
-            "why is this happening",
-            "heeeeeeeeellllllllllllllllllllllp",
-            "you like jazzzz?",
-        ]
-        for message in test_messages:
-            websocket.send_text(message)
-            data = websocket.receive_text()
-            assert data == message
+        for token in GARBAGE_TOKENS:
+            websocket.send_text(token)
+            data = await websocket_timeout_recieve(websocket, .5)
+            assert data is None

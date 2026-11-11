@@ -91,7 +91,7 @@ class ServerConnectionStatusMessage(BaseModel):
 class ClientAuthenticationMessage(BaseModel):
     """The user sends a token with this format with the authentication credentials"""
 
-    type: Literal["authentication"]
+    type: Literal["authentication"] = "authentication"
     token: str
 
 
@@ -130,7 +130,7 @@ class ServerDeleteTimerMessage(ServerTimerMessage):
 class ClientRequestTimersMessage(BaseModel):
     """A model for when the user wants all the timers data"""
 
-    type: Literal["timer"]
+    type: Literal["timer"] = "timer"
     action: Literal["request_all"]
 
 
@@ -161,7 +161,7 @@ class ServerDeleteScoreboardMessage(ServerScoreboardMessage):
 
 
 class ClientRequestScoreboardsMessage(BaseModel):
-    type: Literal["scoreboard"]
+    type: Literal["scoreboard"] = "scoreboard"
     action: Literal["request_all"]
 
 
@@ -179,7 +179,7 @@ class ServerChatMessage(BaseModel):
 class ClientSendChatMessage(BaseModel):
     """A model for when the user sends a message"""
 
-    type: Literal["chat"]
+    type: Literal["chat"] = "chat"
     message: str
     room_id: UUID
 
