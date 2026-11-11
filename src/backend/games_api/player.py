@@ -68,8 +68,6 @@ class Player:
         """
         raise NotImplementedError("Chatrooms have not been implemented yet")
 
-
-
     def send_notification(
         self,
         notification_title: str,
@@ -95,11 +93,23 @@ class Player:
         """
         This makes the timer and adds it to the list of timers that the player sees
         """
-        self._timers[timer_id] = (timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)
+        self._timers[timer_id] = (
+            timer_id,
+            timer_name,
+            timer_end,
+            timer_end_function,
+            disappear_on_completion,
+        )
         amount_of_seconds = timer_end.timestamp() - (datetime.now()).timestamp()
-        amount_of_seconds = amount_of_seconds/60
-        schedule(amount_of_seconds,self._check_timer,timer_id,timer_end_function)
-        return (timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)
+        amount_of_seconds = amount_of_seconds / 60
+        schedule(amount_of_seconds, self._check_timer, timer_id, timer_end_function)
+        return (
+            timer_id,
+            timer_name,
+            timer_end,
+            timer_end_function,
+            disappear_on_completion,
+        )
 
     # Timer_request_all(): this player has requested all timers
     async def _timer_request_all(

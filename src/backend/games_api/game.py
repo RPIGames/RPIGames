@@ -22,9 +22,7 @@ class Game(ABC):
 
     def __init__(self, initial_player: Player):
         self.scoreboard = []
-        self.chat_room_players :dict[UUID,list[UUID]] = {}
-
-
+        self.chat_room_players: dict[UUID, list[UUID]] = {}
 
     # add scoreboard
     # takes in a sorted array that this then sends to front end.
@@ -39,9 +37,8 @@ class Game(ABC):
     #    ) -> list[ScoreboardData]:
     #    return self.scoreboard
 
-    #Chat_Send_Message(Room UUID, message): gets all the players that are in the chatroom
-    async def get_room(self,
-        room_id: UUID) -> list[UUID]:
+    # Chat_Send_Message(Room UUID, message): gets all the players that are in the chatroom
+    async def get_room(self, room_id: UUID) -> list[UUID]:
         if room_id in self.chat_room_players:
             return self.chat_room_players[room_id]
         else:
@@ -64,8 +61,9 @@ class Game(ABC):
     async def leave_lobby(self, player: Player) -> None:
         pass
 
-    #define function to get timers to all players
-    async def assign_mass_timer(self,
+    # define function to get timers to all players
+    async def assign_mass_timer(
+        self,
         players: list[Player],
         timer_id: UUID,
         timer_end: datetime,
@@ -75,5 +73,11 @@ class Game(ABC):
     ) -> bool:
         # add way to stop already started timers
         for player in players:
-            player.make_timer(timer_id,timer_end,timer_name,timer_end_function,disappear_on_completion)
+            player.make_timer(
+                timer_id,
+                timer_end,
+                timer_name,
+                timer_end_function,
+                disappear_on_completion,
+            )
         return True

@@ -16,7 +16,9 @@ from games_api.schedule import schedule
 class SampleGame(Game):
     name: ClassVar[str] = "Sample Game!"
     max_players: ClassVar[tuple[int, int]] = (2, 500)
-    game_config: ClassVar[dict[str, tuple[str, Type, int | str | bool | float | None]]] = {
+    game_config: ClassVar[
+        dict[str, tuple[str, Type, int | str | bool | float | None]]
+    ] = {
         "welcome_message": ("Welcome message", str, "Welcome to the game!"),
         "time_to_hide": ("Time to Hide (minutes):", int, 5),
         "points_for_hiding": ("Points per minute hidden:", int, 10),
