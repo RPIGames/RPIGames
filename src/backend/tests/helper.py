@@ -17,28 +17,42 @@ def create_quick_user() -> str:
     return f"Bearer {uuid}${secret}"
 
 
-def create_quick_lobby(auth: str, *,
+def create_quick_lobby(
+    auth: str,
+    *,
     game_type: str = "sample_game",
     capacity: int = 8,
     config: dict[str, str | int | float | bool] | None = None,
-    secret: str | None = None) -> UUID:
+    secret: str | None = None,
+) -> UUID:
     """Helper method that creates a quick lobby given an auth string. Returns lobby uuid."""
     if config is None:
-        config = {"welcome_message": "hello", "time_to_hide": 5, "points_for_hiding": 10, "points_for_seeking": 15}
+        config = {
+            "welcome_message": "hello",
+            "time_to_hide": 5,
+            "points_for_hiding": 10,
+            "points_for_seeking": 15,
+        }
     if secret is None:
-        response = client.post("/v1/lobby/new", json={
-            "game_type_id": game_type,
-            "game_capacity": capacity,
-            "game_config": config,
-        }, headers={"Authorization": auth})
-    else:
         response = client.post(
-            "/v1/lobby/new", json={
+            "/v1/lobby/new",
+            json={
                 "game_type_id": game_type,
                 "game_capacity": capacity,
                 "game_config": config,
-                "secret": secret
-            }, headers={"Authorization": auth}
+            },
+            headers={"Authorization": auth},
+        )
+    else:
+        response = client.post(
+            "/v1/lobby/new",
+            json={
+                "game_type_id": game_type,
+                "game_capacity": capacity,
+                "game_config": config,
+                "secret": secret,
+            },
+            headers={"Authorization": auth},
         )
         print(response.request.content)
 
@@ -68,9 +82,7 @@ def join_lobby(auth: str, lobby_id: UUID, lobby_secret: str | None = None) -> bo
     }
     if lobby_secret is not None:
         body["lobby_secret"] = lobby_secret
-    response = client.post(
-        "/v1/lobby/join", headers={"Authorization": auth}, json=body
-    )
+    response = client.post("/v1/lobby/join", headers={"Authorization": auth}, json=body)
     print(response)
     print(response.json())
     return response.status_code == status.HTTP_200_OK
