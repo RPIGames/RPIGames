@@ -12,6 +12,7 @@ from sqlmodel import Session
 from db.engine import engine
 from db.models import User
 from games_api.schedule import schedule
+from models.websocket import LocationData,ChatroomData,TimerData
 
 T = TypeVar("T")
 
@@ -26,7 +27,7 @@ class Player:
         self._user = user
         self._location = None
         self._timers: dict[
-            UUID, tuple[UUID, str, datetime, Callable[[], Awaitable[Any]] | None, bool]
+            UUID, tuple[TimerData, Callable[[], Awaitable[Any]] | None]
         ] = {}
 
     def __eq__(self, value: object, /) -> bool:
@@ -35,7 +36,7 @@ class Player:
         return False
 
     # when websockets are implemented fix deal with right type of location
-    async def _set_location(self, new_location: tuple[float, float]) -> None:
+    async def _set_location(self, new_location: LocationData) -> None:
         """
         Sets the location of the player.
         """
@@ -48,11 +49,14 @@ class Player:
         return self._user.name
 
     # when websockets are implemented fix deal with right type of location
-    def get_location(self) -> tuple[float, float] | None:
+    def get_location(self) -> LocationData | None:
         """
         Gets the location of the current player. May return None if no location can be found
         """
         return self._location
+
+    def get_uuid()->UUID:
+        return self.uuid
 
     def assign_chatroom(
         self, chatroom_id: UUID, read_permission=True, send_permission=True
@@ -61,6 +65,8 @@ class Player:
         Assigns a chatroom to the player, so that the player can see it.
         """
         raise NotImplementedError("Chatrooms have not been implemented yet")
+
+    #get chatrooms in 
 
     def unassign_chatroom(self, chatroom_id: UUID):
         """
@@ -88,11 +94,12 @@ class Player:
         timer_end_function: Callable[[], Awaitable[Any]] | None = None,
         disappear_on_completion: bool = True,
     ) -> tuple[
-        UUID, str, datetime, Callable[[], Awaitable[Any]] | None, bool
-    ]:  # id , name  , time of end, function called at end,  disappear on completion
+        TimerData, Callable[[], Awaitable[Any]] | None
+    ]: 
         """
         This makes the timer and adds it to the list of timers that the player sees
         """
+        
         self._timers[timer_id] = (
             timer_id,
             timer_name,
@@ -114,10 +121,13 @@ class Player:
     # Timer_request_all(): this player has requested all timers
     async def _timer_request_all(
         self,
-    ) -> dict[
-        UUID, tuple[UUID, str, datetime, Callable[[], Awaitable[Any]] | None, bool]
+    ) -> list[
+        TimerData
     ]:
-        return self._timers
+        timers_list = []
+        for timer in self._timers:
+            timer_list.append(timer[0])
+        return timers_list
 
     # stop timer
     async def stop_timer(self, timer_id: UUID):

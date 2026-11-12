@@ -9,6 +9,7 @@ from collections.abc import Awaitable, Callable
 from datetime import datetime
 from typing import Any, ClassVar
 from uuid import UUID
+from models.websocket import ScoreboardData
 
 from games_api.player import Player
 
@@ -21,7 +22,7 @@ class Game(ABC):
     game_config: ClassVar[dict[str, tuple[str, Type, str | float | int | bool | None]]]
 
     def __init__(self, initial_player: Player):
-        self.scoreboard = []
+        self.scoreboard: list[ScoreboardData] = []
         self.chat_room_players: dict[UUID, list[UUID]] = {}
 
     # add scoreboard
@@ -29,22 +30,42 @@ class Game(ABC):
     # takes in an amount of scores that are being stored
     # also takes the which score it is
     # also adds it to the list of scoreboards
+    async def add_scoreboard(self,new_scoreboard:ScoreboardData):
+        self.scoreboard.append(new_coreboard)
+    
 
     # Scoreboard_request_all(Player UUID): this player has requested all scoreboards
-    # async def scoreboard_get_all(
-    #   self,
-    #    player_UUID: str | UUID
-    #    ) -> list[ScoreboardData]:
-    #    return self.scoreboard
+    async def scoreboard_get_all(
+       self,
+        player_UUID: UUID
+        ) -> list[ScoreboardData]:
+        return self.scoreboard
 
-    # Chat_Send_Message(Room UUID, message): gets all the players that are in the chatroom
+    # get_room(Room UUID): gets all the players that are in the chatroom
     async def get_room(self, room_id: UUID) -> list[UUID]:
         if room_id in self.chat_room_players:
             return self.chat_room_players[room_id]
         else:
             return []
-
-    # have a start game function
+    
+    #get way to add people to a room 
+    #takes in list of player that will be assigned to the room
+    #id of the room
+    #if they can write
+    #if they can see
+    async def add_to_room(self,room_id: UUID,players:list[Player]=[],read_permission=True, send_permission=True):
+        for player in players:
+            player.assign_chatroom(room_id,read_permission, send_permission)
+            self.chat_room_players[room_id].append(player.get_uuid())
+    
+    #get way to remove people from a room 
+    #takes in list of player that will be removed from the room
+    #id of the room
+    async def remove_from_room(self,room_id: UUID,players:list[Player]=[]):
+        for player in players:
+            player.unassign_chatroom(room_id)
+            self.chat_room_players[room_id].pop(player.get_uuid()|None)
+    
 
     # have a start game function
     @abstractmethod
