@@ -8,8 +8,8 @@ Also exports centerContent, which stores an HTML element that is the highest wra
 
 import {
     closeHamburgerMenu,
-    hideBottomButtons,
-    showBottomButtons,
+    hideBottomButtonSection,
+    showBottomButtonSection,
 } from "./externalMenus.js";
 
 import { initializeLobbyCreationPage } from "./lobbyCreation.js";
@@ -103,7 +103,7 @@ export async function setPageContent(
     const pageContentResult: HTMLElement | HTMLTemplateElement | null =
         await getPageContent(pageLocation, divId, true);
 
-    if(!pageContentResult) throw Error(`Can't change find new page content! pageLocation: ${pageLocation} divId: ${divId}`);
+    if(!pageContentResult) throw Error(`Can't find new page content! pageLocation: ${pageLocation} divId: ${divId}`);
 
     //close menu, if open
     closeHamburgerMenu();
@@ -152,9 +152,9 @@ Initializes newly-loaded page
  */
 async function initializeNewPage(pageLocation: string) {
     if (pageLocation === "gameLobbyInfo" || pageLocation === "chat") {
-        showBottomButtons();
+        showBottomButtonSection();
     } else {
-        hideBottomButtons();
+        hideBottomButtonSection();
     }
 
     switch (pageLocation) {
