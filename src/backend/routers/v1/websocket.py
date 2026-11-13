@@ -163,6 +163,8 @@ class ConnectionManager:
             return
         player = Player(player_id)
         lobby = get_players_lobby(player)
+        if lobby is None:
+            return
         scoreboards = lobby._game.scoreboard_get_all(player_id)
         model = ServerUpdateScoreboardMessage(data=scoreboards)
         await websocket.send_json(model)

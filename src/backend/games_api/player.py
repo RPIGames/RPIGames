@@ -37,7 +37,7 @@ class Player:
         return False
 
     # when websockets are implemented fix deal with right type of location
-    async def _set_location(self, new_location: LocationData) -> None:
+    def _set_location(self, new_location: LocationData) -> None:
         """
         Sets the location of the player.
         """
@@ -121,7 +121,7 @@ class Player:
         )
 
     # Timer_request_all(): this player has requested all timers
-    async def _timer_request_all(
+    def _timer_request_all(
         self,
     ) -> list[
         TimerData
