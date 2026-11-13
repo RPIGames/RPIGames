@@ -88,7 +88,6 @@ export async function setPageContent(
     parentDivId?: string,
     divId?: string,
 ) {
-
     //find div to append to; if parameter not initialized, set to null
     let parentDiv: HTMLElement | null = parentDivId
         ? document.querySelector(`#${parentDivId}`)
@@ -103,7 +102,10 @@ export async function setPageContent(
     const pageContentResult: HTMLElement | HTMLTemplateElement | null =
         await getPageContent(pageLocation, divId, true);
 
-    if(!pageContentResult) throw Error(`Can't find new page content! pageLocation: ${pageLocation} divId: ${divId}`);
+    if (!pageContentResult)
+        throw Error(
+            `Can't find new page content! pageLocation: ${pageLocation} divId: ${divId}`,
+        );
 
     //close menu, if open
     closeHamburgerMenu();
@@ -115,7 +117,7 @@ export async function setPageContent(
     if (lobbyUpdateIntervalId) {
         clearInterval(lobbyUpdateIntervalId);
     }
-    
+
     //actually add content to page
     const divTemplate = pageContentResult as HTMLTemplateElement;
     const templateContent = document.importNode(divTemplate.content, true);

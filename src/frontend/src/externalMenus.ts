@@ -68,14 +68,19 @@ export function hideBottomButtonSection() {
  * @param buttonLocation - location that button goes to. Can be either lobbyInfo, chat, scoreboard, buttons, timers, or map.
  * @param show - true means button will be shown, false means button will be hidden. Defaults to true
  */
-export function changeButtonVisibility(buttonLocation:string, show : boolean = true) {
+export function changeButtonVisibility(
+    buttonLocation: string,
+    show: boolean = true,
+) {
     //all bottom row buttons have id of format `bottomButton-${buttonLocation}`
-    const button = document.getElementById(`bottomButton-${buttonLocation}`) as HTMLButtonElement | null
-    if(!button) throw Error(`No button of id bottomButton-${buttonLocation}`)
-    if(show){
-        button.style.display="block";
-    }else{
-        button.style.display="none";
+    const button = document.getElementById(
+        `bottomButton-${buttonLocation}`,
+    ) as HTMLButtonElement | null;
+    if (!button) throw Error(`No button of id bottomButton-${buttonLocation}`);
+    if (show) {
+        button.style.display = "block";
+    } else {
+        button.style.display = "none";
     }
 }
 
