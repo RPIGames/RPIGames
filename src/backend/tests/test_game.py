@@ -1,8 +1,10 @@
+from datetime import datetime
 from uuid import UUID
 
 import pytest
 
 from games_api.player import Player
+from models.websocket import LocationData
 
 from .helper import create_quick_user, get_uid_from_auth, get_user_info
 
@@ -45,11 +47,11 @@ async def test_location():
     player = Player(uuid)
     location = player.get_location()
     assert location == None
-    old_location = (0.0, 0.0)
+    old_location = LocationData(accuracy=0.0, latitude=0.0,longitude=0.0,time=datetime.now())
     await player._set_location(old_location)
     location = player.get_location()
     assert location == old_location
-    new_location = (1.0, 1.0)
+    new_location = LocationData(accuracy=1.0, latitude=1.0,longitude=1.0,time=datetime.now())
     await player._set_location(new_location)
     location = player.get_location()
     assert location == new_location

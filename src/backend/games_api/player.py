@@ -9,10 +9,11 @@ from uuid import UUID
 
 from sqlmodel import Session
 
+import routers.v1.websocket
 from db.engine import engine
 from db.models import User
 from games_api.schedule import schedule
-from models.websocket import LocationData,ChatroomData,TimerData
+from models.websocket import LocationData, TimerData
 
 T = TypeVar("T")
 
@@ -55,7 +56,7 @@ class Player:
         """
         return self._location
 
-    def get_uuid()->UUID:
+    def get_uuid(self)->UUID:
         return self.uuid
 
     def assign_chatroom(
@@ -74,7 +75,7 @@ class Player:
         """
         raise NotImplementedError("Chatrooms have not been implemented yet")
 
-    def send_notification(
+    async def send_notification(
         self,
         notification_title: str,
         notification_body: str | None = None,
@@ -84,7 +85,8 @@ class Player:
         Sends a notification to a player. This is implied to be a in-app notification, but may
         also be a push notification if permission is available.
         """
-        raise NotImplementedError("Notifications have not been implemented yet")
+        await routers.v1.websocket.manager.send_notification(self.uuid,notification_body,native)
+        #raise NotImplementedError("Notifications have not been implemented yet")
 
     def make_timer(
         self,
@@ -126,7 +128,7 @@ class Player:
     ]:
         timers_list = []
         for timer in self._timers:
-            timer_list.append(timer[0])
+            timers_list.append(timer[0])
         return timers_list
 
     # stop timer
@@ -137,8 +139,7 @@ class Player:
         checking = self._timers.pop(timer_id, None)
         return checking != None
 
-    # todo add function that is a helper function that when the function is called makes sure the called function is in the list of timers.
-    # has atributes of fuction being called and timer id
+    
     async def _check_timer(
         self,
         timer_id: UUID,

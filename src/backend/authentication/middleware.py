@@ -11,6 +11,8 @@ by a '$'):
   the person sending the request is who they say they are.
 """
 
+from __future__ import annotations
+
 from typing import Annotated
 from uuid import UUID
 
@@ -19,9 +21,9 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlmodel import Session
 
+import games_api.player
 from db.engine import get_session
 from db.models import User
-from games_api.player import Player
 
 security_optional = HTTPBearer(auto_error=False)
 
@@ -63,7 +65,7 @@ def parse_credentials(
 def optional_authorization(
     credentials: Annotated[tuple[str, str] | None, Depends(parse_credentials)],
     session: Annotated[Session, Depends(get_session)],
-) -> Player | None:
+) -> games_api.player.Player | None:
     """
     This dependency allows the user to authenticate themselves, as
     long as the user passes a Bearer auth with the respective details.
@@ -91,12 +93,12 @@ def optional_authorization(
     if not constant_time.bytes_eq(user.secret.bytes, secret_uuid.bytes):
         return None
 
-    return Player(user_uuid)
+    return games_api.player.Player(user_uuid)
 
 
 def require_authorization(
-    possible_auth: Annotated[Player | None, Depends(optional_authorization)],
-) -> Player:
+    possible_auth: Annotated[games_api.player.Player | None, Depends(optional_authorization)],
+) -> games_api.player.Player:
     """
     This dependency forces the user to have a valid, active, user session,
     and that the user passes a Bearer auth with the respective details.

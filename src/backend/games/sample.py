@@ -43,7 +43,7 @@ class SampleGame(Game):
         self.points_per_min_hide = config["points_for_hiding"]
 
         for player in self.hiders:
-            player.send_notification(
+            await player.send_notification(
                 "Time to hide!",
                 f"""
                 The game has started. You are a hider. Start hiding, you have {self.hide_time} minutes.
@@ -51,7 +51,7 @@ class SampleGame(Game):
             )
 
         for player in self.seekers:
-            player.send_notification(
+            await player.send_notification(
                 "Stay Put!",
                 """
                 You are a seeker. Stay put for now, and watch the timer. Once the timer finishes, you can begin seeking.
@@ -68,7 +68,7 @@ class SampleGame(Game):
                 "Time to seek!", """The timer is up and you can start seeking."""
             )
         for hider in self.hiders:
-            hider.send_notification(
+            await hider.send_notification(
                 "Hide!", """The seekers have been released. Good luck. """
             )
             hider.assign_button(
@@ -82,7 +82,7 @@ class SampleGame(Game):
         if self.game_started:
             self.seekers.append(player)
 
-            player.send_notification(
+            await player.send_notification(
                 "Welcome to the game!",
                 """
             You are a seeker, go find the hiders!
@@ -91,7 +91,7 @@ class SampleGame(Game):
         else:
             self.unassigned_players.append(player)
             try:
-                player.send_notification(
+                await player.send_notification(
                     "Welcome to the game!",
                     """
                 The game is still starting, wait for the team leader.
@@ -111,7 +111,7 @@ class SampleGame(Game):
             self.scores[selection.uuid] = 0
         self.scores[selection.uuid] += self.points_per_player
 
-        selection.send_notification("You found a player!")
+        await selection.send_notification("You found a player!")
 
 
 GAMES["sample_game"] = SampleGame

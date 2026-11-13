@@ -215,13 +215,13 @@ class ConnectionManager:
 
     async def send_notification(
         self,
-        player_ids: list[UUID],
+        player_id: UUID,
         text: str,
         native: bool,
         level: Literal["normal", "debug", "warning", "error"] = "normal",
     ) -> None:
         model = ServerSendNotificationMessage(level=level, native=native, text=text)
-        await self._broadcast_model(player_ids, model)
+        await self._send_model(player_id, model)
 
     ##############################################################################
     ########################### HELPERS ##########################################
