@@ -18,8 +18,8 @@
       <div class="flex menu-wrapper">
         <div class="nav-user" id="username">Signed Out</div>
         <button class="hamburgerButton">
-          <img id="hamburgerOpen" src="/static/hamburger.svg"/>
-          <img id="hamburgerClose" src="/static/close.svg"/>
+          <img id="hamburgerOpen" class="invertImage" src="/static/hamburger.svg"/>
+          <img id="hamburgerClose" class="invertImage" src="/static/close.svg"/>
         </button>
       </div>
     </div>
@@ -39,8 +39,18 @@
     </div>
 
       <div id="game-bottom-button-wrapper">
-        <button class="pageChange" data-url="gameLobbyInfo" data-div="">Lobby Info</button>
-        <button class="pageChange" data-url="chat" data-div="">Chat</button>
+        <button class="pageChange" data-url="gameLobbyInfo" title="Lobby Info" data-div="">Lobby Info</button>
+        <button class="pageChange" title="Chat" data-url="chat" data-div="">
+          <img class="invertImage" src="./static/chat.svg">
+        </button>
+        <button class="pageChange" data-url="scoreboard" title="Scoreboard" data-div="">Scoreboard</button>
+        <button class="pageChange" data-url="buttons" title="Game Buttons" data-div="">Game Buttons</button>
+        <button class="pageChange" data-url="timers" title="Timers" data-div="">
+          <img class="invertImage" src="./static/timer.svg">
+        </button>
+        <button class="pageChange" data-url="map" title="Map" data-div="">
+          <img class="invertImage" src="./static/map.svg">
+        </button>
       </div>
 
     <footer id="footer">
