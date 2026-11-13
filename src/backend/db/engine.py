@@ -1,5 +1,4 @@
 import os
-from collections.abc import Generator
 
 from sqlmodel import Session, SQLModel, create_engine
 
