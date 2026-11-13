@@ -89,10 +89,7 @@ class ConnectionManager:
         if parsed_credentials is None:
             await websocket.send_json(ServerAuthenticationErrorMessage())
             return False
-        user = None
-        # this has to be a for loop because get_session() is a generator.
-        for session in get_session():
-            user = optional_authorization(parsed_credentials, session)
+        user = optional_authorization(parsed_credentials, get_session())
         if user is None:
             await websocket.send_json(ServerAuthenticationErrorMessage())
             return False
