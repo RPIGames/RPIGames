@@ -1,14 +1,13 @@
+from datetime import datetime
 from uuid import UUID
 
 import pytest
-from fastapi.testclient import TestClient
 
 from games_api.player import Player
-from main import app
+from models.websocket import LocationData
 
-from .test_user_modification import create_quick_user, get_uid_from_auth, get_user_info
+from .helper import create_quick_user, get_uid_from_auth, get_user_info
 
-client = TestClient(app)
 
 def test_making_player():
     """
@@ -20,11 +19,12 @@ def test_making_player():
         player = Player(uuid)
         assert player.uuid == uuid
     except ValueError:
-        assert(False)
+        assert False
+
 
 def test_making_player_no_user():
     """
-     Test making a player if there is no user requested
+    Test making a player if there is no user requested
     """
     uuid = UUID(int=0)
     try:
@@ -33,10 +33,10 @@ def test_making_player_no_user():
     except ValueError:
         pass
     else:
-        assert(False)
+        assert False
 
 
-#when websockets are implemented fix to test wider variety
+# when websockets are implemented fix to test wider variety
 @pytest.mark.anyio
 async def test_location():
     """
@@ -46,15 +46,16 @@ async def test_location():
     uuid = get_uid_from_auth(auth)
     player = Player(uuid)
     location = player.get_location()
-    assert(location == None)
-    old_location = (0.0,0.0)
+    assert location == None
+    old_location = LocationData(accuracy=0.0, latitude=0.0,longitude=0.0,time=datetime.now())
     await player._set_location(old_location)
     location = player.get_location()
-    assert(location==old_location)
-    new_location = (1.0,1.0)
+    assert location == old_location
+    new_location = LocationData(accuracy=1.0, latitude=1.0,longitude=1.0,time=datetime.now())
     await player._set_location(new_location)
     location = player.get_location()
-    assert(location==new_location)
+    assert location == new_location
+
 
 def test_name():
     """
@@ -65,4 +66,4 @@ def test_name():
     uuid = get_uid_from_auth(auth)
     player = Player(uuid)
     player_name = player.get_name()
-    assert(user_name == player_name)
+    assert user_name == player_name

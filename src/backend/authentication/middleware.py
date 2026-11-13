@@ -11,6 +11,8 @@ by a '$'):
   the person sending the request is who they say they are.
 """
 
+from __future__ import annotations
+
 from typing import Annotated
 from uuid import UUID
 
@@ -19,11 +21,26 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlmodel import Session
 
+import games_api.player
 from db.engine import get_session
 from db.models import User
-from games_api.player import Player
 
 security_optional = HTTPBearer(auto_error=False)
+
+
+def extract_credentials(credential_str: str) -> tuple[str, str] | None:
+    """
+    This function extracts a user and secret token from a string, or returns None if the format is invalid.
+    """
+    if "$" not in credential_str:
+        return None
+    credentials_list = credential_str.split("$")
+    if len(credentials_list) != 2:
+        return None
+    user_token, secret_token = credentials_list
+    if len(user_token) != len(secret_token):
+        return None
+    return user_token, secret_token
 
 
 def parse_credentials(
@@ -42,19 +59,13 @@ def parse_credentials(
         or "$" not in credentials.credentials
     ):
         return None
-    credentials_list = credentials.credentials.split("$")
-    if len(credentials_list) != 2:
-        return None
-    user_token, secret_token = credentials_list
-    if len(user_token) != len(secret_token):
-        return None
-    return user_token, secret_token
+    return extract_credentials(credentials.credentials)
 
 
 def optional_authorization(
-    credentials: Annotated[tuple[str, str | None], Depends(parse_credentials)],
+    credentials: Annotated[tuple[str, str] | None, Depends(parse_credentials)],
     session: Annotated[Session, Depends(get_session)],
-) -> Player | None:
+) -> games_api.player.Player | None:
     """
     This dependency allows the user to authenticate themselves, as
     long as the user passes a Bearer auth with the respective details.
@@ -82,12 +93,12 @@ def optional_authorization(
     if not constant_time.bytes_eq(user.secret.bytes, secret_uuid.bytes):
         return None
 
-    return Player(user_uuid)
+    return games_api.player.Player(user_uuid)
 
 
 def require_authorization(
-    possible_auth: Annotated[Player | None, Depends(optional_authorization)],
-) -> Player:
+    possible_auth: Annotated[games_api.player.Player | None, Depends(optional_authorization)],
+) -> games_api.player.Player:
     """
     This dependency forces the user to have a valid, active, user session,
     and that the user passes a Bearer auth with the respective details.

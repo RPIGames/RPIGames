@@ -97,7 +97,7 @@ async def make_lobby(
         leader=Player(player.uuid),
         lobby_size=body.game_capacity,
         name=body.name,
-        secret=body.secret
+        secret=body.secret,
     )
     return mk_lobby_response_from_lobby(created_lobby)
 
