@@ -700,10 +700,22 @@ a:not(:hover) {
 }
 
 
-#player-list li.leader::after{
-    content:" 👑"
+#player-list-wrapper{
+    display: grid;
+    grid-template-columns: 33% 77%;
+    column-gap: 10px;
 }
 
+#player-icons{
+    width: 100%;
+    text-align: right;
+    grid-column: 1/1;
+}
+
+#player-list{
+    grid-column: 2/2;
+    text-align: left;
+}
 .game-wrapper button{
     margin-top:10px;
     background-color: red;

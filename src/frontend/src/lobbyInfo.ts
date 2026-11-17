@@ -40,16 +40,20 @@ async function displayLobbyData(){
     playerMaxElement.textContent=globalThis.currentLobby.max_members
 
     //set players
-    const playerListElement=document.querySelector("#player-list ul") as HTMLUListElement;
+    const playerListElement=document.querySelector("#player-list") as HTMLUListElement;
+    const playerIconElement=document.querySelector("#player-icons") as HTMLUListElement;
+
     for(const player of globalThis.currentLobby.players){
-        const playerElement=document.createElement("li")
-        playerElement.textContent=player.name;
+        const playerNameElement=document.createElement("li")
+        const iconElement=document.createElement("li");
+        playerNameElement.textContent=player.name;
 
         if(player.leader==true){
-            playerElement.classList.add("leader")
+            iconElement.textContent="👑"
         }
 
-        playerListElement.append(playerElement)
+        playerIconElement.append(iconElement)
+        playerListElement.append(playerNameElement)
     }
 }
 
