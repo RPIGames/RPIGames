@@ -126,16 +126,16 @@ class ConnectionManager:
     ##############################################################################
 
     async def update_scoreboards(
-        self, player_ids: list[UUID], scoreboards: list[ScoreboardData]
+        self, player_id: UUID, scoreboards: list[ScoreboardData]
     ) -> None:
         model = ServerUpdateScoreboardMessage(data=scoreboards)
-        await self._broadcast_model(player_ids, model)
+        await self._send_model(player_id, model)
 
     async def delete_scoreboards(
-        self, player_ids: list[UUID], scoreboards: list[UUID]
+        self, player_id: UUID, scoreboards: list[UUID]
     ) -> None:
         model = ServerDeleteScoreboardMessage(ids=scoreboards)
-        await self._broadcast_model(player_ids, model)
+        await self._send_model(player_id, model)
 
     async def _request_scoreboards(self, websocket: WebSocket, _) -> None:
         scoreboards = []
@@ -168,12 +168,12 @@ class ConnectionManager:
     ##############################################################################
 
     async def update_markers(
-        self, player_ids: list[UUID], markers: list[MarkerData]
+        self, player_ids: UUID, markers: list[MarkerData]
     ) -> None:
         model = ServerUpdateMarkerMessage(data=markers)
         await self._broadcast_model(player_ids, model)
 
-    async def delete_markers(self, player_ids: list[UUID], markers: list[UUID]) -> None:
+    async def delete_markers(self, player_ids: UUID, markers: list[UUID]) -> None:
         model = ServerDeleteMarkerMessage(ids=markers)
         await self._broadcast_model(player_ids, model)
 

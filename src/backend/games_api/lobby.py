@@ -6,7 +6,7 @@ and a list of players that are in the lobby.
 from random import choice, randint
 from uuid import UUID, uuid4
 
-from games.registry import GAMES
+import games.registry
 from games_api.player import Player
 from games_api.private_maps import PLAYER_TO_LOBBY_MAP
 
@@ -21,10 +21,10 @@ class Lobby:
         name: str = f"Unnamed Lobby {randint(1000, 9999)}",
         secret: str | None = None,
     ) -> None:
-        if game_name not in GAMES:
+        if game_name not in games.registry.GAMES:
             raise ValueError("invalid game_type")
 
-        game_type = GAMES[game_name]
+        game_type = games.registry.GAMES[game_name]
 
         for config_option in game_type.game_config.items():
             if config_option[0] not in game_settings:
