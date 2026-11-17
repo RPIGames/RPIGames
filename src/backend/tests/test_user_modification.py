@@ -11,6 +11,7 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from main import app
+from models.request import ChangeNameRequest
 from models.response import AuthenticationErrorResponse, ErrorResponse
 
 from .test_lobby import create_quick_lobby
@@ -49,9 +50,7 @@ def test_change_username():
 
     response = client.post(
         "/v1/user/change_name",
-        params={
-            "new_name": "testuser",
-        },
+        json=ChangeNameRequest(new_name="testuser").model_dump(),
         headers={"Authorization": auth},
     )
 
@@ -63,9 +62,7 @@ def test_change_username():
 def test_change_username_with_no_session():
     response = client.post(
         "/v1/user/change_name",
-        params={
-            "new_name": "this user shouldn't exist",
-        },
+        json=ChangeNameRequest(new_name="this user shouldn't exist").model_dump(),
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     print(response.text)
@@ -78,9 +75,7 @@ def test_change_username_with_too_long_name():
 
     response = client.post(
         "/v1/user/change_name",
-        params={
-            "new_name": "this is an extremely long username you could even say it isnt a username at all and is instead just a test",
-        },
+        json=ChangeNameRequest(new_name="this is an extremely long username you could even say it isnt a username at all and is instead just a test").model_dump(),
         headers={"Authorization": auth},
     )
 
@@ -95,9 +90,7 @@ def test_change_username_with_non_alphanumeric_name():
 
     response = client.post(
         "/v1/user/change_name",
-        params={
-            "new_name": "just a regular username++",
-        },
+        json=ChangeNameRequest(new_name="just a regular username++").model_dump(),
         headers={"Authorization": auth},
     )
 

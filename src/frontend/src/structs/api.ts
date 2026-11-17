@@ -37,3 +37,7 @@ export interface MakeLobbyRequest {
 export interface LobbyPassLeadershipRequest {
     grantee_id: string; // uuid of the user to grant to
 }
+
+export interface ChangeNameRequest {
+    new_name: string;
+}

@@ -1,9 +1,9 @@
 /*
 Code for dynamically changing the page.
 Exports the following functions:
-    - getPageContent - returns a stored HTML element so it can be manipulated before adding to page 
+    - getPageContent - returns a stored HTML element so it can be manipulated before adding to page
     - setPageContent - sets a section of the page (usually all of centerContent) to contain a stored HTML template
-Also exports centerContent, which stores an HTML element that is the highest wrapper for dynamic content 
+Also exports centerContent, which stores an HTML element that is the highest wrapper for dynamic content
 */
 
 import { closeHamburgerMenu } from "./hamburgerMenu.js";
@@ -19,6 +19,7 @@ import {
 } from "./lobbyList.js";
 
 import { sendUINotification } from "./notifications.js";
+import { initializeSettingsPage } from "./settings.js";
 
 export const centerContent: HTMLDivElement = document.querySelector(
     "#center-content",
@@ -31,7 +32,7 @@ let activeWindow = "home";
 retrieves content from a template page
  * @param pageLocation - name of html file containing page (w/o file extension)
  * @param divId - id of html element to retrieve. If empty, defaults to pageLocation
- * @param leaveAsTemplate - bool to determine if an HTML element should be returned 
+ * @param leaveAsTemplate - bool to determine if an HTML element should be returned
     as an HTML element or left in template form. Defaults to returning an HTML element
  * @returns HTML Element or HTML template depending on value of leaveAsTemplate
 */
@@ -179,6 +180,10 @@ async function initializeNewPage(pageLocation: string) {
             leaveLobbyButton.addEventListener("click", async () => {
                 leaveLobby();
             });
+            break;
+        }
+        case "settings": {
+            await initializeSettingsPage();
             break;
         }
     }
