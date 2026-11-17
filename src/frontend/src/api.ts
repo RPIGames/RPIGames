@@ -168,7 +168,7 @@ export async function getLobby(
     lobby_id: string,
 ): Promise<LobbyResponse | null> {
     // construct a url with parameters
-    const url = new URL("/api/latest/lobby/single");
+    const url = new URL("/api/latest/lobby/single", location.href);
     url.searchParams.append("lobby_id", lobby_id);
 
     // perform the actual fetch
