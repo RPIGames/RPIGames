@@ -2,9 +2,10 @@
 Code for lobby info page
 Will probably be integrated into another page in the future
 */
-import { leaveLobby as leaveLobbyBackend, getLobby } from "./api.js";
+import { leaveLobby as leaveLobbyBackend, getLobby, getSelfUserInfo } from "./api.js";
 
 import { setPageContent } from "./dynamicPages.js";
+import type { PublicUserInfo } from "./structs/api.js";
 
 export async function initializeLobbyInfoPage(){
     setupLeaveLobbyButton()
@@ -48,8 +49,15 @@ async function displayLobbyData(){
         const iconElement=document.createElement("li");
         playerNameElement.textContent=player.name;
 
+        iconElement.textContent=" "
+
         if(player.leader==true){
             iconElement.textContent="👑"
+        }
+
+        const selfInfo = await getSelfUserInfo() as PublicUserInfo; 
+        if(player.name==selfInfo.name){
+            iconElement.textContent+="(You)"
         }
 
         playerIconElement.append(iconElement)

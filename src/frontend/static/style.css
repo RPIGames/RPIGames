@@ -712,6 +712,14 @@ a:not(:hover) {
     grid-column: 1/1;
 }
 
+#player-icons li{
+    height:30px;
+}
+
+#player-list li{
+    height:30px;
+}
+
 #player-list{
     grid-column: 2/2;
     text-align: left;
