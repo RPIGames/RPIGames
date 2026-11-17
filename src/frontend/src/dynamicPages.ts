@@ -14,7 +14,7 @@ import {
 
 import { initializeLobbyCreationPage } from "./lobbyCreation.js";
 
-import { leaveLobby } from "./lobbyLeave.js";
+import { initializeLobbyInfoPage } from "./lobbyInfo.js";
 
 import {
     deselectCard,
@@ -185,14 +185,7 @@ async function initializeNewPage(pageLocation: string) {
             break;
         }
         case "gameLobbyInfo": {
-            //button to leave lobby
-            const leaveLobbyButton = document.getElementById(
-                "leave-lobby-button",
-            ) as HTMLButtonElement;
-
-            leaveLobbyButton.addEventListener("click", async () => {
-                leaveLobby();
-            });
+            initializeLobbyInfoPage();
             break;
         }
         case "settings": {

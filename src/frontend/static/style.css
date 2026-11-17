@@ -682,6 +682,20 @@ a:not(:hover) {
 /*Game css*/
 .game-wrapper{
     height:100%;
+    padding:10px;
+}
+
+.game-wrapper li::before{
+    content:"-"
+}
+
+.game-wrapper button{
+    background-color: red;
+    border:none;
+    color:white;
+    height:50px;
+    width:100px;
+    border-radius:500px;
 }
 
 
