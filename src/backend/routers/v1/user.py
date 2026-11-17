@@ -27,6 +27,24 @@ router = APIRouter(
     tags=["user"],
 )
 
+def make_player_response_from_player(player: Player) -> PublicUserInfoResponse:
+
+    leader = False
+    lobby = get_players_lobby(player)
+    lobby_id = None
+    if lobby is not None:
+        lobby_id = lobby._uuid
+        if lobby.leader == player:
+            leader = True
+
+    return PublicUserInfoResponse(
+        id=player.uuid,
+        name=player.get_name(),
+        leader=leader,
+        lobby_id=lobby_id,
+    )
+
+
 
 @router.post(
     "/new",
@@ -109,20 +127,7 @@ def get_public_user_info(
         response.status_code = status.HTTP_404_NOT_FOUND
         return ErrorResponse(error="User not found.")
 
-    leader = False
-    lobby = get_players_lobby(player)
-    lobby_id = None
-    if lobby is not None:
-        lobby_id = lobby._uuid
-        if lobby.leader == player:
-            leader = True
-
-    return PublicUserInfoResponse(
-        id=player.uuid,
-        name=player.get_name(),
-        leader=leader,
-        lobby_id=lobby_id,
-    )
+    return make_player_response_from_player(player)
 
 
 @router.post(
