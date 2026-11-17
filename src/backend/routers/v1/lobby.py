@@ -5,6 +5,7 @@ of the API.
 
 import random
 from typing import Annotated
+from uuid import UUID
 
 from cryptography.hazmat.primitives import constant_time
 from fastapi import APIRouter, Depends, Response, status
@@ -25,6 +26,7 @@ from models.response import (
     LobbyResponse,
     OkResponse,
 )
+from routers.v1.user import make_player_response_from_player
 
 router = APIRouter(
     prefix="/lobby",
@@ -37,14 +39,35 @@ def mk_lobby_response_from_lobby(lobby: Lobby) -> LobbyResponse:
     This helper function extracts the values needed to
     make a `LobbyResponse` from the `Lobby` passed into it.
     """
+
+    player_list = []
+    for player in lobby.get_players():
+        player_list.append(make_player_response_from_player(player))
+
     return LobbyResponse(
         id=lobby._uuid,
         name=lobby.name,
         max_members=lobby.capacity,
         curr_members=len(lobby._players),
         needs_secret=lobby.secret is not None,
+        players=player_list
     )
 
+@router.get("/single")
+def get_lobbies(
+    lobby_id: UUID,
+    response: Response,
+) -> LobbyResponse | None:
+    """
+    Gets a single lobby's info. If not defined, returns 404.
+    """
+    if lobby_id not in GLOBAL_LOBBY_MAP:
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return None
+
+    lobby = GLOBAL_LOBBY_MAP[lobby_id]
+
+    return mk_lobby_response_from_lobby(lobby)
 
 @router.get("/all")
 def get_all_lobbies() -> list[LobbyResponse]:
@@ -97,7 +120,7 @@ async def make_lobby(
         leader=Player(player.uuid),
         lobby_size=body.game_capacity,
         name=body.name,
-        secret=body.secret
+        secret=body.secret,
     )
     return mk_lobby_response_from_lobby(created_lobby)
 

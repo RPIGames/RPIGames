@@ -1,6 +1,7 @@
 """
 This file contains the Player sub-API for the Game API.
 """
+
 from collections.abc import Awaitable, Callable
 from datetime import datetime
 from typing import Any, TypeVar
@@ -8,11 +9,14 @@ from uuid import UUID
 
 from sqlmodel import Session
 
+import routers.v1.websocket
 from db.engine import engine
 from db.models import User
 from games_api.schedule import schedule
+from models.websocket import LocationData, TimerData
 
 T = TypeVar("T")
+
 
 class Player:
     def __init__(self, uuid: UUID) -> None:
@@ -23,15 +27,17 @@ class Player:
             raise ValueError
         self._user = user
         self._location = None
-        self._timers : dict[str, tuple[str, str, datetime, Callable[[], Awaitable[Any]] | None, bool ]] = {}
+        self._timers: dict[
+            UUID, tuple[TimerData, Callable[[], Awaitable[Any]] | None]
+        ] = {}
 
     def __eq__(self, value: object, /) -> bool:
-        if type(value) == Player:
+        if type(value) is Player:
             return value.uuid == self.uuid
         return False
 
-    #when websockets are implemented fix deal with right type of location
-    async def _set_location(self, new_location: tuple[float, float]) -> None:
+    # when websockets are implemented fix deal with right type of location
+    async def _set_location(self, new_location: LocationData) -> None:
         """
         Sets the location of the player.
         """
@@ -43,12 +49,15 @@ class Player:
         """
         return self._user.name
 
-    #when websockets are implemented fix deal with right type of location
-    def get_location(self) -> tuple[float, float] | None:
+    # when websockets are implemented fix deal with right type of location
+    def get_location(self) -> LocationData | None:
         """
         Gets the location of the current player. May return None if no location can be found
         """
         return self._location
+
+    def get_uuid(self)->UUID:
+        return self.uuid
 
     def assign_chatroom(
         self, chatroom_id: UUID, read_permission=True, send_permission=True
@@ -58,70 +67,82 @@ class Player:
         """
         raise NotImplementedError("Chatrooms have not been implemented yet")
 
+    #get chatrooms in 
+
     def unassign_chatroom(self, chatroom_id: UUID):
         """
         Unassigns a chatroom to the player, so that the player stops seeing it.
         """
         raise NotImplementedError("Chatrooms have not been implemented yet")
 
-    #Chat_Send_Message(Room UUID, message): this player has sent this message
-    async def chat_send_message(
+    async def send_notification(
         self,
-        Room_UUID:str|UUID,
-        message:str
-        ) -> None:
-        pass
-
-    def send_notification(
-        self, notification_title: str, notification_body: str | None = None
+        notification_title: str,
+        notification_body: str | None = None,
+        native: bool = False,
     ):
         """
         Sends a notification to a player. This is implied to be a in-app notification, but may
         also be a push notification if permission is available.
         """
-        raise NotImplementedError("Notifications have not been implemented yet")
+        await routers.v1.websocket.manager.send_notification(self.uuid,notification_body,native)
+        #raise NotImplementedError("Notifications have not been implemented yet")
 
     def make_timer(
         self,
-        timer_id : str | UUID,
+        timer_id: UUID,
         timer_end: datetime,
         timer_name: str = "Untitled Timer",
         timer_end_function: Callable[[], Awaitable[Any]] | None = None,
         disappear_on_completion: bool = True,
-    ) -> tuple[str, str, datetime, Callable[[], Awaitable[Any]] | None, bool ]: #id , name  , time of end, function called at end,  disappear on completion
+    ) -> tuple[
+        TimerData, Callable[[], Awaitable[Any]] | None
+    ]: 
         """
         This makes the timer and adds it to the list of timers that the player sees
         """
-        if type(timer_id) is not str:
-            assert type(timer_id) is UUID
-            timer_id = timer_id.hex
-        self._timers[timer_id] = (timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)
+        
+        self._timers[timer_id] = (
+            timer_id,
+            timer_name,
+            timer_end,
+            timer_end_function,
+            disappear_on_completion,
+        )
         amount_of_seconds = timer_end.timestamp() - (datetime.now()).timestamp()
-        amount_of_seconds = amount_of_seconds/60
-        if timer_end_function is not None:
-            schedule(amount_of_seconds,timer_end_function)
-        return (timer_id,timer_name,timer_end,timer_end_function,disappear_on_completion)
+        amount_of_seconds = amount_of_seconds / 60
+        schedule(amount_of_seconds, self._check_timer, timer_id, timer_end_function)
+        return (
+            timer_id,
+            timer_name,
+            timer_end,
+            timer_end_function,
+            disappear_on_completion,
+        )
 
     # Timer_request_all(): this player has requested all timers
-    async def _timer_request_all(self) -> dict[str, tuple[str,str, datetime,Callable[[], Awaitable[Any]] | None, bool]]:
-        return self._timers
+    async def _timer_request_all(
+        self,
+    ) -> list[
+        TimerData
+    ]:
+        timers_list = []
+        for timer in self._timers:
+            timers_list.append(timer[0])
+        return timers_list
 
-    #stop timer
-    async def stop_timer(self,
-        timer_id : str):
+    # stop timer
+    async def stop_timer(self, timer_id: UUID):
         """
         Tries to remove the time if the timer does not exist return false otherwise return true
         """
-        checking = self._timers.pop(timer_id,None)
+        checking = self._timers.pop(timer_id, None)
         return checking != None
 
-
-
-    #todo add function that is a helper function that when the function is called makes sure the called function is in the list of timers.
-    # has atributes of fuction being called and timer id
+    
     async def _check_timer(
         self,
-        timer_id : str | UUID,
+        timer_id: UUID,
         timer_end_function: Callable[[], Awaitable[Any]] | None = None,
     ):
         """
@@ -131,24 +152,3 @@ class Player:
             return
         if timer_id in self._timers:
             await timer_end_function()
-
-
-    def assign_button(
-        self,
-        button_id: UUID | str,
-        button_function: Callable[["Player", T], Any],
-        button_name: str = "Unnamed Button",
-        *,
-        selection: None | list[T] = None,
-    ) -> None:
-        if isinstance(button_id, str):
-            button_id = UUID(bytes=button_id.encode("ascii"))
-        raise NotImplementedError("Buttons have not been implemented yet")
-
-    async def button_send(
-        self,
-        Button_ID: str| UUID,
-        arguments: list[str]
-        )-> None:
-         pass
-        #: this player pushed this button

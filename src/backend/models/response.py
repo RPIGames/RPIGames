@@ -22,14 +22,6 @@ class AuthenticationErrorResponse(BaseModel):
     detail: str | None = None
 
 
-class LobbyResponse(BaseModel):
-    id: UUID
-    name: str
-    max_members: int
-    curr_members: int
-    needs_secret: bool
-
-
 class UserTokenResponse(BaseModel):
     id: UUID
     secret: UUID
@@ -53,7 +45,16 @@ class PublicUserInfoResponse(PublicUserInfo):
 class PrivateUserInfoResponse(PrivateUserInfo):
     pass
 
+class LobbyResponse(BaseModel):
+    id: UUID
+    name: str
+    max_members: int
+    curr_members: int
+    needs_secret: bool
+    players: list[PublicUserInfo]
+
 ConfigType = Literal["string", "number", "boolean"]
+
 
 class GameInfo(BaseModel):
     name: str

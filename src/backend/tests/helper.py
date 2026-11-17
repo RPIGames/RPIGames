@@ -1,0 +1,111 @@
+from typing import Any
+from uuid import UUID
+
+from fastapi import status
+from fastapi.testclient import TestClient
+
+from main import app
+
+client = TestClient(app)
+
+
+def create_quick_user() -> str:
+    """Helper method that creates a user. Returns an auth bearer string"""
+    response = client.post("/v1/user/new")
+    secret: str = response.json()["secret"]
+    uuid: str = response.json()["id"]
+    return f"Bearer {uuid}${secret}"
+
+
+def create_quick_lobby(
+    auth: str,
+    *,
+    game_type: str = "sample_game",
+    capacity: int = 8,
+    config: dict[str, str | int | float | bool] | None = None,
+    secret: str | None = None,
+) -> UUID:
+    """Helper method that creates a quick lobby given an auth string. Returns lobby uuid."""
+    if config is None:
+        config = {
+            "welcome_message": "hello",
+            "time_to_hide": 5,
+            "points_for_hiding": 10,
+            "points_for_seeking": 15,
+        }
+    if secret is None:
+        response = client.post(
+            "/v1/lobby/new",
+            json={
+                "game_type_id": game_type,
+                "game_capacity": capacity,
+                "game_config": config,
+            },
+            headers={"Authorization": auth},
+        )
+    else:
+        response = client.post(
+            "/v1/lobby/new",
+            json={
+                "game_type_id": game_type,
+                "game_capacity": capacity,
+                "game_config": config,
+                "secret": secret,
+            },
+            headers={"Authorization": auth},
+        )
+        print(response.request.content)
+
+    if response.status_code != 200:
+        raise ValueError(f"there was an error making a quick lobby: {response.text}")
+
+    return UUID(response.json()["id"])
+
+
+def get_uid_from_auth(auth: str) -> UUID:
+    return UUID(auth.split(" ")[1].split("$")[0])
+
+
+def get_user_info(auth: str) -> dict[str, Any]:
+    """Gets the public user info as from an auth bearer string"""
+    response = client.get(
+        "/v1/user/info", params={"user_id": str(get_uid_from_auth(auth))}
+    )
+    return response.json()
+
+
+def join_lobby(auth: str, lobby_id: UUID, lobby_secret: str | None = None) -> bool:
+    """Trys to join the respective lobby at lobby_id with the
+    user authenticated with auth. Returns true if joined successfully."""
+    body = {
+        "lobby_id": str(lobby_id),
+    }
+    if lobby_secret is not None:
+        body["lobby_secret"] = lobby_secret
+    response = client.post("/v1/lobby/join", headers={"Authorization": auth}, json=body)
+    print(response)
+    print(response.json())
+    return response.status_code == status.HTTP_200_OK
+
+
+GARBAGE_AUTH_HEADERS = [
+    {"Authorization": "Bearer Random Garbage"},
+    {"Authorization": "Bearer "},
+    {"Authorization": "Bea rer"},
+    {"Authorization": "Bearer 01010101$010010001"},
+    {"Auth": "Bearer 102948"},
+    {"Authorization": "Bearer 01Ef12943jrka#$&@(!\x00\\EEE)"},
+    {"Auth": "Bearer \x00\n\n\nHAHAHAHA"},
+    {"Authorization": "Bearer \x00\n\n\nHAHAHAHA"},
+]
+
+GARBAGE_TOKENS = [
+    "asjfewfasdfadsg",
+    "sdhfiurewhgif",
+    "fhrieuhfriuasdf",
+    "foiureahfoieahf",
+    "froiuoihjwwfoijefd",
+    "fjoirehoihwflsjlkfj",
+    "oriheoiwhjlkjsflakmr",
+    "foihsoihflkdsmtnsl",
+]
