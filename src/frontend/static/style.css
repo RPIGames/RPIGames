@@ -683,21 +683,40 @@ a:not(:hover) {
 .game-wrapper{
     height:100%;
     padding:10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    overflow: scroll;
 }
 
-.game-wrapper li::before{
-    content:"-"
+.game-wrapper h1{
+    margin-bottom:10px;
+}
+
+.game-wrapper div{
+    text-align: center;
+    font-size:20px;
+}
+
+
+#player-list li.leader::after{
+    content:" 👑"
 }
 
 .game-wrapper button{
+    margin-top:10px;
     background-color: red;
     border:none;
     color:white;
-    height:50px;
+    min-height:50px;
     width:100px;
     border-radius:500px;
 }
 
+.game-wrapper button:hover{
+    background-color: rgb(165, 2, 2);
+}
 
 /* ~~copied~~ heavily inspired from tailwind css */
 

@@ -2,11 +2,16 @@
 Code for lobby info page
 Will probably be integrated into another page in the future
 */
-import { leaveLobby as leaveLobbyBackend } from "./api.js";
+import { leaveLobby as leaveLobbyBackend, getLobby } from "./api.js";
 
 import { setPageContent } from "./dynamicPages.js";
 
-export function initializeLobbyInfoPage(){
+export async function initializeLobbyInfoPage(){
+    setupLeaveLobbyButton()
+    displayLobbyData()
+}
+
+function setupLeaveLobbyButton(){
     //setup leave lobby button
     const leaveLobbyButton = document.getElementById(
         "leave-lobby-button",
@@ -15,11 +20,37 @@ export function initializeLobbyInfoPage(){
     leaveLobbyButton.addEventListener("click", async () => {
         leaveLobby();
     });
+}
 
-    //display lobby data
-    if(!globalThis.currentLobby) throw Error("Lobby data does not exist!");
+async function displayLobbyData(){
+    //set currentLobby value if it is not already set
+    if(!globalThis.currentLobby){
+        const lobbyId=localStorage.getItem("currentLobby") as string;
+        globalThis.currentLobby=await getLobby(lobbyId);
+    }
     
-    (document.querySelector("h1 span") as HTMLHeadingElement).textContent=globalThis.currentLobby.name;
+    //set lobby name
+    const lobbyName=(document.querySelector("h1 span") as HTMLHeadingElement)
+    lobbyName.textContent=globalThis.currentLobby.name;
+
+    const playerCountElement=document.querySelector("#current-player-count span") as HTMLSpanElement
+    playerCountElement.textContent=globalThis.currentLobby.curr_members
+
+    const playerMaxElement=document.querySelector("#max-player-count span") as HTMLSpanElement
+    playerMaxElement.textContent=globalThis.currentLobby.max_members
+
+    //set players
+    const playerListElement=document.querySelector("#player-list ul") as HTMLUListElement;
+    for(const player of globalThis.currentLobby.players){
+        const playerElement=document.createElement("li")
+        playerElement.textContent=player.name;
+
+        if(player.leader==true){
+            playerElement.classList.add("leader")
+        }
+
+        playerListElement.append(playerElement)
+    }
 }
 
 async function leaveLobby() {
