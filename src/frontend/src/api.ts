@@ -164,7 +164,9 @@ export async function getAllLobbies(): Promise<LobbyResponse[]> {
  *
  * @returns The lobby, or null if there is no lobby with that name.
  */
-export async function getLobby(lobby_id: string): Promise<LobbyResponse | null> {
+export async function getLobby(
+    lobby_id: string,
+): Promise<LobbyResponse | null> {
     // construct a url with parameters
     const url = new URL("/api/latest/lobby/single");
     url.searchParams.append("lobby_id", lobby_id);
