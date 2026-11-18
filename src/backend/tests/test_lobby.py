@@ -8,6 +8,8 @@ from uuid import UUID
 
 from fastapi import status
 
+from models.response import LobbyResponse
+
 from .helper import (
     client,
     create_quick_lobby,
@@ -65,6 +67,17 @@ def test_create_lobby():
     assert response.json()["name"] == "Test Lobby"
     assert "max_members" in response.json()
 
+def test_get_single_lobby():
+    """Tests the /single endpoint"""
+    auth = create_quick_user()
+    lobby = create_quick_lobby(auth)
+
+    response = client.get("/latest/lobby/single", params={"lobby_id": str(lobby)})
+    assert response.status_code == status.HTTP_200_OK
+    assert LobbyResponse.model_validate_json(response.text)
+
+    response = client.get("/latest/lobby/single", params={"lobby_id": str(UUID(int=0))})
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
 def test_leave_lobby():
     """Tests the /leave endpoint"""

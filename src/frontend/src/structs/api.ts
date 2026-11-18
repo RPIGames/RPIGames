@@ -19,6 +19,7 @@ export type LobbyResponse = {
     max_members: number;
     curr_members: number;
     needs_secret: boolean;
+    players: PublicUserInfo[];
 };
 
 export interface LobbyJoinRequest {
