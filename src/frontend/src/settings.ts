@@ -20,6 +20,7 @@ export async function initializeSettingsPage() {
     ) as HTMLInputElement;
 
     newNameInput.defaultValue = userInfo.name;
+    newNameInput.checkValidity();
 
     changeNameButton.addEventListener("click", async (e) => {
         await rename_button_event(e);
@@ -28,6 +29,9 @@ export async function initializeSettingsPage() {
 
 async function rename_button_event(_: PointerEvent): Promise<void> {
     if (newNameInput === null) return;
+
+    //return if input invalid
+    if(!newNameInput.checkValidity()) return;
 
     const status = await changeSelfName(newNameInput.value);
     if (status.ok) {

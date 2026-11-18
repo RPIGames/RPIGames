@@ -606,7 +606,39 @@ a:not(:hover) {
     padding:10px;
 }
 
-#refresh-lobbies:hover{
+.rename-input-wrapper{
+    width: clamp(190px,50%,300px);
+    position:relative;
+}
+
+
+.rename-input-wrapper::after{
+    content:"Username must be 3-50 characters long and can only contain letters, numbers, or spaces";
+    color:red;
+    position:absolute;
+    left:2px;
+    top:50px;
+}
+
+.rename-input-wrapper:has(input:invalid)::after{
+    display: inline;
+}
+
+.rename-input-wrapper:has(input:valid)::after{
+    display: none;
+}
+
+
+#rename-text-box{
+    width:100%;
+}
+
+#rename-text-box:invalid {
+    border:2px solid red;
+}
+
+
+#rename-button:hover{
     background-color: rgb(235, 144, 144);
 }
 
