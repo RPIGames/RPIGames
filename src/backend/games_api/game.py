@@ -30,26 +30,26 @@ class Game(ABC):
     # takes in an amount of scores that are being stored
     # also takes the which score it is
     # also adds it to the list of scoreboards
-    async def add_scoreboard(self,new_scoreboard:ScoreboardData):
+    def add_scoreboard(self,new_scoreboard:ScoreboardData):
         self.scoreboard.append(new_scoreboard)
     
 
     # Scoreboard_request_all(Player UUID): this player has requested all scoreboards
-    async def scoreboard_get_all(
+    def scoreboard_get_all(
        self,
         player_UUID: UUID
         ) -> list[ScoreboardData]:
         return self.scoreboard
 
     # get_room(Room UUID): gets all the players that are in the chatroom
-    async def get_room(self, room_id: UUID) -> list[UUID]:
+    def get_room(self, room_id: UUID) -> list[UUID]:
         if room_id in self.chat_room_players:
             return self.chat_room_players[room_id]
         else:
             return []
     
     #get way to add people to a room 
-    async def add_to_room(self,room_id: UUID,players:list[Player]| None =None,read_permission=True, send_permission=True):
+    def add_to_room(self,room_id: UUID,players:list[Player]| None =None,read_permission=True, send_permission=True):
         if players is None:
             players =[]
         for player in players:
@@ -59,7 +59,7 @@ class Game(ABC):
     #get way to remove people from a room 
     #takes in list of player that will be removed from the room
     #id of the room
-    async def remove_from_room(self,room_id: UUID,players:list[Player]| None =None):
+    def remove_from_room(self,room_id: UUID,players:list[Player]| None =None):
         if players is None:
             players =[]
         for player in players:
@@ -83,7 +83,7 @@ class Game(ABC):
         pass
 
     # define function to get timers to all players
-    async def assign_mass_timer(
+    def assign_mass_timer(
         self,
         players: list[Player],
         timer_id: UUID,
@@ -103,7 +103,7 @@ class Game(ABC):
             )
         return True
 
-    async def remove_mass_timer(
+    def remove_mass_timer(
         self,
         timer_id: UUID,
         players:list[Player]| None =None
@@ -114,7 +114,7 @@ class Game(ABC):
             player.stop_timer(timer_id)
         return True
 
-    async def mass_notification_Send(
+    def mass_notification_Send(
         self,
         players:list[Player]| None =None,
         body:str | None = None,
