@@ -34,6 +34,6 @@ async function rename_button_event(_: PointerEvent): Promise<void> {
         console.log(status);
         setTimeout(() => location.reload(), 1000);
     } else {
-        sendUINotification(`An error occurred: {status}`);
+        sendUINotification(`An error occurred: ${status.status}`);
     }
 }
