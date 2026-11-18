@@ -173,6 +173,7 @@ export async function changeSelfName(name: string): Promise<Response> {
         body: JSON.stringify(body),
     });
 }
+/**
  * Gets a single lobby.
  *
  * @param lobby_id the id of the lobby to try and fetch

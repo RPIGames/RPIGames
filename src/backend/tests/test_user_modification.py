@@ -6,7 +6,6 @@ as well as testing when users fail to be created
 
 from fastapi import status
 
-from main import app
 from models.request import ChangeNameRequest
 from models.response import AuthenticationErrorResponse, ErrorResponse
 
