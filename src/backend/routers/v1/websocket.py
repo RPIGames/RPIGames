@@ -216,6 +216,13 @@ class ConnectionManager:
         model = ServerNewChatroomPermissionsMessage(data=chatrooms)
         await cls._send_model(player_id, model)
 
+    @classmethod
+    async def delete_chatroom(cls, player_id: UUID, chatrooms: list[ChatroomData]) -> None:
+	if not chatrooms:
+	    return
+	model = ServerDeleteChatroomMessage(ids=chatrooms)
+	await cls._send_model(player_id, model)
+
     ##############################################################################
     ########################### MAP ##############################################
     ##############################################################################
