@@ -1,5 +1,6 @@
 import { sendUINotification } from "./notifications.js";
 import type {
+    ChangeNameRequest,
     LobbyJoinRequest,
     LobbyResponse,
     MakeLobbyRequest,
@@ -156,6 +157,22 @@ export async function getAllLobbies(): Promise<LobbyResponse[]> {
     return (await response.json()) as LobbyResponse[];
 }
 
+/**
+ * Changes the current user's name. The new name must be a valid name.
+ */
+export async function changeSelfName(name: string): Promise<Response> {
+    const body: ChangeNameRequest = {
+        new_name: name,
+    };
+
+    const url = new URL("/api/v1/user/change_name", location.href);
+
+    return fetch(url, {
+        method: "POST",
+        headers: [getAuthHeader(), ["Content-Type", "application/json"]],
+        body: JSON.stringify(body),
+    });
+}
 /**
  * Gets a single lobby.
  *

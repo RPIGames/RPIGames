@@ -14,6 +14,7 @@ from db.models import User
 from games_api.lobby import GLOBAL_LOBBY_MAP, get_players_lobby
 from games_api.player import Player
 from games_api.private_maps import PLAYER_TO_LOBBY_MAP
+from models.request import ChangeNameRequest
 from models.response import (
     AuthenticationErrorResponse,
     ErrorResponse,
@@ -139,9 +140,9 @@ def get_public_user_info(
     },
 )
 def rename_self(
-    new_name: str,
     player: Annotated[Player, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
+    request: ChangeNameRequest,
     response: Response,
 ):
     """
@@ -151,6 +152,7 @@ def rename_self(
     - Usernames must be less than or equal to 50 characters long.
     - Usernames must be alphanumeric (+ spaces)
     """
+    new_name = request.new_name
 
     if len(new_name) < 3:
         response.status_code = status.HTTP_400_BAD_REQUEST
