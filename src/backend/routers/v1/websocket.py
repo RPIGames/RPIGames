@@ -163,6 +163,12 @@ class ConnectionManager:
         model = ServerNewChatroomPermissionsMessage(data=chatrooms)
         await self._broadcast_model(player_ids, model)
 
+    async def delete_chatroom(self, player_id: UUID, chatrooms: list[UUID]) -> None:
+        if not chatrooms:
+            return
+        model = ServerDeleteChatroomMessage(ids=chatrooms)
+        await self._send_model(player_id, model)
+
     ##############################################################################
     ########################### MAP ##############################################
     ##############################################################################
@@ -171,11 +177,11 @@ class ConnectionManager:
         self, player_ids: UUID, markers: list[MarkerData]
     ) -> None:
         model = ServerUpdateMarkerMessage(data=markers)
-        await self._broadcast_model(player_ids, model)
+        await self._send_model(player_ids, model)
 
     async def delete_markers(self, player_ids: UUID, markers: list[UUID]) -> None:
         model = ServerDeleteMarkerMessage(ids=markers)
-        await self._broadcast_model(player_ids, model)
+        await self._send_model(player_ids, model)
 
     async def _send_location(
         self, websocket: WebSocket, location: ClientSendLocationMessage

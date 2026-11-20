@@ -14,8 +14,9 @@ from sqlmodel import Session
 import routers.v1.websocket
 from db.engine import engine
 from db.models import User
+from games_api.button import Button
 from games_api.schedule import schedule
-from models.websocket import LocationData, TimerData
+from models.websocket import LocationData, TimerData,ScoreboardData,MarkerData,ChatroomData,ButtonData
 
 T = TypeVar("T")
 
@@ -23,6 +24,7 @@ _timers: dict[ Player,dict[
             UUID, tuple[TimerData, Callable[[], Awaitable[Any]] | None]
         ] ]= {}
 _location: dict[Player,LocationData|None]={}
+_buttons: dict[Player,dict[UUID,Button|None]]={}
 class Player:
     def __init__(self, uuid: UUID) -> None:
         self.uuid = uuid
@@ -70,21 +72,32 @@ class Player:
     def get_uuid(self)->UUID:
         return self.uuid
 
-    def assign_chatroom(
-        self, chatroom_id: UUID, read_permission=True, send_permission=True
+    async def assign_chatroom(
+        self, chatroom_id: UUID,chatroom_name: str, read_permission=True, send_permission=True
     ):
         """
         Assigns a chatroom to the player, so that the player can see it.
         """
-        raise NotImplementedError("Chatrooms have not been implemented yet")
+        temp_chatroom = [ChatroomData(name =chatroom_name,room_id =  chatroom_id, read =read_permission, write =  send_permission)]
+        await  routers.v1.websocket.manager.update_chatrooms(self.uuid,temp_chatroom)
+
+    async def update_chatroom(
+        self, chatroom_id: UUID,chatroom_name: str, read_permission=True, send_permission=True
+    ):
+        """
+        Updates a chatroom to the player, so that the player can see it.
+        """
+        
+        temp_chatroom = [ChatroomData(name =chatroom_name,room_id =  chatroom_id, read =read_permission, write =  send_permission)]
+        await  routers.v1.websocket.manager.update_chatrooms(self.uuid,temp_chatroom)
 
     #get chatrooms in 
-
-    def unassign_chatroom(self, chatroom_id: UUID):
+    async def unassign_chatroom(self, chatroom_id: UUID,):
         """
         Unassigns a chatroom to the player, so that the player stops seeing it.
         """
-        raise NotImplementedError("Chatrooms have not been implemented yet")
+        temp_chatroom  = [chatroom_id]
+        await  routers.v1.websocket.manager.delete_chatroom(self.uuid,temp_chatroom)
 
     async def send_notification(
         self,
@@ -136,7 +149,10 @@ class Player:
         self,
     ) -> list[
         TimerData
-    ]:
+    ]:  
+        """
+        Requeast all the timers this player knows
+        """
         timers_list = []
         for timer in _timers[self]:
             timers_list.append(timer[0])
@@ -187,3 +203,19 @@ class Player:
         markers: List[MarkerData]
     )-> None:
         await routers.v1.websocket.manager.delete_markers(self,markers)
+
+    async def _update_button(self,buttons:List[Button])-> None:
+        temp_button = list[ButtonData] =[]
+        for button in buttons:
+            _buttons[self][button.get_uuid()] = button
+            temp_button.append(button.make_button_data())
+        await routers.v1.websocket.manager.update_buttons(self.uuid, temp_button)
+
+    async def _delete_button(self,buttons:List[Button])-> None:
+        temp_button = list[ButtonData] =[]
+        for button in buttons:
+            _buttons[self].pop(button.get_uuid())
+            temp_button.append(button.make_button_data())
+        await routers.v1.websocket.manager.delete_buttons(self.uuid, temp_button)
+        
+
