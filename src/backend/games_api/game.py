@@ -12,8 +12,10 @@ from uuid import UUID
 
 from games_api.button import Button
 from games_api.player import Player
-from models.websocket import LocationData, TimerData,ScoreboardData,MarkerData,ChatroomData,ButtonData
-import games_api.lobby
+from models.websocket import (
+    MarkerData,
+    ScoreboardData,
+)
 
 Type = type[str] | type[float] | type[int] | type[bool]
 
@@ -54,14 +56,14 @@ class Game(ABC):
         """
         The given player has joined the lobby 
         """
-        await self.players_in_game.append(to_add)
+        await self.players_in_game.append(player)
 
     # have a leave lobby function
     async def leave_lobby(self, player: Player) -> None:
         """
         The given player has left the lobby
         """
-        await self.players_in_game.remove(to_add)
+        await self.players_in_game.remove(player)
 
     def parse_message(player_id: UUID, room_id: UUID, message: str) -> tuple[UUID, UUID, str]:
         """

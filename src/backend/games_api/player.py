@@ -16,7 +16,14 @@ from db.engine import engine
 from db.models import User
 from games_api.button import Button
 from games_api.schedule import schedule
-from models.websocket import LocationData, TimerData,ScoreboardData,MarkerData,ChatroomData,ButtonData
+from models.websocket import (
+    ButtonData,
+    ChatroomData,
+    LocationData,
+    MarkerData,
+    ScoreboardData,
+    TimerData,
+)
 
 T = TypeVar("T")
 
@@ -194,24 +201,24 @@ class Player:
 
     async def _update_marker(
         self,
-        markers: List[MarkerData]
+        markers: list[MarkerData]
     )-> None:
         await routers.v1.websocket.manager.update_markers(self,markers)
     
     async def _delete_marker(
         self,
-        markers: List[MarkerData]
+        markers: list[MarkerData]
     )-> None:
         await routers.v1.websocket.manager.delete_markers(self,markers)
 
-    async def _update_button(self,buttons:List[Button])-> None:
+    async def _update_button(self,buttons:list[Button])-> None:
         temp_button = list[ButtonData] =[]
         for button in buttons:
             _buttons[self][button.get_uuid()] = button
             temp_button.append(button.make_button_data())
         await routers.v1.websocket.manager.update_buttons(self.uuid, temp_button)
 
-    async def _delete_button(self,buttons:List[Button])-> None:
+    async def _delete_button(self,buttons:list[Button])-> None:
         temp_button = list[ButtonData] =[]
         for button in buttons:
             _buttons[self].pop(button.get_uuid())

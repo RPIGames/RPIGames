@@ -207,6 +207,10 @@ class ServerNewChatroomPermissionsMessage(ServerChatMessage):
 
     data: list[ChatroomData]
 
+class ServerDeleteChatroomMessage(ServerChatMessage):
+    ids: list[UUID]
+
+
 
 ##############################################################################
 ########################### MAP ##############################################

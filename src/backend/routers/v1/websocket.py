@@ -26,6 +26,7 @@ from models.websocket import (
     ScoreboardData,
     ServerAuthenticationErrorMessage,
     ServerDeleteButtonsMessage,
+    ServerDeleteChatroomMessage,
     ServerDeleteMarkerMessage,
     ServerDeleteScoreboardMessage,
     ServerDeleteTimerMessage,
