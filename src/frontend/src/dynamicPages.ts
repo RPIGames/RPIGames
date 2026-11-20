@@ -14,7 +14,7 @@ import {
 
 import { initializeLobbyCreationPage } from "./lobbyCreation.js";
 
-import { initializeLobbyInfoPage } from "./lobbyInfo.js";
+import { infoUpdateIntervalId, initializeLobbyInfoPage } from "./lobbyInfo.js";
 
 import {
     deselectCard,
@@ -117,6 +117,11 @@ export async function setPageContent(
     //stop constant lobby refreshing, if active
     if (lobbyUpdateIntervalId) {
         clearInterval(lobbyUpdateIntervalId);
+    }
+
+    //clear info refreshing, if active
+    if (infoUpdateIntervalId) {
+        clearInterval(infoUpdateIntervalId);
     }
 
     //actually add content to page

@@ -11,9 +11,16 @@ import {
 import { setPageContent } from "./dynamicPages.js";
 import type { PublicUserInfo } from "./structs/api.js";
 
+export let infoUpdateIntervalId: number | null;
+
 export async function initializeLobbyInfoPage() {
     setupLeaveLobbyButton();
     displayLobbyData();
+
+    //update info every 10s
+    infoUpdateIntervalId = setInterval(() => {
+        displayLobbyData();
+    }, 10000);
 }
 
 function setupLeaveLobbyButton() {
@@ -28,10 +35,6 @@ function setupLeaveLobbyButton() {
 }
 
 async function displayLobbyData() {
-    //hide wrapper so content appears all at once
-    const wrapper = document.querySelector(".game-wrapper") as HTMLElement;
-    wrapper.style.display = "none";
-
     //set currentLobby value
     const lobbyId = localStorage.getItem("currentLobby") as string;
     globalThis.currentLobby = await getLobby(lobbyId);
@@ -59,6 +62,10 @@ async function displayLobbyData() {
     const playerIconElement = document.querySelector(
         "#player-icons",
     ) as HTMLUListElement;
+
+    playerListElement.innerHTML = "";
+    playerIconElement.innerHTML = "";
+
     for (const player of globalThis.currentLobby.players) {
         //create list elements
         const playerNameElement = document.createElement("li");
@@ -81,9 +88,6 @@ async function displayLobbyData() {
         playerIconElement.append(iconElement);
         playerListElement.append(playerNameElement);
     }
-
-    //reshow wrapper
-    wrapper.style.display = "";
 }
 
 async function leaveLobby() {
