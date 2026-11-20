@@ -28,9 +28,17 @@ body {
     height:100vh;
 }
 
+#middle-div{
+    overflow-y: scroll;
+}
+
 /* deal with the topbar */
 * {
     --topbar-height: calc(var(--spacing)*24);
+}
+
+.invertImage{
+    filter:brightness(0) invert(1); /*forces image color to be white*/
 }
 
 #topbar {
@@ -70,7 +78,6 @@ body {
 
 /* Image on Button */
 .hamburgerButton > img{
-    filter:brightness(0) invert(1); /*forces image color to be white*/
     width: 100%;
     height: 100%;
 }
@@ -386,13 +393,18 @@ button {
 }
 
 #refresh-lobbies{
-    margin-right:10px;
-    height:25px;
+    height:40px;
+    width:40px;
     background-color: rgb(199, 0, 0);
     color:white;
-    border-radius: 10px;
-    padding-left: 10px;
-    padding-right: 10px;
+    border-radius: 200px;
+    margin:5px;
+    padding: 5px;
+}
+
+#refresh-lobbies img{
+    width:100%;
+    height:100%;
 }
 
 #refresh-lobbies:hover{
@@ -642,6 +654,95 @@ a:not(:hover) {
     background-color: rgb(235, 144, 144);
 }
 
+/*Game button css*/
+#game-bottom-button-wrapper{
+    height:100px;
+    width:100vw;
+    border:4px solid black;
+    justify-content: space-between;
+    font-size:300px;
+    display: none;
+}
+
+#game-bottom-button-wrapper button{
+    flex:1;
+    background-color: red;
+    height:100%;
+    text-align: center;
+    border:4px solid black;
+    font-size:min(50px,3vw);
+    padding:10px;
+}
+
+#game-bottom-button-wrapper button img{
+    max-width: 100%;
+    max-height: 100%;
+}
+
+#game-bottom-button-wrapper button:hover{
+    background-color: rgb(165, 2, 2);
+}
+
+/*Game css*/
+.game-wrapper{
+    height:100%;
+    padding:10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    overflow-y: scroll;
+    overflow-x:hidden;
+}
+
+.game-wrapper h1{
+    margin-bottom:10px;
+}
+
+.game-wrapper div{
+    text-align: center;
+    font-size:20px;
+}
+
+
+#player-list-wrapper{
+    display: grid;
+    grid-template-columns: 33% 77%;
+    column-gap: 10px;
+}
+
+#player-icons{
+    width: 100%;
+    text-align: right;
+    grid-column: 1/1;
+}
+
+#player-icons li{
+    height:30px;
+}
+
+#player-list li{
+    height:30px;
+}
+
+#player-list{
+    grid-column: 2/2;
+    text-align: left;
+}
+.game-wrapper button{
+    margin-top:10px;
+    background-color: red;
+    border:none;
+    color:white;
+    min-height:50px;
+    width:100px;
+    border-radius:500px;
+}
+
+.game-wrapper button:hover{
+    background-color: rgb(165, 2, 2);
+}
+
 /* ~~copied~~ heavily inspired from tailwind css */
 
 :root {
@@ -742,7 +843,8 @@ a:not(:hover) {
 }
 
 .h-windowMax{
-    min-height: calc(100vh - var(--topbar-height) - 31.4px);
+    flex:1 1 0;
+    min-height: 0;
 }
 
 .center-align {

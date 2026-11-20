@@ -6,11 +6,15 @@ Exports the following functions:
 Also exports centerContent, which stores an HTML element that is the highest wrapper for dynamic content
 */
 
-import { closeHamburgerMenu } from "./hamburgerMenu.js";
+import {
+    closeHamburgerMenu,
+    hideBottomButtonSection,
+    showBottomButtonSection,
+} from "./externalMenus.js";
 
 import { initializeLobbyCreationPage } from "./lobbyCreation.js";
 
-import { leaveLobby } from "./lobbyLeave.js";
+import { infoUpdateIntervalId, initializeLobbyInfoPage } from "./lobbyInfo.js";
 
 import {
     deselectCard,
@@ -49,7 +53,7 @@ export async function getPageContent(
     //Fetch html from template
     const htmlFetchResponse = await fetch(`templates/${pageLocation}.html`);
     if (!htmlFetchResponse.ok) {
-        throw new Error(`Response status: ${htmlFetchResponse.status}`);
+        throw new Error(`Can't find page! pageLocation: ${pageLocation}`);
     }
 
     //convert response to html
@@ -85,17 +89,6 @@ export async function setPageContent(
     parentDivId?: string,
     divId?: string,
 ) {
-    //close menu, if open
-    closeHamburgerMenu();
-
-    //deselect any saved card id, if it exists
-    deselectCard();
-
-    //stop constant lobby refreshing, if active
-    if (lobbyUpdateIntervalId) {
-        clearInterval(lobbyUpdateIntervalId);
-    }
-
     //find div to append to; if parameter not initialized, set to null
     let parentDiv: HTMLElement | null = parentDivId
         ? document.querySelector(`#${parentDivId}`)
@@ -110,12 +103,31 @@ export async function setPageContent(
     const pageContentResult: HTMLElement | HTMLTemplateElement | null =
         await getPageContent(pageLocation, divId, true);
 
-    if (pageContentResult) {
-        //actually add content to page
-        const divTemplate = pageContentResult as HTMLTemplateElement;
-        const templateContent = document.importNode(divTemplate.content, true);
-        parentDiv.replaceChildren(templateContent);
+    if (!pageContentResult)
+        throw Error(
+            `Can't find new page content! pageLocation: ${pageLocation} divId: ${divId}`,
+        );
+
+    //close menu, if open
+    closeHamburgerMenu();
+
+    //deselect any saved card id, if it exists
+    deselectCard();
+
+    //stop constant lobby refreshing, if active
+    if (lobbyUpdateIntervalId) {
+        clearInterval(lobbyUpdateIntervalId);
     }
+
+    //clear info refreshing, if active
+    if (infoUpdateIntervalId) {
+        clearInterval(infoUpdateIntervalId);
+    }
+
+    //actually add content to page
+    const divTemplate = pageContentResult as HTMLTemplateElement;
+    const templateContent = document.importNode(divTemplate.content, true);
+    parentDiv.replaceChildren(templateContent);
 
     //Make any other dynamically added page-changing buttons interactive
     const locationButtons: (HTMLButtonElement | HTMLLinkElement)[] = Array.from(
@@ -147,6 +159,12 @@ Initializes newly-loaded page
 @param pageLocation - name of page to initialize
  */
 async function initializeNewPage(pageLocation: string) {
+    if (globalThis.currentLobby) {
+        showBottomButtonSection();
+    } else {
+        hideBottomButtonSection();
+    }
+
     switch (pageLocation) {
         case "lobbies": {
             initializeLobbyListPage();
@@ -171,15 +189,8 @@ async function initializeNewPage(pageLocation: string) {
             }
             break;
         }
-        case "game": {
-            //button to leave lobby
-            const leaveLobbyButton = document.getElementById(
-                "leave-lobby-button",
-            ) as HTMLButtonElement;
-
-            leaveLobbyButton.addEventListener("click", async () => {
-                leaveLobby();
-            });
+        case "gameLobbyInfo": {
+            initializeLobbyInfoPage();
             break;
         }
         case "settings": {

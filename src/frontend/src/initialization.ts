@@ -3,9 +3,9 @@ Initialization script
 Runs when loaded from index.html
 */
 
-import { getNewUserId, getSelfUserInfo } from "./api.js";
+import { getLobby, getNewUserId, getSelfUserInfo } from "./api.js";
 import { setPageContent } from "./dynamicPages.js";
-import { closeHamburgerMenu } from "./hamburgerMenu.js";
+import { closeHamburgerMenu } from "./externalMenus.js";
 
 //initialize global variable
 globalThis.currentLobby = null;
@@ -21,10 +21,16 @@ closeHamburgerMenu();
 //Set page to home
 
 //go to game page if user already logged into lobby
-if (localStorage.getItem("currentLobby")) {
-    setPageContent("game", "", "game-main");
-} else {
-    setPageContent("home");
+setPageBasedOnLobby();
+
+async function setPageBasedOnLobby() {
+    const storageLobbyId = localStorage.getItem("currentLobby");
+    if (storageLobbyId) {
+        globalThis.currentLobby = await getLobby(storageLobbyId);
+        setPageContent("gameLobbyInfo");
+    } else {
+        setPageContent("home");
+    }
 }
 
 // Registers a service worker to cache requests for offline navigation and faster loading. Also reduces server strain.

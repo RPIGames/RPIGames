@@ -1,9 +1,12 @@
 /*
-Code for top-right hamburger menu.
-When module loaded, sets up hamburger menu related events
+Code for external menus.
+When module loaded, sets up hamburger menu related events and bottom button related events
 Exports the following functions:
     - openHamburgerMenu - opens the hamburger menu
     - closeHamburgerMenu - closes the hamburger menu
+    - showBottomButtonSection - show bottom button row
+    - hideBottomButtonSection - hide bottom button row
+    -changeButtonVisibility - change visibility of button on bottom row
 */
 
 //hamburger menu itself
@@ -26,6 +29,10 @@ const hamburgerImageClose: HTMLDivElement = document.querySelector(
     "#hamburgerClose",
 ) as HTMLImageElement;
 
+const bottomButtons: HTMLDivElement = document.querySelector(
+    "#game-bottom-button-wrapper",
+) as HTMLDivElement;
+
 export function openHamburgerMenu() {
     //show menu itself
     hamburgerMenu.style.display = "flex";
@@ -46,6 +53,35 @@ export function closeHamburgerMenu() {
 
     //show closing-x image
     hamburgerImageClose.style.display = "none";
+}
+
+export function showBottomButtonSection() {
+    bottomButtons.style.display = "flex";
+}
+
+export function hideBottomButtonSection() {
+    bottomButtons.style.display = "none";
+}
+
+/**
+ * Change visibility of button on bottom row.
+ * @param buttonLocation - location that button goes to. Can be either lobbyInfo, chat, scoreboard, buttons, timers, or map.
+ * @param show - true means button will be shown, false means button will be hidden. Defaults to true
+ */
+export function changeButtonVisibility(
+    buttonLocation: string,
+    show: boolean = true,
+) {
+    //all bottom row buttons have id of format `bottomButton-${buttonLocation}`
+    const button = document.getElementById(
+        `bottomButton-${buttonLocation}`,
+    ) as HTMLButtonElement | null;
+    if (!button) throw Error(`No button of id bottomButton-${buttonLocation}`);
+    if (show) {
+        button.style.display = "block";
+    } else {
+        button.style.display = "none";
+    }
 }
 
 //close menu when middle section (anything but header, footer, or menu) is clicked
