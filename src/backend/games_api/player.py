@@ -2,6 +2,8 @@
 This file contains the Player sub-API for the Game API.
 """
 
+from __future__ import annotations
+
 from collections.abc import Awaitable, Callable
 from datetime import datetime
 from typing import Any, TypeVar
@@ -12,12 +14,24 @@ from sqlmodel import Session
 import routers.v1.websocket
 from db.engine import engine
 from db.models import User
+from games_api.button import Button
 from games_api.schedule import schedule
-from models.websocket import LocationData, TimerData
+from models.websocket import (
+    ButtonData,
+    ChatroomData,
+    LocationData,
+    MarkerData,
+    ScoreboardData,
+    TimerData,
+)
 
 T = TypeVar("T")
 
-
+_timers: dict[ Player,dict[
+            UUID, tuple[TimerData, Callable[[], Awaitable[Any]] | None]
+        ] ]= {}
+_location: dict[Player,LocationData|None]={}
+_buttons: dict[Player,dict[UUID,Button|None]]={}
 class Player:
     def __init__(self, uuid: UUID) -> None:
         self.uuid = uuid
@@ -27,21 +41,22 @@ class Player:
             raise ValueError
         self._user = user
         self._location = None
-        self._timers: dict[
-            UUID, tuple[TimerData, Callable[[], Awaitable[Any]] | None]
-        ] = {}
+        
 
     def __eq__(self, value: object, /) -> bool:
         if type(value) is Player:
             return value.uuid == self.uuid
         return False
 
+    def __hash__(self)->int:
+        return self.uuid.__hash__()
+
     # when websockets are implemented fix deal with right type of location
     async def _set_location(self, new_location: LocationData) -> None:
         """
         Sets the location of the player.
         """
-        self._location = new_location
+        _location[self] = new_location
 
     def get_name(self) -> str:
         """
@@ -54,26 +69,42 @@ class Player:
         """
         Gets the location of the current player. May return None if no location can be found
         """
-        return self._location
+        try:
+            return _location[self]
+        except KeyError:
+            _location[self] = None
+            return None
+        
 
     def get_uuid(self)->UUID:
         return self.uuid
 
-    def assign_chatroom(
-        self, chatroom_id: UUID, read_permission=True, send_permission=True
+    async def assign_chatroom(
+        self, chatroom_id: UUID,chatroom_name: str, read_permission=True, send_permission=True
     ):
         """
         Assigns a chatroom to the player, so that the player can see it.
         """
-        raise NotImplementedError("Chatrooms have not been implemented yet")
+        temp_chatroom = [ChatroomData(name =chatroom_name,room_id =  chatroom_id, read =read_permission, write =  send_permission)]
+        await  routers.v1.websocket.manager.update_chatrooms(self.uuid,temp_chatroom)
+
+    async def update_chatroom(
+        self, chatroom_id: UUID,chatroom_name: str, read_permission=True, send_permission=True
+    ):
+        """
+        Updates a chatroom to the player, so that the player can see it.
+        """
+        
+        temp_chatroom = [ChatroomData(name =chatroom_name,room_id =  chatroom_id, read =read_permission, write =  send_permission)]
+        await  routers.v1.websocket.manager.update_chatrooms(self.uuid,temp_chatroom)
 
     #get chatrooms in 
-
-    def unassign_chatroom(self, chatroom_id: UUID):
+    async def unassign_chatroom(self, chatroom_id: UUID,):
         """
         Unassigns a chatroom to the player, so that the player stops seeing it.
         """
-        raise NotImplementedError("Chatrooms have not been implemented yet")
+        temp_chatroom  = [chatroom_id]
+        await  routers.v1.websocket.manager.delete_chatroom(self.uuid,temp_chatroom)
 
     async def send_notification(
         self,
@@ -102,32 +133,35 @@ class Player:
         This makes the timer and adds it to the list of timers that the player sees
         """
         
-        self._timers[timer_id] = (
-            timer_id,
-            timer_name,
-            timer_end,
+        _timers[self][timer_id] = ( 
+            TimerData(id=timer_id,
+            name=timer_name,
+            time=timer_end,
+            disappear_on_completion=disappear_on_completion),
             timer_end_function,
-            disappear_on_completion,
         )
         amount_of_seconds = timer_end.timestamp() - (datetime.now()).timestamp()
         amount_of_seconds = amount_of_seconds / 60
         schedule(amount_of_seconds, self._check_timer, timer_id, timer_end_function)
-        return (
-            timer_id,
-            timer_name,
-            timer_end,
+        return ( 
+            TimerData(id=timer_id,
+            name=timer_name,
+            time=timer_end,
+            disappear_on_completion=disappear_on_completion),
             timer_end_function,
-            disappear_on_completion,
         )
 
     # Timer_request_all(): this player has requested all timers
-    async def _timer_request_all(
+    def _timer_request_all(
         self,
     ) -> list[
         TimerData
-    ]:
+    ]:  
+        """
+        Requeast all the timers this player knows
+        """
         timers_list = []
-        for timer in self._timers:
+        for timer in _timers[self]:
             timers_list.append(timer[0])
         return timers_list
 
@@ -136,7 +170,7 @@ class Player:
         """
         Tries to remove the time if the timer does not exist return false otherwise return true
         """
-        checking = self._timers.pop(timer_id, None)
+        checking = _timers[self].pop(timer_id, None)
         return checking != None
 
     
@@ -150,5 +184,45 @@ class Player:
         """
         if timer_end_function is None:
             return
-        if timer_id in self._timers:
+        if timer_id in _timers[self]:
             await timer_end_function()
+
+    async def _update_scoreboard(
+        self,
+        scoreboards: list[ScoreboardData]
+    ) -> None:
+        await routers.v1.websocket.manager.update_scoreboards(self.uuid,scoreboards)
+        
+    async def _delete_scoreboard(
+        self,
+        scoreboards: list[ScoreboardData]
+    ) -> None:
+        await routers.v1.websocket.manager.delete_scoreboards(self.uuid,scoreboards)
+
+    async def _update_marker(
+        self,
+        markers: list[MarkerData]
+    )-> None:
+        await routers.v1.websocket.manager.update_markers(self,markers)
+    
+    async def _delete_marker(
+        self,
+        markers: list[MarkerData]
+    )-> None:
+        await routers.v1.websocket.manager.delete_markers(self,markers)
+
+    async def _update_button(self,buttons:list[Button])-> None:
+        temp_button = list[ButtonData] =[]
+        for button in buttons:
+            _buttons[self][button.get_uuid()] = button
+            temp_button.append(button.make_button_data())
+        await routers.v1.websocket.manager.update_buttons(self.uuid, temp_button)
+
+    async def _delete_button(self,buttons:list[Button])-> None:
+        temp_button = list[ButtonData] =[]
+        for button in buttons:
+            _buttons[self].pop(button.get_uuid())
+            temp_button.append(button.make_button_data())
+        await routers.v1.websocket.manager.delete_buttons(self.uuid, temp_button)
+        
+
