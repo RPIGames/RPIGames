@@ -6,7 +6,7 @@ and a list of players that are in the lobby.
 from random import choice, randint
 from uuid import UUID, uuid4
 
-from games.registry import Games
+from games.registry import GAMES
 from games_api.player import Player
 from games_api.private_maps import PLAYER_TO_LOBBY_MAP
 
