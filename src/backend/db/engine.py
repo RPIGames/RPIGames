@@ -1,5 +1,4 @@
 import os
-from collections.abc import Generator
 
 from sqlmodel import Session, SQLModel, create_engine
 
@@ -16,6 +15,6 @@ def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
 
 
-def get_session() -> Generator[Session, None, None]:
+def get_session() -> Session:
     with Session(engine) as session:
-        yield session
+        return session
