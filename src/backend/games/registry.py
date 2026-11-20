@@ -1,7 +1,8 @@
 """
 Every game adds them selves here so everthing can import the games
 """
+from __future__ import annotations
 
-import games_api.game
+from games_api.game import Game
 
-GAMES: dict[str, type[ games_api.game.Game]] = {}
+GAMES: dict[str, type[ Game]] = {}
