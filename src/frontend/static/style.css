@@ -591,6 +591,57 @@ a:not(:hover) {
     color: var(--text-color);
 }
 
+/*Settings elements*/
+.rename-settings-wrapper{
+    display: flex;
+    align-items: center;
+    gap:10px;
+}
+
+#rename-button {
+    height:50px;
+    background-color: rgb(199, 0, 0);
+    color:white;
+    border-radius: 10px;
+    padding:10px;
+}
+
+.rename-input-wrapper{
+    width: clamp(190px,50%,300px);
+    position:relative;
+}
+
+
+.rename-input-wrapper::after{
+    content:"Username must be 3-50 characters long and can only contain letters, numbers, or spaces";
+    color:red;
+    position:absolute;
+    left:2px;
+    top:50px;
+}
+
+.rename-input-wrapper:has(input:invalid)::after{
+    display: inline;
+}
+
+.rename-input-wrapper:has(input:valid)::after{
+    display: none;
+}
+
+
+#rename-text-box{
+    width:100%;
+}
+
+#rename-text-box:invalid {
+    border:2px solid red;
+}
+
+
+#rename-button:hover{
+    background-color: rgb(235, 144, 144);
+}
+
 /* ~~copied~~ heavily inspired from tailwind css */
 
 :root {

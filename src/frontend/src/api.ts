@@ -1,5 +1,6 @@
 import { sendUINotification } from "./notifications.js";
 import type {
+    ChangeNameRequest,
     LobbyJoinRequest,
     LobbyResponse,
     MakeLobbyRequest,
@@ -143,7 +144,7 @@ export async function getSelfUserInfo() {
  *
  * @returns All the lobbies available.
  */
-export async function getAllLobbies() {
+export async function getAllLobbies(): Promise<LobbyResponse[]> {
     //get lobby data
     const response = await fetch("/api/latest/lobby/all");
     if (!response.ok) {
@@ -154,6 +155,55 @@ export async function getAllLobbies() {
 
     //create list of lobbies
     return (await response.json()) as LobbyResponse[];
+}
+
+/**
+ * Changes the current user's name. The new name must be a valid name.
+ */
+export async function changeSelfName(name: string): Promise<Response> {
+    const body: ChangeNameRequest = {
+        new_name: name,
+    };
+
+    const url = new URL("/api/v1/user/change_name", location.href);
+
+    return fetch(url, {
+        method: "POST",
+        headers: [getAuthHeader(), ["Content-Type", "application/json"]],
+        body: JSON.stringify(body),
+    });
+}
+/**
+ * Gets a single lobby.
+ *
+ * @param lobby_id the id of the lobby to try and fetch
+ * @throws If the lobbies could not be fetched because network error or otherwise
+ *
+ * @returns The lobby, or null if there is no lobby with that name.
+ */
+export async function getLobby(
+    lobby_id: string,
+): Promise<LobbyResponse | null> {
+    // construct a url with parameters
+    const url = new URL("/api/latest/lobby/single", location.href);
+    url.searchParams.append("lobby_id", lobby_id);
+
+    // perform the actual fetch
+    const response = await fetch(url);
+
+    // parse the response
+    if (response.status === 404) {
+        // lobby not found
+        return null;
+    }
+    if (!response.ok) {
+        throw new Error(
+            `Failed to get lobbies: Status code from fetching lobbies is ${response.status}`,
+        );
+    }
+
+    //create list of lobbies
+    return (await response.json()) as LobbyResponse;
 }
 
 /**
