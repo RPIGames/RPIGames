@@ -1,0 +1,12 @@
+<template id="settings">
+    <h1>User Settings</h1>
+
+    <div class="rename-settings-wrapper">
+        <label for="rename-text-box">Change Name: </label>
+        <div class="rename-input-wrapper">
+        <input  name="rename-text-box" id="rename-text-box" type="text" class="lobby-input" autocomplete="name" required 
+          pattern="[a-zA-Z0-9 ]+"  minlength="3" maxlength="50">
+        </div>
+        <button id="rename-button" class="button">Rename</button>
+    </div>
+</template>

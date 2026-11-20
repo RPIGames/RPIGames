@@ -22,3 +22,6 @@ class MakeLobbyRequest(BaseModel):
 
 class LobbyPassLeadershipRequest(BaseModel):
     grantee_id: UUID
+
+class ChangeNameRequest(BaseModel):
+    new_name: str

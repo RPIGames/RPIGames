@@ -14,6 +14,7 @@ from db.models import User
 from games_api.lobby import GLOBAL_LOBBY_MAP, get_players_lobby
 from games_api.player import Player
 from games_api.private_maps import PLAYER_TO_LOBBY_MAP
+from models.request import ChangeNameRequest
 from models.response import (
     AuthenticationErrorResponse,
     ErrorResponse,
@@ -26,6 +27,24 @@ router = APIRouter(
     prefix="/user",
     tags=["user"],
 )
+
+def make_player_response_from_player(player: Player) -> PublicUserInfoResponse:
+
+    leader = False
+    lobby = get_players_lobby(player)
+    lobby_id = None
+    if lobby is not None:
+        lobby_id = lobby._uuid
+        if lobby.leader == player:
+            leader = True
+
+    return PublicUserInfoResponse(
+        id=player.uuid,
+        name=player.get_name(),
+        leader=leader,
+        lobby_id=lobby_id,
+    )
+
 
 
 @router.post(
@@ -109,20 +128,7 @@ def get_public_user_info(
         response.status_code = status.HTTP_404_NOT_FOUND
         return ErrorResponse(error="User not found.")
 
-    leader = False
-    lobby = get_players_lobby(player)
-    lobby_id = None
-    if lobby is not None:
-        lobby_id = lobby._uuid
-        if lobby.leader == player:
-            leader = True
-
-    return PublicUserInfoResponse(
-        id=player.uuid,
-        name=player.get_name(),
-        leader=leader,
-        lobby_id=lobby_id,
-    )
+    return make_player_response_from_player(player)
 
 
 @router.post(
@@ -134,9 +140,9 @@ def get_public_user_info(
     },
 )
 def rename_self(
-    new_name: str,
     player: Annotated[Player, Depends(require_authorization)],
     session: Annotated[Session, Depends(get_session)],
+    request: ChangeNameRequest,
     response: Response,
 ):
     """
@@ -146,6 +152,7 @@ def rename_self(
     - Usernames must be less than or equal to 50 characters long.
     - Usernames must be alphanumeric (+ spaces)
     """
+    new_name = request.new_name
 
     if len(new_name) < 3:
         response.status_code = status.HTTP_400_BAD_REQUEST
