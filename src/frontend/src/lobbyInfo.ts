@@ -2,11 +2,7 @@
 Code for lobby info page
 Will probably be integrated into another page in the future
 */
-import {
-    getLobby,
-    getSelfUserInfo,
-    leaveLobby as leaveLobbyBackend,
-} from "./api.js";
+import { getSelfUserInfo, leaveLobby as leaveLobbyBackend } from "./api.js";
 
 import { setPageContent } from "./dynamicPages.js";
 import type { PublicUserInfo } from "./structs/api.js";
@@ -35,10 +31,6 @@ function setupLeaveLobbyButton() {
 }
 
 async function displayLobbyData() {
-    //set currentLobby value
-    const lobbyId = localStorage.getItem("currentLobby") as string;
-    globalThis.currentLobby = await getLobby(lobbyId);
-
     //set lobby name
     const lobbyName = document.querySelector("h1 span") as HTMLHeadingElement;
     lobbyName.textContent = globalThis.currentLobby.name;
@@ -96,7 +88,7 @@ async function leaveLobby() {
     const lobbyLeaveSuccess = await leaveLobbyBackend();
     if (lobbyLeaveSuccess) {
         //go back to lobbies page
-        currentLobby = null;
+        globalThis.currentLobby = null;
         localStorage.removeItem("currentLobby");
         console.log("Lobby left successfully!");
         setPageContent("lobbies", "", "lobby-main");

@@ -159,7 +159,7 @@ Initializes newly-loaded page
 @param pageLocation - name of page to initialize
  */
 async function initializeNewPage(pageLocation: string) {
-    if (pageLocation === "gameLobbyInfo" || pageLocation === "chat") {
+    if (globalThis.currentLobby) {
         showBottomButtonSection();
     } else {
         hideBottomButtonSection();
