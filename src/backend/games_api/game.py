@@ -42,8 +42,8 @@ class Game(ABC):
 
     ###############################################################################
     #### inherited class does can change but must maintain this functionallity ####
-    ###############################################################################   
-     
+    ###############################################################################
+
     # add scoreboard
     async def add_scoreboard(self,new_scoreboard:ScoreboardData):
         """
@@ -54,25 +54,25 @@ class Game(ABC):
     # have a join lobby function
     async def join_lobby(self, player: Player) -> None:
         """
-        The given player has joined the lobby 
+        The given player has joined the lobby
         """
-        await self.players_in_game.append(player)
+        self.players_in_game.append(player)
 
     # have a leave lobby function
     async def leave_lobby(self, player: Player) -> None:
         """
         The given player has left the lobby
         """
-        await self.players_in_game.remove(player)
+        self.players_in_game.remove(player)
 
     def parse_message(player_id: UUID, room_id: UUID, message: str) -> tuple[UUID, UUID, str]:
         """
         Does the parsing of chat messages
         """
-        return tuple[player_id,room_id,message]
+        tuple[player_id,room_id,message]
 
 
-    
+
 
     ###############################################################################
     ################### inherited class does not change ###########################
@@ -114,14 +114,14 @@ class Game(ABC):
     # get_room(Room UUID): gets all the players that are in the chatroom
     def get_room(self, room_id: UUID) -> list[UUID]:
         """
-        Gets all the players in the given room 
+        Gets all the players in the given room
         """
         if room_id in self.chat_room_players:
             return self.chat_room_players[room_id]
         else:
             return []
-    
-    #get way to add people to a room 
+
+    #get way to add people to a room
     def add_to_room(self,room_id: UUID,players:list[Player]| None =None,read_permission=True, send_permission=True):
         """
         Adds a set of players to a room
@@ -131,11 +131,11 @@ class Game(ABC):
         for player in players:
             player.assign_chatroom(room_id,read_permission, send_permission)
             self.chat_room_players[room_id].append(player.get_uuid())
-    
-    
+
+
     async def remove_from_room(self,room_id: UUID,players:list[Player]| None =None):
         """
-        removs a set of given players from a room 
+        removs a set of given players from a room
         """
         if players is None:
             players =[]
@@ -150,7 +150,7 @@ class Game(ABC):
     )-> bool:
         """
         Mass send out of removing timers from each of given players
-        """ 
+        """
         if players is None:
             players =[]
         for player in players:
@@ -158,12 +158,12 @@ class Game(ABC):
         return True
 
 
-    async def mass_notification_Send(
+    async def mass_notification_send(
         self,
         players:list[Player]| None =None,
         body:str | None = None,
         native: bool =False
-    ):     
+    ):
         """
         Mass send out of notifications to each of given players
         """
@@ -262,7 +262,3 @@ class Game(ABC):
             buttons = []
         for player in players:
             await player._delete_button(buttons)
-
-    
-    
-

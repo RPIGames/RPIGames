@@ -4,12 +4,20 @@ as well as testing when users fail to be created
 (for example, a bogus header)
 """
 
+from uuid import UUID
+
 from fastapi import status
 
 from models.request import ChangeNameRequest
 from models.response import AuthenticationErrorResponse, ErrorResponse
 
-from .helper import client, create_quick_user, get_uid_from_auth, get_user_info
+from .helper import (
+    client,
+    create_quick_user,
+    get_lobby_info,
+    get_uid_from_auth,
+    get_user_info,
+)
 from .test_lobby import create_quick_lobby
 
 
@@ -29,6 +37,31 @@ def test_change_username():
     assert response.status_code == status.HTTP_200_OK
     assert response.text == ""
     assert get_user_info(auth)["name"] == "testuser"
+
+
+def test_change_username_in_lobby():
+    """
+    This test creates a user, adds it to a lobby, changes its name, and verifies everything is ok.
+    """
+    auth = create_quick_user()
+    assert get_user_info(auth)["name"] != "testuser"
+    lobby = create_quick_lobby(auth)
+
+    response = client.post(
+        "/v1/user/change_name",
+        json=ChangeNameRequest(new_name="testuser").model_dump(),
+        headers={"Authorization": auth},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.text == ""
+    assert get_user_info(auth)["name"] == "testuser"
+
+    lobby = get_lobby_info(lobby)
+    assert len(lobby.players) == 1
+    lobby_player = lobby.players[0]
+    assert lobby_player.id == UUID(get_user_info(auth)["id"])
+    assert lobby_player.name == "testuser"
 
 
 def test_change_username_with_no_session():
