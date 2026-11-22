@@ -4,7 +4,7 @@ Will probably be integrated into another page in the future
 */
 import { getSelfUserInfo, leaveLobby as leaveLobbyBackend } from "./api.js";
 
-import { setPageContent } from "./dynamicPages.js";
+import { setCurrentLobbyFromBackend, setPageContent } from "./dynamicPages.js";
 import type { PublicUserInfo } from "./structs/api.js";
 
 export let infoUpdateIntervalId: number | null;
@@ -31,6 +31,8 @@ function setupLeaveLobbyButton() {
 }
 
 async function displayLobbyData() {
+    await setCurrentLobbyFromBackend();
+
     //set lobby name
     const lobbyName = document.querySelector("h1 span") as HTMLHeadingElement;
     lobbyName.textContent = globalThis.currentLobby.name;

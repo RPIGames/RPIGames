@@ -753,6 +753,7 @@ a:not(:hover) {
 
 #player-list li{
     height:30px;
+    overflow: clip;
 }
 
 #player-list{

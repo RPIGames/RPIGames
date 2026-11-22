@@ -6,12 +6,17 @@ Exports:
     deselectCard - setter to deselect currently selected card
 */
 
-import { getAllLobbies, joinLobby as joinLobbyBackend } from "./api.js";
+import {
+    getAllLobbies,
+    getLobby,
+    joinLobby as joinLobbyBackend,
+} from "./api.js";
 import {
     centerContent,
     getPageContent,
     setPageContent,
 } from "./dynamicPages.js";
+import { sendUINotification } from "./notifications.js";
 import type { LobbyResponse } from "./structs/api.js";
 
 //map of data for all lobbies
@@ -198,11 +203,21 @@ async function makeButtonsInteractable() {
 //or lobby can be joined immediately
 async function checkLobbyJoinStatus() {
     //Refresh data just in case there has been a change since last join
-    await refreshLobbyData();
-
-    const lobby = allLobbiesData.get(
+    const lobby: LobbyResponse | null = await getLobby(
         currentSelectedCardId as string,
-    ) as LobbyResponse;
+    );
+
+    if (!lobby) {
+        //lobby does not exist, update cards to match
+        sendUINotification(
+            "Error: This lobby no longer exists.",
+            undefined,
+            true,
+            false,
+        );
+        updateLobbyCards(false);
+        return;
+    }
 
     //Don't join lobby directly if secret is needed
     //Instead create password modal and join lobby when submit button pressed
@@ -277,10 +292,13 @@ async function joinLobby(lobby: LobbyResponse, password?: string) {
     } else {
         await joinLobbyBackend(lobby.id);
     }
+
+    //update lobby data with new player info
+    globalThis.currentLobby = await getLobby(lobby.id);
+
     //go to main game page
-    currentLobby = lobby;
     console.log("Lobby joined successfully! Lobby info: ");
     console.log(currentLobby);
-    localStorage.setItem("currentLobby", lobby.id);
+    localStorage.setItem("currentLobby", JSON.stringify(lobby));
     setPageContent("gameLobbyInfo");
 }
