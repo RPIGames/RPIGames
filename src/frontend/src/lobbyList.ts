@@ -16,11 +16,8 @@ import {
     getPageContent,
     setPageContent,
 } from "./dynamicPages.js";
-import { hideBottomButtonSection } from "./externalMenus.js";
 
-import{
-    leaveLobby
-}from "./lobbyInfo.js"
+import { leaveLobby } from "./lobbyInfo.js";
 
 import { sendUINotification } from "./notifications.js";
 import type { LobbyResponse } from "./structs/api.js";
@@ -226,16 +223,16 @@ async function checkLobbyJoinStatus() {
     }
 
     //Don't join lobby yet if you are currently in a lobby
-    if(globalThis.currentLobby){
+    if (globalThis.currentLobby) {
         //don't join lobby if already in it
-        if(globalThis.currentLobby.id==lobby.id){
+        if (globalThis.currentLobby.id === lobby.id) {
             sendUINotification(
-            "You are already in this lobby!",
-            undefined,
-            true,
-            false,
+                "You are already in this lobby!",
+                undefined,
+                true,
+                false,
             );
-        }else{
+        } else {
             //otherwise add modal for leaving lobby
             setupLeaveLobbyModal();
         }
@@ -254,7 +251,7 @@ async function checkLobbyJoinStatus() {
 }
 
 //Modal for leaving a lobby, if trying to join a lobby while already in a lobby
-async function setupLeaveLobbyModal(){
+async function setupLeaveLobbyModal() {
     //show leave lobby element on page
     const leaveModal = (await getPageContent(
         "lobbies",
@@ -272,12 +269,12 @@ async function setupLeaveLobbyModal(){
         leaveModal.remove();
     });
 
-     const submitLeaveButton = document.querySelector(
+    const submitLeaveButton = document.querySelector(
         ".submit-leave-button",
     ) as HTMLButtonElement;
 
     //Leave current lobby, then try to join lobby again
-    submitLeaveButton.addEventListener("click", async function() {
+    submitLeaveButton.addEventListener("click", async () => {
         await leaveLobby(false);
         leaveModal.remove();
         checkLobbyJoinStatus();

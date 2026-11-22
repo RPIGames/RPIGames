@@ -92,7 +92,7 @@ async function displayLobbyData() {
  * @param returnHome If true,returns to home page after leaving; 
     otherwise hide bottom buttons since no longer in lobby. Defaults to true
  */
-export async function leaveLobby(returnHome : boolean=true) {
+export async function leaveLobby(returnHome: boolean = true) {
     console.log("Attempting to leave lobby...");
     //leave lobby in backend
     const lobbyLeaveSuccess = await leaveLobbyBackend();
@@ -101,9 +101,9 @@ export async function leaveLobby(returnHome : boolean=true) {
         globalThis.currentLobby = null;
         localStorage.removeItem("currentLobby");
         console.log("Lobby left successfully!");
-        if(returnHome){
+        if (returnHome) {
             setPageContent("lobbies", "", "lobby-main");
-        }else{
+        } else {
             hideBottomButtonSection();
         }
     }
