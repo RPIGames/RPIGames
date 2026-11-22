@@ -64,6 +64,36 @@ body {
     align-items: center;
 }
 
+/*
+Gooie
+*/
+#gooie{
+    margin:20px;
+    cursor:pointer;
+    user-select: none;
+}
+
+#gooie:active{
+        animation: scale 0.5s ease-in-out infinite;
+}
+
+@keyframes scale {
+    10%{
+        transform: scale(1, 1);
+
+    }
+
+
+    50%{
+        transform: scale(1.2, 0.5) translate(0, 45%); 
+    }
+
+
+    90%{
+        transform: scale(1, 1);
+    }
+}
+
 /* Hamburger Menu styling */
 
 /* Button Itself */
@@ -723,6 +753,7 @@ a:not(:hover) {
 
 #player-list li{
     height:30px;
+    overflow: clip;
 }
 
 #player-list{

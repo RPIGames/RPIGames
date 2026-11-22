@@ -3,8 +3,8 @@ Initialization script
 Runs when loaded from index.html
 */
 
-import { getLobby, getNewUserId, getSelfUserInfo } from "./api.js";
-import { setPageContent } from "./dynamicPages.js";
+import { getNewUserId, getSelfUserInfo } from "./api.js";
+import { setCurrentLobbyFromBackend, setPageContent } from "./dynamicPages.js";
 import { closeHamburgerMenu } from "./externalMenus.js";
 
 //initialize global variable
@@ -19,19 +19,6 @@ window.addEventListener("load", async () => {
 //set hamburger menu to closed state
 closeHamburgerMenu();
 //Set page to home
-
-//go to game page if user already logged into lobby
-setPageBasedOnLobby();
-
-async function setPageBasedOnLobby() {
-    const storageLobbyId = localStorage.getItem("currentLobby");
-    if (storageLobbyId) {
-        globalThis.currentLobby = await getLobby(storageLobbyId);
-        setPageContent("gameLobbyInfo");
-    } else {
-        setPageContent("home");
-    }
-}
 
 // Registers a service worker to cache requests for offline navigation and faster loading. Also reduces server strain.
 async function registerServiceWorker() {
@@ -83,5 +70,13 @@ async function start() {
     // check to see if the user is in a lobby
     if (selfInfo.lobbyId != null) {
         // if it is in a lobby, figure out the lobby name
+    }
+
+    //go to game info page or home page if lobby data does/does not exist
+    const lobbyDataExists = await setCurrentLobbyFromBackend();
+    if (lobbyDataExists) {
+        setPageContent("gameLobbyInfo");
+    } else {
+        setPageContent("home");
     }
 }
