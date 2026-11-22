@@ -3,27 +3,26 @@ Code for dynamically changing the page.
 Exports the following functions:
     - getPageContent - returns a stored HTML element so it can be manipulated before adding to page
     - setPageContent - sets a section of the page (usually all of centerContent) to contain a stored HTML template
+    - setCurrentLobbyFromBackend - updates global currentLobby variable from storage
 Also exports centerContent, which stores an HTML element that is the highest wrapper for dynamic content
 */
 
+import { getLobby } from "./api.js";
 import {
     closeHamburgerMenu,
     hideBottomButtonSection,
     showBottomButtonSection,
 } from "./externalMenus.js";
-
 import { initializeLobbyCreationPage } from "./lobbyCreation.js";
-
 import { infoUpdateIntervalId, initializeLobbyInfoPage } from "./lobbyInfo.js";
-
 import {
     deselectCard,
     initializeLobbyListPage,
     lobbyUpdateIntervalId,
 } from "./lobbyList.js";
-
 import { sendUINotification } from "./notifications.js";
 import { initializeSettingsPage } from "./settings.js";
+import type { LobbyResponse } from "./structs/api.js";
 
 export const centerContent: HTMLDivElement = document.querySelector(
     "#center-content",
@@ -198,4 +197,34 @@ async function initializeNewPage(pageLocation: string) {
             break;
         }
     }
+}
+
+/**
+ * Finds currentLobby data from localstorage and attempts to update from backend
+ * @return {boolean} True if data exists and false if it does not
+ */
+export async function setCurrentLobbyFromBackend(): Promise<boolean> {
+    //get and parse lobby data
+    const lobbyString = localStorage.getItem("currentLobby") as string;
+    const storageLobby = JSON.parse(lobbyString) as LobbyResponse;
+
+    //if data exists
+    if (storageLobby) {
+        try {
+            //update lobby data from backend, if possible
+            globalThis.currentLobby = await getLobby(storageLobby.id);
+            localStorage.setItem(
+                "currentLobby",
+                JSON.stringify(globalThis.currentLobby),
+            );
+        } catch {
+            //use cached data
+            console.warn(
+                `Can't get data for lobby ${storageLobby.id}, using cached data`,
+            );
+            globalThis.currentLobby = storageLobby;
+        }
+        return true;
+    }
+    return false;
 }

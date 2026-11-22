@@ -281,6 +281,6 @@ async function joinLobby(lobby: LobbyResponse, password?: string) {
     currentLobby = lobby;
     console.log("Lobby joined successfully! Lobby info: ");
     console.log(currentLobby);
-    localStorage.setItem("currentLobby", lobby.id);
+    localStorage.setItem("currentLobby", JSON.stringify(lobby));
     setPageContent("gameLobbyInfo");
 }
