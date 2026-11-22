@@ -16,6 +16,12 @@ import {
     getPageContent,
     setPageContent,
 } from "./dynamicPages.js";
+import { hideBottomButtonSection } from "./externalMenus.js";
+
+import{
+    leaveLobby
+}from "./lobbyInfo.js"
+
 import { sendUINotification } from "./notifications.js";
 import type { LobbyResponse } from "./structs/api.js";
 
@@ -219,6 +225,23 @@ async function checkLobbyJoinStatus() {
         return;
     }
 
+    //Don't join lobby yet if you are currently in a lobby
+    if(globalThis.currentLobby){
+        //don't join lobby if already in it
+        if(globalThis.currentLobby.id==lobby.id){
+            sendUINotification(
+            "You are already in this lobby!",
+            undefined,
+            true,
+            false,
+            );
+        }else{
+            //otherwise add modal for leaving lobby
+            setupLeaveLobbyModal();
+        }
+        return;
+    }
+
     //Don't join lobby directly if secret is needed
     //Instead create password modal and join lobby when submit button pressed
     const lobbyNeedsSecret = lobby.needs_secret;
@@ -230,6 +253,38 @@ async function checkLobbyJoinStatus() {
     }
 }
 
+//Modal for leaving a lobby, if trying to join a lobby while already in a lobby
+async function setupLeaveLobbyModal(){
+    //show leave lobby element on page
+    const leaveModal = (await getPageContent(
+        "lobbies",
+        "lobby-leave-modal",
+    )) as HTMLTemplateElement;
+    centerContent.appendChild(leaveModal);
+
+    //set up button to leave lobby modal
+    const cancelButton = document.querySelector(
+        ".cancel-leave-button",
+    ) as HTMLButtonElement;
+
+    //Delete the password modal when modal is exited
+    cancelButton.addEventListener("click", () => {
+        leaveModal.remove();
+    });
+
+     const submitLeaveButton = document.querySelector(
+        ".submit-leave-button",
+    ) as HTMLButtonElement;
+
+    //Leave current lobby, then try to join lobby again
+    submitLeaveButton.addEventListener("click", async function() {
+        await leaveLobby(false);
+        leaveModal.remove();
+        checkLobbyJoinStatus();
+    });
+}
+
+//Modal for inputting lobby password
 async function setupPasswordModal(lobby: LobbyResponse) {
     //show password element on page
     const passwordModal = (await getPageContent(

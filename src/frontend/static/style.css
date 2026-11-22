@@ -499,7 +499,7 @@ button {
     display: none;
 }
 
-.password-button-wrapper{
+.lobby-list-modal-button-wrapper{
     display: flex;
     align-items: center;
     justify-content: space-between;    
@@ -509,7 +509,7 @@ button {
 
 /*lobby password modal styling*/
 
-.password-modal-wrapper{
+.lobby-list-modal-wrapper{
     position: absolute;
     background-color: #0000001a;
     top:0;
@@ -521,7 +521,8 @@ button {
     justify-content: center;
 }
 
-.password-modal{
+.lobby-list-modal{
+    text-align: center;
     position: relative;
     font-size:20px;
     background-color: white;
@@ -537,7 +538,7 @@ button {
     border-radius: 20px;
 }
 
-.password-modal button{
+.lobby-list-modal button{
     height:50px;
     width: 100px;
     border-radius: 10px;
@@ -545,12 +546,12 @@ button {
     color:white;
 }
 
-.password-modal button:hover{
+.lobby-list-modal button:hover{
     background-color: rgb(235, 144, 144);
     cursor: pointer;
 }
 
-.password-modal input{
+.lobby-list-modal input{
     border: 2px solid black;
     border-radius: 10px;
     width:90%;
@@ -567,7 +568,7 @@ button {
     display: none;
 }
 
-.password-button-wrapper{
+.lobby-list-modal-button-wrapper{
     display: flex;
     align-items: center;
     justify-content: space-between;    
@@ -575,7 +576,7 @@ button {
     gap:50px;
 }
 
-.password-modal button img{
+.lobby-list-modal button img{
     height:100%;
     width: 100%;
 }

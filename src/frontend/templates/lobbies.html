@@ -41,14 +41,28 @@
   </template>
 
 <template id="lobby-password-modal">
-    <div class="password-modal-wrapper">
-      <div class="password-modal">
+    <div class="lobby-list-modal-wrapper">
+      <div class="lobby-list-modal">
         Enter Lobby Password:
         <input class="lobby-password-input lobby-input"></input>
-        <div class="password-button-wrapper">
+        <div class="lobby-list-modal-button-wrapper">
             <button class="cancel-password-button">Cancel</button>
             <p class="password-invalid">Incorrect Password</p>
             <button class="submit-password-button">Submit</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="lobby-leave-modal">
+    <div class="lobby-list-modal-wrapper">
+      <div class="lobby-list-modal">
+        <p>You are currently in a lobby.</p>
+        <p>Leave your current lobby?</p>
+        <div class="lobby-list-modal-button-wrapper">
+            <button class="cancel-leave-button">Cancel</button>
+            <p class="password-invalid">Incorrect Password</p>
+            <button class="submit-leave-button">Leave Lobby</button>
         </div>
       </div>
     </div>
