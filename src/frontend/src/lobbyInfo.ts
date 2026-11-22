@@ -80,7 +80,7 @@ async function displayLobbyData() {
         //add crown for leader player
         if (player.leader === true) {
             //remove dash if it has not been removed yet
-            if(iconElement.textContent == "-"){
+            if (iconElement.textContent === "-") {
                 iconElement.textContent = "";
             }
 
