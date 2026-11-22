@@ -34,8 +34,9 @@ _location: dict[Player,LocationData|None]={}
 _buttons: dict[Player,dict[UUID,Button|None]]={}
 
 def _get_user_from_uuid(uuid: UUID) -> User | None:
-    db_conn = Session(engine)
-    user = db_conn.get(User, uuid)
+    user = None
+    with Session(engine) as db_conn:
+        user = db_conn.get(User, uuid)
     if user is None:
         raise ValueError
     return user
