@@ -6,7 +6,7 @@ Exports:
     deselectCard - setter to deselect currently selected card
 */
 
-import { getAllLobbies, joinLobby as joinLobbyBackend } from "./api.js";
+import { getAllLobbies, joinLobby as joinLobbyBackend, getLobby } from "./api.js";
 import {
     centerContent,
     getPageContent,
@@ -277,8 +277,11 @@ async function joinLobby(lobby: LobbyResponse, password?: string) {
     } else {
         await joinLobbyBackend(lobby.id);
     }
+
+    //update lobby data with new player info
+    globalThis.currentLobby = await getLobby(lobby.id);
+
     //go to main game page
-    currentLobby = lobby;
     console.log("Lobby joined successfully! Lobby info: ");
     console.log(currentLobby);
     localStorage.setItem("currentLobby", JSON.stringify(lobby));
