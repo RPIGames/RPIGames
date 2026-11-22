@@ -5,6 +5,7 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from main import app
+from models.response import LobbyResponse
 
 client = TestClient(app)
 
@@ -54,7 +55,6 @@ def create_quick_lobby(
             },
             headers={"Authorization": auth},
         )
-        print(response.request.content)
 
     if response.status_code != 200:
         raise ValueError(f"there was an error making a quick lobby: {response.text}")
@@ -82,10 +82,18 @@ def join_lobby(auth: str, lobby_id: UUID, lobby_secret: str | None = None) -> bo
     }
     if lobby_secret is not None:
         body["lobby_secret"] = lobby_secret
+    print(body)
     response = client.post("/v1/lobby/join", headers={"Authorization": auth}, json=body)
     print(response)
     print(response.json())
     return response.status_code == status.HTTP_200_OK
+
+def get_lobby_info(lobby_id: UUID) -> LobbyResponse:
+    """
+    Gets the information for a single lobby.
+    """
+    response = client.get("/v1/lobby/single", params={"lobby_id": str(lobby_id)})
+    return LobbyResponse.model_validate_json(response.text)
 
 
 GARBAGE_AUTH_HEADERS = [

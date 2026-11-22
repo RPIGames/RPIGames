@@ -145,6 +145,7 @@ async def join_lobby(
 
     If the lobby is a secret lobby, pass the lobby_secret parameter with the password to the lobby.
     """
+    print(body.model_dump_json())
 
     lobby_id = PLAYER_TO_LOBBY_MAP.get(player.uuid)
 
