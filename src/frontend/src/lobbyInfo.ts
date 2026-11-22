@@ -51,19 +51,18 @@ async function displayLobbyData() {
 
     //set player data
     const playerListElement = document.querySelector(
-        "#player-list",
-    ) as HTMLUListElement;
-    const playerIconElement = document.querySelector(
-        "#player-icons",
+        "#player-list-wrapper",
     ) as HTMLUListElement;
 
     playerListElement.innerHTML = "";
-    playerIconElement.innerHTML = "";
 
     for (const player of globalThis.currentLobby.players) {
         //create list elements
-        const playerNameElement = document.createElement("li");
-        const iconElement = document.createElement("li");
+        const playerNameElement = document.createElement("span");
+        playerNameElement.classList.add("info-player-name");
+
+        const iconElement = document.createElement("span");
+        iconElement.classList.add("info-player-icon");
 
         //set content of elements
         playerNameElement.textContent = player.name;
@@ -79,7 +78,7 @@ async function displayLobbyData() {
             iconElement.textContent += " 👑";
         }
 
-        playerIconElement.append(iconElement);
+        playerListElement.append(iconElement);
         playerListElement.append(playerNameElement);
     }
 }

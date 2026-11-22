@@ -730,6 +730,7 @@ a:not(:hover) {
 }
 
 .game-wrapper div{
+    width:100%;
     text-align: center;
     font-size:20px;
 }
@@ -737,29 +738,23 @@ a:not(:hover) {
 
 #player-list-wrapper{
     display: grid;
-    grid-template-columns: 33% 77%;
+    width:100%;
+    grid-template-columns: 35% 1fr;
+    grid-auto-rows: minmax(30px, auto);
     column-gap: 10px;
+    padding-right: 20px;
 }
 
-#player-icons{
-    width: 100%;
-    text-align: right;
-    grid-column: 1/1;
-}
-
-#player-icons li{
-    height:30px;
-}
-
-#player-list li{
-    height:30px;
-    overflow: clip;
-}
-
-#player-list{
-    grid-column: 2/2;
+.info-player-name{
+    overflow-wrap: break-word;
+    word-break: break-all;
     text-align: left;
 }
+
+.info-player-icon{
+    text-align: right;
+}
+
 .game-wrapper button{
     margin-top:10px;
     background-color: red;
