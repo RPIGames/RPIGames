@@ -69,12 +69,22 @@ async function displayLobbyData() {
 
         //add "you" label for self
         const selfInfo = (await getSelfUserInfo()) as PublicUserInfo;
+
+        //default content is dash
+        iconElement.textContent = "-";
+
         if (player.name === selfInfo.name) {
-            iconElement.textContent += "(You)";
+            iconElement.textContent = "(You)";
         }
 
         //add crown for leader player
         if (player.leader === true) {
+            //remove dash if it has not been removed yet
+            if(iconElement.textContent == "-"){
+                iconElement.textContent = "";
+            }
+
+            //append crown, so it appears next to "you" if person is both you and leader
             iconElement.textContent += " 👑";
         }
 
