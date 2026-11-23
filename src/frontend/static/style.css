@@ -741,7 +741,7 @@ a:not(:hover) {
 #player-list-wrapper{
     display: grid;
     width:100%;
-    grid-template-columns: 35% 1fr;
+    grid-template-columns: calc(50% - 3em) 1fr;
     grid-auto-rows: minmax(30px, auto);
     column-gap: 10px;
     padding-right: 20px;
@@ -751,6 +751,7 @@ a:not(:hover) {
     overflow-wrap: break-word;
     word-break: break-all;
     text-align: left;
+    text-indent: 1ch hanging;
 }
 
 .info-player-icon{
