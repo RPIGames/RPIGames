@@ -665,7 +665,7 @@ navigator.geolocation.watchPosition(
 );
 
 function sendPosition(position: GeolocationPosition) {
-    console.log("got position", position);
+    //console.log("got position", position);
     if (webSocketAuthenticated) {
         const to_send: ClientSendLocationMessage = {
             type: "map",
@@ -691,9 +691,11 @@ function sendPosition(position: GeolocationPosition) {
         }
         webSocket.send(JSON.stringify(to_send));
     } else {
+        /*
         console.error(
             "could not send geolocation data because websocket is not authenticated at: ",
             position.timestamp,
         );
+        */
     }
 }
