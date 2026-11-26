@@ -1,10 +1,13 @@
 /*
 Code for lobby info page
-Will probably be integrated into another page in the future
+Exports the following functions:
+- initializeLobbyInfoPage
+- leaveLobby - allows user to leave lobby
 */
 import { getSelfUserInfo, leaveLobby as leaveLobbyBackend } from "./api.js";
 
 import { setCurrentLobbyFromBackend, setPageContent } from "./dynamicPages.js";
+import { hideBottomButtonSection } from "./externalMenus.js";
 import type { PublicUserInfo } from "./structs/api.js";
 
 export let infoUpdateIntervalId: number | null;
@@ -85,7 +88,12 @@ async function displayLobbyData() {
     }
 }
 
-async function leaveLobby() {
+/**
+ * Leaves current lobby.
+ * @param returnHome If true,returns to home page after leaving; 
+    otherwise hide bottom buttons since no longer in lobby. Defaults to true
+ */
+export async function leaveLobby(returnHome: boolean = true) {
     console.log("Attempting to leave lobby...");
     //leave lobby in backend
     const lobbyLeaveSuccess = await leaveLobbyBackend();
@@ -94,6 +102,10 @@ async function leaveLobby() {
         globalThis.currentLobby = null;
         localStorage.removeItem("currentLobby");
         console.log("Lobby left successfully!");
-        setPageContent("lobbies", "", "lobby-main");
+        if (returnHome) {
+            setPageContent("lobbies", "", "lobby-main");
+        } else {
+            hideBottomButtonSection();
+        }
     }
 }
